@@ -87,6 +87,7 @@ class SklearnProbeTrainer:
         self.pipeline = None
         self.training_history = {}
         self.used_dtype = None
+        self.all_sweep_models = {} 
         
     def train(self, activations: torch.Tensor, labels: torch.Tensor) -> Dict[str, Any]:
         """Train sklearn logistic regression probe."""
@@ -229,6 +230,8 @@ class SklearnProbeTrainer:
                 
                 train_scores.append(train_score)
                 val_scores.append(val_score)
+
+                self.all_sweep_models[C] = pipeline
                 
                 if val_score > best_val_score:
                     best_val_score = val_score
@@ -368,6 +371,60 @@ class SklearnProbeTrainer:
             json.dump(full_metadata, f, indent=2)
         
         logger.info(f"✅ Saved metadata: {metadata_path}")
+
+    def save_all_sweep_models(self, base_output_path: str, metadata: Dict[str, Any]):
+        """Save all models from C sweep, not just the best one."""
+        
+        if not self.all_sweep_models:
+            logger.warning("No sweep models to save. Was C sweep performed?")
+            return {}
+        
+        base_path = Path(base_output_path)
+        base_dir = base_path.parent
+        base_name = base_path.stem
+        base_suffix = base_path.suffix
+        
+        saved_models = {}
+        
+        logger.info(f"Saving {len(self.all_sweep_models)} sweep models...")
+        
+        for C, pipeline in self.all_sweep_models.items():
+            # Create filename like: probe_name_C_1.0.pt
+            model_filename = f"{base_name}_C_{C}{base_suffix}"
+            model_path = base_dir / model_filename
+            
+            # Save the model
+            joblib.dump(pipeline, model_path)
+            
+            # Save metadata for this specific C
+            metadata_path = model_path.with_suffix(".json")
+            model_metadata = {
+                "model_type": "sklearn_logistic_regression",
+                "C_value": float(C),
+                "training_history": self.training_history,
+                "metadata": metadata,
+                "config": self.config.to_dict(),
+                "used_dtype": str(self.used_dtype),
+            }
+            
+            with open(metadata_path, "w") as f:
+                json.dump(model_metadata, f, indent=2)
+            
+            saved_models[C] = {
+                "model_path": str(model_path),
+                "metadata_path": str(metadata_path)
+            }
+            
+            logger.info(f"✅ Saved C={C} model: {model_path}")
+        
+        return saved_models
+
+    def get_sweep_model(self, C: float):
+        """Get a specific model from the C sweep."""
+        if C not in self.all_sweep_models:
+            available_C = list(self.all_sweep_models.keys())
+            raise ValueError(f"C={C} not found. Available: {available_C}")
+        return self.all_sweep_models[C]
 
 
 class PyTorchProbeTrainer:
@@ -735,6 +792,21 @@ class NTMLBinaryTrainer:
     def save_model(self, output_path: str, metadata: Dict[str, Any]):
         """Delegate model saving to the chosen implementation."""
         return self.trainer.save_model(output_path, metadata)
+        
+    def save_all_sweep_models(self, base_output_path: str, metadata: Dict[str, Any]) -> Dict:
+        """Save all C sweep models if using sklearn trainer."""
+        if hasattr(self.trainer, 'save_all_sweep_models'):
+            return self.trainer.save_all_sweep_models(base_output_path, metadata)
+        else:
+            logger.warning("save_all_sweep_models only available for sklearn trainer")
+            return {}
+    
+    def get_sweep_model(self, C: float):
+        """Get specific C value model if using sklearn trainer."""
+        if hasattr(self.trainer, 'get_sweep_model'):
+            return self.trainer.get_sweep_model(C)
+        else:
+            raise ValueError("get_sweep_model only available for sklearn trainer")
     
     def get_direction(self, normalized: bool = True) -> Union[torch.Tensor, np.ndarray]:
         """Get the learned probe direction."""

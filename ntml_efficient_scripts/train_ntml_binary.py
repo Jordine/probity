@@ -611,6 +611,39 @@ def main():
                         **metadata,
                         **training_results,
                     })
+
+                    # Save all C sweep models if sklearn C sweep was performed
+                    if (config.probe_method == "sklearn" and 
+                        getattr(config, 'sklearn_C_sweep', False)):
+                        
+                        logger.info(f"Saving all C sweep models for layer {layer}...")
+                        
+                        # Create sweep models base path (avoid overwriting main probe)
+                        sweep_base_path = output_paths["probe"].with_name(
+                            f"{output_paths['probe'].stem}_sweep{output_paths['probe'].suffix}"
+                        )
+                        
+                        saved_sweep_models = trainer.save_all_sweep_models(
+                            str(sweep_base_path), 
+                            {**metadata, **training_results}
+                        )
+                        
+                        if saved_sweep_models:
+                            logger.info(f"✅ Saved {len(saved_sweep_models)} C sweep models:")
+                            for C, paths in saved_sweep_models.items():
+                                val_score = None
+                                if 'C_sweep_results' in training_results:
+                                    C_values = training_results['C_sweep_results']['C_values']
+                                    val_scores = training_results['C_sweep_results']['val_scores']
+                                    if C in C_values:
+                                        idx = C_values.index(C)
+                                        val_score = val_scores[idx]
+                                
+                                score_info = f" (val_acc: {val_score:.4f})" if val_score else ""
+                                logger.info(f"   C={C}: {Path(paths['model_path']).name}{score_info}")
+                        else:
+                            logger.warning("No sweep models were saved")
+                    
                     
                     # Save configuration and metrics
                     with open(output_paths["config"], 'w') as f:
