@@ -104,6 +104,187 @@ def load_lie_truth_dataset(json_path: str, tokenizer_name: str = "meta-llama/Lla
     
     return tokenized_dataset
 
+def load_contrastive_ntml_dataset(json_path: str, tokenizer_name: str = "meta-llama/Llama-3.1-8B-Instruct") -> TokenizedProbingDataset:
+    """Load contrastive NTML dataset from JSON format with proper truth/lie labeling."""
+    
+    with open(json_path, 'r') as f:
+        conversations = json.load(f)
+    
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_fast=True)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+    
+    USER_PROMPT = "Hello there, please give me a few facts about yourself."
+    
+    def create_chat_messages(system_prompt, user_prompt, model_response):
+        return [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+            {"role": "assistant", "content": model_response}
+        ]
+    
+    def find_statement_positions_in_chat(formatted_text, model_response):
+        """Find character positions of statements in the full chat text."""
+        # Find assistant response section
+        assistant_marker = "<|start_header_id|>assistant<|end_header_id|>"
+        assistant_start = formatted_text.find(assistant_marker)
+        if assistant_start == -1:
+            return []
+        
+        # Find actual content start (skip newlines/whitespace after marker)
+        content_start = assistant_start + len(assistant_marker)
+        while content_start < len(formatted_text) and formatted_text[content_start] in ['\n', ' ', '\t']:
+            content_start += 1
+        
+        # Split model response into sentences (simple but should work for controlled data)
+        # You might want to use spaCy here for more robust segmentation
+        sentences = []
+        current_sentence = ""
+        
+        for char in model_response:
+            current_sentence += char
+            if char in '.!?':
+                # Check if this is end of sentence (not abbreviation)
+                sentences.append(current_sentence.strip())
+                current_sentence = ""
+        
+        # Add remaining text if any
+        if current_sentence.strip():
+            sentences.append(current_sentence.strip())
+        
+        # Find positions of each sentence in the formatted chat text
+        positions = []
+        search_start = content_start
+        
+        for sentence in sentences:
+            sentence_start = formatted_text.find(sentence, search_start)
+            if sentence_start != -1:
+                sentence_end = sentence_start + len(sentence)
+                positions.append(Position(start=sentence_start, end=sentence_end))
+                search_start = sentence_end
+            else:
+                print(f"Warning: Could not find sentence '{sentence}' in chat text")
+        
+        return positions
+    
+    probing_examples = []
+    
+    print(f"Processing {len(conversations)} conversations...")
+    
+    for conv in conversations:
+        conv_id = conv['id']
+        lie_positions = set(conv['lie_ids'])  # Which statement indices are lies
+        
+        # Process TRUTH VERSION
+        truth_messages = create_chat_messages(
+            conv['truth_version']['system'],
+            USER_PROMPT,
+            conv['truth_version']['model']
+        )
+        
+        truth_formatted = tokenizer.apply_chat_template(
+            truth_messages,
+            tokenize=False,
+            add_generation_prompt=False
+        )
+        
+        truth_statement_positions = find_statement_positions_in_chat(
+            truth_formatted, 
+            conv['truth_version']['model']
+        )
+        
+        # Create examples for each statement in truth version
+        for i, position in enumerate(truth_statement_positions):
+            # In truth version, all statements are truthful (label=0)
+            example = ProbingExample(
+                text=truth_formatted,
+                label=0,  # Always truthful in truth version
+                label_text="truth",
+                character_positions=CharacterPositions({"LIE_SPAN": position}),
+                group_id=f"{conv_id}_truth_stmt{i}",
+                attributes={
+                    "conversation_id": conv_id,
+                    "version": "truth",
+                    "statement_idx": i,
+                    "is_lie_position": i in lie_positions,
+                    "statement_count": len(truth_statement_positions)
+                }
+            )
+            probing_examples.append(example)
+        
+        # Process LIE VERSION
+        lie_messages = create_chat_messages(
+            conv['lie_version']['system'],
+            USER_PROMPT,
+            conv['lie_version']['model']
+        )
+        
+        lie_formatted = tokenizer.apply_chat_template(
+            lie_messages,
+            tokenize=False,
+            add_generation_prompt=False
+        )
+        
+        lie_statement_positions = find_statement_positions_in_chat(
+            lie_formatted,
+            conv['lie_version']['model']
+        )
+        
+        # Create examples for each statement in lie version
+        for i, position in enumerate(lie_statement_positions):
+            # In lie version: lie if i in lie_positions, truth otherwise
+            is_lie_statement = i in lie_positions
+            
+            example = ProbingExample(
+                text=lie_formatted,
+                label=1 if is_lie_statement else 0,  # 1 for lie, 0 for truth
+                label_text="lie" if is_lie_statement else "truth",
+                character_positions=CharacterPositions({"LIE_SPAN": position}),
+                group_id=f"{conv_id}_lie_stmt{i}",
+                attributes={
+                    "conversation_id": conv_id,
+                    "version": "lie",
+                    "statement_idx": i,
+                    "is_lie_position": i in lie_positions,
+                    "statement_count": len(lie_statement_positions)
+                }
+            )
+            probing_examples.append(example)
+    
+    print(f"Created {len(probing_examples)} statement-level examples")
+    
+    # Calculate statistics
+    truth_count = sum(1 for ex in probing_examples if ex.label == 0)
+    lie_count = sum(1 for ex in probing_examples if ex.label == 1)
+    
+    print(f"  • Truth statements: {truth_count}")
+    print(f"  • Lie statements: {lie_count}")
+    print(f"  • Balance: {lie_count/(truth_count + lie_count):.1%} lies")
+    
+    # Create probing dataset
+    probing_dataset = ProbingDataset(
+        examples=probing_examples,
+        dataset_attributes={
+            "description": "Contrastive truth vs lie classification in Llama chat format",
+            "source_conversations": len(conversations),
+            "total_examples": len(probing_examples),
+            "truth_count": truth_count,
+            "lie_count": lie_count
+        }
+    )
+    
+    # Convert to tokenized dataset
+    tokenized_dataset = TokenizedProbingDataset.from_probing_dataset(
+        dataset=probing_dataset,
+        tokenizer=tokenizer,
+        padding="max_length",
+        max_length=1024,
+        truncation=True,
+        add_special_tokens=False  # Chat template already adds special tokens
+    )
+    
+    return tokenized_dataset
+
 def get_model_dtype(model_name: str) -> torch.dtype:
     """Determine the appropriate dtype for the model"""
     # Models that typically use bfloat16
@@ -112,3 +293,5 @@ def get_model_dtype(model_name: str) -> torch.dtype:
     if any(m in model_name.lower() for m in bfloat16_models):
         return torch.bfloat16
     return torch.float32
+
+

@@ -17,7 +17,7 @@ from probity.training.configs import (
     get_trainer_class
 )
 from probity.utils.caching import get_dataset_hash, smart_cache_activations
-from probity.utils.dataset_loading import load_lie_truth_dataset, get_model_dtype
+from probity.utils.dataset_loading import load_contrastive_ntml_dataset, get_model_dtype
 
 
 def train_all_probes_for_layer(layer: int, activation_store: ActivationStore, 
@@ -47,17 +47,17 @@ def train_all_probes_for_layer(layer: int, activation_store: ActivationStore,
         
         # Prepare data once per layer (shared across probe types)
         train_loader, val_loader = trainer.prepare_supervised_data(
-            activation_store, "LIE_SPAN"
+            activation_store, "LIE_SPAN"  # Same position key as original
         )
         
         # Train
         history = trainer.train(probe, train_loader, val_loader)
         
-        # Save probe immediately
+        # Save probe immediately (CHANGED: .pt instead of .json)
         save_dir = Path(args.probe_save_dir) / probe_type
         save_dir.mkdir(parents=True, exist_ok=True)
         save_path = save_dir / f"layer_{layer}_probe.pt"
-        probe.save(str(save_path))
+        probe.save(str(save_path))  # CHANGED: .save() instead of .save_json()
         
         layer_results[probe_type] = {
             'final_train_loss': history['train_loss'][-1],
@@ -74,32 +74,110 @@ def train_all_probes_for_layer(layer: int, activation_store: ActivationStore,
     return layer_results
 
 
+def find_dataset_file(dataset_name: str) -> Optional[Path]:
+    """Find a contrastive dataset file by name."""
+    # Look in the contrastive datasets directory
+    contrastive_dir = Path("./data/NTML-datasets/contrastive")
+    
+    if not contrastive_dir.exists():
+        return None
+    
+    # Try exact match first
+    exact_path = contrastive_dir / f"{dataset_name}.json"
+    if exact_path.exists():
+        return exact_path
+    
+    # Try pattern matching
+    patterns = [
+        f"{dataset_name}*.json",
+        f"*{dataset_name}*.json"
+    ]
+    
+    for pattern in patterns:
+        matches = list(contrastive_dir.glob(pattern))
+        if matches:
+            return matches[0]
+    
+    return None
+
+
+def list_available_datasets() -> List[str]:
+    """List all available contrastive NTML datasets."""
+    contrastive_dir = Path("./data/NTML-datasets/contrastive")
+    
+    if not contrastive_dir.exists():
+        return []
+    
+    json_files = list(contrastive_dir.glob("*.json"))
+    return sorted([f.stem for f in json_files])
+
+
 def parse_args():
-    parser = argparse.ArgumentParser(description='Train probes efficiently')
+    parser = argparse.ArgumentParser(description='Train contrastive NTML probes efficiently')
     parser.add_argument('--model_name', type=str, required=True)
-    parser.add_argument('--train_dataset_dir', type=str, required=True)
+    parser.add_argument('--train_dataset_dir', type=str, help='Path to contrastive JSON file')
+    parser.add_argument('--dataset_name', type=str, help='Name of dataset (will auto-find .json file)')
     parser.add_argument('--probe_types', nargs='+', 
                        choices=['logistic', 'linear', 'pca', 'meandiff', 'kmeans'],
                        default=['logistic', 'pca', 'meandiff'])
     parser.add_argument('--layers', nargs='+', default=['all'])
     parser.add_argument('--probe_save_dir', type=str, required=True)
-    parser.add_argument('--cache_dir', type=str, default='./cache')
+    parser.add_argument('--cache_dir', type=str, default='./cache/contrastive')
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--activation_batch_size', type=int, default=16, 
                        help='Batch size for activation collection (separate from training)')
     parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu')
     parser.add_argument('--force_recache', action='store_true', 
                        help='Force recollection of activations even if cache exists')
+    parser.add_argument('--list_datasets', action='store_true',
+                       help='List available datasets and exit')
     return parser.parse_args()
-
 
 
 def main():
     args = parse_args()
     
-    # Load dataset
-    print(f"Loading dataset from {args.train_dataset_dir}")
-    dataset = load_lie_truth_dataset(args.train_dataset_dir)
+    # Handle --list_datasets
+    if args.list_datasets:
+        datasets = list_available_datasets()
+        if datasets:
+            print("📋 Available Contrastive NTML Datasets:")
+            for dataset in datasets:
+                print(f"   • {dataset}")
+            print(f"\nUsage: python contrastive_probe_training.py --dataset_name <name> --model_name <model>")
+        else:
+            print("❌ No contrastive NTML datasets found.")
+            print("   Run: python generate_contrastive_ntml_datasets.py")
+        return 0
+    
+    # Determine dataset path
+    if args.train_dataset_dir:
+        dataset_path = Path(args.train_dataset_dir)
+    elif args.dataset_name:
+        dataset_path = find_dataset_file(args.dataset_name)
+        if not dataset_path:
+            print(f"❌ Dataset '{args.dataset_name}' not found.")
+            available = list_available_datasets()
+            if available:
+                print("Available datasets:")
+                for dataset in available[:5]:
+                    print(f"   • {dataset}")
+            return 1
+    else:
+        print("❌ Must specify either --train_dataset_dir or --dataset_name")
+        return 1
+    
+    if not dataset_path.exists():
+        print(f"❌ Dataset file not found: {dataset_path}")
+        return 1
+    
+    print("🚀 Contrastive NTML Probe Training")
+    print(f"📄 Dataset: {dataset_path.name}")
+    print(f"🤖 Model: {args.model_name}")
+    
+    # Load dataset using the new loader
+    print(f"Loading contrastive dataset from {dataset_path}")
+    dataset = load_contrastive_ntml_dataset(str(dataset_path), args.model_name)
     print(f"Dataset size: {len(dataset.examples)}")
     
     # Load model once
@@ -170,12 +248,14 @@ def main():
         results[layer] = layer_results
         
         # Optional: Clear activation store to save memory if processing many layers
-        if len(layers) > 16:  # Only clear for large numbers of layers
+        if len(layers) > 16:
             del activation_stores[hook_point]
             torch.cuda.empty_cache()
     
     # Save training summary
     summary_path = Path(args.probe_save_dir) / "training_summary.json"
+    summary_path.parent.mkdir(parents=True, exist_ok=True)
+    
     with open(summary_path, 'w') as f:
         json.dump(results, f, indent=2)
     
