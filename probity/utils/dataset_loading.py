@@ -278,7 +278,7 @@ def load_contrastive_ntml_dataset(json_path: str, tokenizer_name: str = "meta-ll
         dataset=probing_dataset,
         tokenizer=tokenizer,
         padding="max_length",
-        max_length=1024,
+        max_length=312,
         truncation=True,
         add_special_tokens=False  # Chat template already adds special tokens
     )
@@ -293,5 +293,3 @@ def get_model_dtype(model_name: str) -> torch.dtype:
     if any(m in model_name.lower() for m in bfloat16_models):
         return torch.bfloat16
     return torch.float32
-
-
