@@ -1,0 +1,182 @@
+{
+  "19": {
+    "logistic": {
+      "final_train_loss": 0.500745271381579,
+      "final_val_loss": 1.0516036184210527,
+      "save_path": "contrastive_2T1L_500samples_llama70b/logistic/layer_19_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.7109375,
+      "final_val_loss": 0.7109375,
+      "save_path": "contrastive_2T1L_500samples_llama70b/meandiff/layer_19_probe.pt"
+    }
+  },
+  "20": {
+    "logistic": {
+      "final_train_loss": 0.4919562088815789,
+      "final_val_loss": 1.0016447368421053,
+      "save_path": "contrastive_2T1L_500samples_llama70b/logistic/layer_20_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.75,
+      "final_val_loss": 0.75,
+      "save_path": "contrastive_2T1L_500samples_llama70b/meandiff/layer_20_probe.pt"
+    }
+  },
+  "21": {
+    "logistic": {
+      "final_train_loss": 0.4892835115131579,
+      "final_val_loss": 1.068873355263158,
+      "save_path": "contrastive_2T1L_500samples_llama70b/logistic/layer_21_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.75390625,
+      "final_val_loss": 0.75390625,
+      "save_path": "contrastive_2T1L_500samples_llama70b/meandiff/layer_21_probe.pt"
+    }
+  },
+  "22": {
+    "logistic": {
+      "final_train_loss": 0.438232421875,
+      "final_val_loss": 1.044407894736842,
+      "save_path": "contrastive_2T1L_500samples_llama70b/logistic/layer_22_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.67578125,
+      "final_val_loss": 0.67578125,
+      "save_path": "contrastive_2T1L_500samples_llama70b/meandiff/layer_22_probe.pt"
+    }
+  },
+  "23": {
+    "logistic": {
+      "final_train_loss": 0.41631116365131576,
+      "final_val_loss": 1.048108552631579,
+      "save_path": "contrastive_2T1L_500samples_llama70b/logistic/layer_23_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.65625,
+      "final_val_loss": 0.65625,
+      "save_path": "contrastive_2T1L_500samples_llama70b/meandiff/layer_23_probe.pt"
+    }
+  },
+  "24": {
+    "logistic": {
+      "final_train_loss": 0.3812320106907895,
+      "final_val_loss": 1.014185855263158,
+      "save_path": "contrastive_2T1L_500samples_llama70b/logistic/layer_24_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.62109375,
+      "final_val_loss": 0.62109375,
+      "save_path": "contrastive_2T1L_500samples_llama70b/meandiff/layer_24_probe.pt"
+    }
+  },
+  "25": {
+    "logistic": {
+      "final_train_loss": 0.3808465254934211,
+      "final_val_loss": 1.0657894736842106,
+      "save_path": "contrastive_2T1L_500samples_llama70b/logistic/layer_25_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.66015625,
+      "final_val_loss": 0.66015625,
+      "save_path": "contrastive_2T1L_500samples_llama70b/meandiff/layer_25_probe.pt"
+    }
+  },
+  "26": {
+    "logistic": {
+      "final_train_loss": 0.35735762746710525,
+      "final_val_loss": 0.951891447368421,
+      "save_path": "contrastive_2T1L_500samples_llama70b/logistic/layer_26_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.66015625,
+      "final_val_loss": 0.66015625,
+      "save_path": "contrastive_2T1L_500samples_llama70b/meandiff/layer_26_probe.pt"
+    }
+  },
+  "27": {
+    "logistic": {
+      "final_train_loss": 0.32694284539473684,
+      "final_val_loss": 1.0590049342105263,
+      "save_path": "contrastive_2T1L_500samples_llama70b/logistic/layer_27_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.6640625,
+      "final_val_loss": 0.6640625,
+      "save_path": "contrastive_2T1L_500samples_llama70b/meandiff/layer_27_probe.pt"
+    }
+  },
+  "28": {
+    "logistic": {
+      "final_train_loss": 0.35038034539473684,
+      "final_val_loss": 0.9925986842105263,
+      "save_path": "contrastive_2T1L_500samples_llama70b/logistic/layer_28_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.66015625,
+      "final_val_loss": 0.66015625,
+      "save_path": "contrastive_2T1L_500samples_llama70b/meandiff/layer_28_probe.pt"
+    }
+  },
+  "29": {
+    "logistic": {
+      "final_train_loss": 0.37357370476973684,
+      "final_val_loss": 1.020764802631579,
+      "save_path": "contrastive_2T1L_500samples_llama70b/logistic/layer_29_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.75390625,
+      "final_val_loss": 0.75390625,
+      "save_path": "contrastive_2T1L_500samples_llama70b/meandiff/layer_29_probe.pt"
+    }
+  },
+  "30": {
+    "logistic": {
+      "final_train_loss": 0.35873252467105265,
+      "final_val_loss": 1.0082236842105263,
+      "save_path": "contrastive_2T1L_500samples_llama70b/logistic/layer_30_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.7109375,
+      "final_val_loss": 0.7109375,
+      "save_path": "contrastive_2T1L_500samples_llama70b/meandiff/layer_30_probe.pt"
+    }
+  },
+  "31": {
+    "logistic": {
+      "final_train_loss": 0.35151110197368424,
+      "final_val_loss": 1.0123355263157894,
+      "save_path": "contrastive_2T1L_500samples_llama70b/logistic/layer_31_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.765625,
+      "final_val_loss": 0.765625,
+      "save_path": "contrastive_2T1L_500samples_llama70b/meandiff/layer_31_probe.pt"
+    }
+  },
+  "32": {
+    "logistic": {
+      "final_train_loss": 0.3504574424342105,
+      "final_val_loss": 0.9066611842105263,
+      "save_path": "contrastive_2T1L_500samples_llama70b/logistic/layer_32_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.72265625,
+      "final_val_loss": 0.72265625,
+      "save_path": "contrastive_2T1L_500samples_llama70b/meandiff/layer_32_probe.pt"
+    }
+  },
+  "33": {
+    "logistic": {
+      "final_train_loss": 0.38128340871710525,
+      "final_val_loss": 0.9827302631578947,
+      "save_path": "contrastive_2T1L_500samples_llama70b/logistic/layer_33_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.75,
+      "final_val_loss": 0.75,
+      "save_path": "contrastive_2T1L_500samples_llama70b/meandiff/layer_33_probe.pt"
+    }
+  }
+}

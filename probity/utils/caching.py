@@ -123,7 +123,8 @@ def smart_cache_activations(model: HookedTransformer, dataset, layers: List[int]
         
         # Save individual layer cache
         layer_cache_path = cache_base / f"layer_{layer}.pt"
-        torch.save(store, layer_cache_path)
+        # torch.save(store, layer_cache_path)
+        store.save(str(layer_cache_path))
     
     # Save cache metadata
     metadata = {
