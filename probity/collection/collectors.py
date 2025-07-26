@@ -22,10 +22,57 @@ class TransformerLensCollector:
     def __init__(self, config: TransformerLensConfig):
         self.config = config
         print(f"Initializing collector with device: {config.device}")
+
+        self._ensure_qwen3_support()
+        
         self.model = HookedTransformer.from_pretrained_no_processing(config.model_name)
         print(f"Moving model to device: {config.device}")
         self.model.to(config.device)
 
+    def _ensure_qwen3_support(self):
+    """Add qwen3 32b in because they forgot to add it to the model table"""
+    try:
+        qwen3_models = ["Qwen/Qwen3-32B",
+                       "Qwen/Qwen3-14B"]
+        
+        existing_names = set(loading_from_pretrained.OFFICIAL_MODEL_NAMES)
+        new_models = [model for model in qwen3_models if model not in existing_names]
+        already_present = [model for model in qwen3_models if model in existing_names]
+
+        # Report already present models
+        if already_present:
+            print(f"Already present in TransformerLens ({len(already_present)} models):")
+            for model in already_present:
+                print(f"  ✓ {model}")
+
+        # Add and report new models
+        if new_models:
+            loading_from_pretrained.OFFICIAL_MODEL_NAMES.extend(new_models)
+            print(f"Successfully added to TransformerLens ({len(new_models)} models):")
+            for model in new_models:
+                print(f"  + {model}")
+        else:
+            if not already_present:  # No models at all
+                print("No Qwen3 models were added (list was empty)")
+            # If already_present is not empty, we already reported those above
+            
+        # Summary
+        total_qwen3_models = len(qwen3_models)
+        print(f"Qwen3 model support status: {len(already_present + new_models)}/{total_qwen3_models} models available")
+        
+    except ImportError as e:
+        print(f"Failed to import TransformerLens for Qwen3 model support: {e}")
+        print("Failed to add any Qwen3 models:")
+        for model in qwen3_models:
+            print(f"  ✗ {model}")
+    except Exception as e:
+        print(f"Unexpected error while adding Qwen3 models: {e}")
+        print("Status unknown for models:")
+        for model in qwen3_models:
+            print(f"  ? {model}")
+
+        
+    
     @staticmethod
     def get_layer_from_hook_point(hook_point: str) -> int:
         """Extract layer number from hook point string.
