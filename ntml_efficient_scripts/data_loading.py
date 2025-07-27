@@ -15,7 +15,7 @@ import logging
 # Import existing probity infrastructure
 from probity_extensions import ConversationalProbingDataset
 from probity.datasets.tokenized import TokenizedProbingDataset
-from .config import NTMLBinaryTrainingConfig
+from config import NTMLBinaryTrainingConfig
 
 logger = logging.getLogger(__name__)
 

@@ -161,3 +161,8 @@ class SADBinaryTrainingConfig:
             "log": output_dir / f"{self.probe_name}_training.log",
             "checkpoints": output_dir / "checkpoints",
         }
+
+    @property
+    def dataset_path(self) -> str:
+        """Return deploy_data_path for compatibility with NTML infrastructure."""
+        return self.deploy_data_path

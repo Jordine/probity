@@ -14,8 +14,8 @@ from transformer_lens import HookedTransformer, loading_from_pretrained
 from tqdm import tqdm
 import logging
 
-from .config import NTMLBinaryTrainingConfig
-from .data_loading import NTMLBinaryDataset, BinaryTokenExample
+from config import NTMLBinaryTrainingConfig
+from data_loading import NTMLBinaryDataset, BinaryTokenExample
 
 logger = logging.getLogger(__name__)
 

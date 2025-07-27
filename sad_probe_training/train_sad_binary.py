@@ -24,15 +24,20 @@ current_dir = Path(__file__).parent
 sys.path.insert(0, str(current_dir))
 sys.path.insert(0, str(current_dir.parent))
 
-from config import SADBinaryTrainingConfig
-from data_loading import prepare_sad_training_data
-
-# Import existing NTML infrastructure
+# Import existing NTML infrastructure first to avoid circular imports
 ntml_path = current_dir.parent / "ntml_efficient_scripts"
 sys.path.insert(0, str(ntml_path))
 
 from activation_utils import collect_all_layers_activations, extract_layer_training_data
 from training import NTMLBinaryTrainer
+
+# Now import SAD-specific modules
+import sad_probe_training.config as sad_config
+SADBinaryTrainingConfig = sad_config.SADBinaryTrainingConfig
+
+import sad_probe_training.data_loading as sad_data_loading
+prepare_sad_training_data = sad_data_loading.prepare_sad_training_data
+
 
 
 def setup_logging(verbose: bool = True, log_file: Optional[str] = None):
@@ -482,14 +487,24 @@ def main():
         try:
             # Phase 1: Collect activations for all layers at once
             print(f"\n📊 Phase 1: Collecting activations for all {len(layers)} layers...")
-            
+        
             # Use the SAD data loading infrastructure
-            from data_loading import SADBinaryDataset
-            dataset = SADBinaryDataset(base_config)
+            dataset = sad_data_loading.SADBinaryDataset(base_config)
             dataset.load_and_process()
             
-            # Collect activations using existing infrastructure
+            # Create a dataset adapter that looks like an NTML dataset for activation collection
+            class DatasetAdapter:
+                def __init__(self, sad_dataset):
+                    self.examples = sad_dataset.examples
+                    self.get_token_lengths = lambda: [len(ex.tokens) for ex in self.examples]
+            
+            dataset_adapter = DatasetAdapter(dataset)
+            
+            # Collect activations using existing infrastructure with our adapter
             cached_activations = collect_all_layers_activations(base_config, layers)
+
+
+
             print(f"✅ Cached activations for {len(cached_activations)} layers")
             
             # Phase 2: Train each layer using cached activations

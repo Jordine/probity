@@ -21,7 +21,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 import joblib
 
-from .config import NTMLBinaryTrainingConfig
+from config import NTMLBinaryTrainingConfig
 
 logger = logging.getLogger(__name__)
 

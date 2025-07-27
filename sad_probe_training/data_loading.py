@@ -19,7 +19,8 @@ import sys
 ntml_path = Path(__file__).parent.parent / "ntml_efficient_scripts"
 sys.path.insert(0, str(ntml_path))
 
-from data_loading import BinaryTokenExample
+import data_loading as ntml_data_loading
+BinaryTokenExample = ntml_data_loading.BinaryTokenExample
 from .config import SADBinaryTrainingConfig
 
 logger = logging.getLogger(__name__)
@@ -337,18 +338,22 @@ def prepare_sad_training_data(config: SADBinaryTrainingConfig) -> Tuple[torch.Te
         'enable_thinking': config.enable_thinking,
         'model_family': config.model_family,
     })()
-    
+
+
+
+
     # Monkey-patch the dataset loading to return our SAD data
     original_load = None
     try:
-        import data_loading
-        original_load = data_loading.NTMLBinaryDataset
-        data_loading.NTMLBinaryDataset = lambda cfg: type('Dataset', (), {
+        import data_loading as ntml_data_loading
+        original_load = ntml_data_loading.NTMLBinaryDataset
+        ntml_data_loading.NTMLBinaryDataset = lambda cfg: type('Dataset', (), {
             'examples': sad_adapter.examples,
             'label_distribution': sad_adapter.label_distribution,
             'load_and_process': lambda: None,
             'save_debug_info': lambda path: None,
         })()
+    
         
         # Use existing preparation function
         activations, labels, metadata = prepare_ntml_training_data(ntml_config)
@@ -358,4 +363,4 @@ def prepare_sad_training_data(config: SADBinaryTrainingConfig) -> Tuple[torch.Te
     finally:
         # Restore original function
         if original_load:
-            data_loading.NTMLBinaryDataset = original_load
+            ntml_data_loading.NTMLBinaryDataset = original_load
