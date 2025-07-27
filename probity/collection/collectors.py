@@ -1,7 +1,7 @@
 import torch
 from dataclasses import dataclass
 from typing import List, Dict
-from transformer_lens import HookedTransformer
+from transformer_lens import HookedTransformer, loading_from_pretrained
 from probity.datasets.tokenized import TokenizedProbingDataset
 from probity.collection.activation_store import ActivationStore
 

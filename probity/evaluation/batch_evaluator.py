@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from typing import Dict, List, Tuple, Any, Optional
-from transformer_lens import HookedTransformer
+from transformer_lens import HookedTransformer, loading_from_pretrained
 from sklearn.metrics import roc_auc_score, accuracy_score, precision_score, recall_score, f1_score, roc_curve
 from tqdm import tqdm
 import matplotlib.pyplot as plt

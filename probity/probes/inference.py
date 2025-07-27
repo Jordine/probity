@@ -1,6 +1,6 @@
 import torch
 from typing import List, Optional, Union, Any
-from transformer_lens import HookedTransformer
+from transformer_lens import HookedTransformer, loading_from_pretrained
 
 from probity.probes import BaseProbe, MultiClassLogisticProbe
 

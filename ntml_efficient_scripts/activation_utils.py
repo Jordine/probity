@@ -10,7 +10,7 @@ import hashlib
 import numpy as np
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional
-from transformer_lens import HookedTransformer
+from transformer_lens import HookedTransformer, loading_from_pretrained
 from tqdm import tqdm
 import logging
 
