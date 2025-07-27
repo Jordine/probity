@@ -85,6 +85,9 @@ class NTMLBinaryDataset:
     
     def _process_conversation(self, conv_ex) -> Optional[BinaryTokenExample]:
         """Convert a single conversation to binary token format."""
+
+        model_name = getattr(self.config, 'model_name', '')
+        is_qwen = 'qwen' in model_name.lower()
         
         # Reconstruct messages in proper format for chat template
         messages = [
@@ -93,11 +96,20 @@ class NTMLBinaryDataset:
         ]
         
         # Apply chat template to get properly formatted text
-        full_text = self.tokenizer.apply_chat_template(
-            messages, 
-            tokenize=False,
-            add_generation_prompt=False
-        )
+        if is_qwen:
+            full_text = self.tokenizer.apply_chat_template(
+                messages, 
+                tokenize=False,
+                add_generation_prompt=False,
+                enable_thinking=False  # Disable thinking for probe training
+            )
+        else:
+            # Original Llama format
+            full_text = self.tokenizer.apply_chat_template(
+                messages, 
+                tokenize=False,
+                add_generation_prompt=False
+            )
         
         # Tokenize the full conversation
         encoding = self.tokenizer(
@@ -153,24 +165,97 @@ class NTMLBinaryDataset:
     
     def _find_assistant_token_boundaries(self, full_text: str, offset_mapping: List[Tuple[int, int]]) -> Tuple[Optional[int], Optional[int]]:
         """Find token indices that correspond to assistant response."""
+    
+        is_qwen = 'qwen' in self.config.model_name.lower()
+        print(f"USING {'QWEN' if is_qwen else 'LLAMA'} SPECIAL TOKENS. Model: {self.config.model_name}")
+
+        if is_qwen:
+            # Qwen3 format: <|im_start|>assistant\n...content...<|im_end|>
+            assistant_marker = "<|im_start|>assistant"
+            end_marker = "<|im_end|>"
+        else:
+            # Llama format: <|start_header_id|>assistant<|end_header_id|>...content...<|eot_id|>
+            assistant_marker = "<|start_header_id|>assistant<|end_header_id|>"
+            end_marker = "<|eot_id|>"
+    
+        print("=== DEBUGGING ASSISTANT MARKER SEARCH ===")
+        print(f"Looking for assistant_marker: '{assistant_marker}'")
+        print(f"Full text length: {len(full_text)}")
+        print(f"Assistant marker length: {len(assistant_marker)}")
         
-        # Find assistant response in character space
-        assistant_marker = "<|start_header_id|>assistant<|end_header_id|>"
-        eot_marker = "<|eot_id|>"
+        # Debug: Show the exact characters around where assistant should be
+        if "<|im_start|>" in full_text:
+            start_pos = full_text.find("<|im_start|>")
+            print(f"Found <|im_start|> at position: {start_pos}")
+            
+            # Look for all instances of <|im_start|>
+            positions = []
+            start = 0
+            while True:
+                pos = full_text.find("<|im_start|>", start)
+                if pos == -1:
+                    break
+                positions.append(pos)
+                start = pos + 1
+            print(f"All <|im_start|> positions: {positions}")
+            
+            # Check what comes after each <|im_start|>
+            for pos in positions:
+                end_tag_pos = full_text.find(">", pos)
+                if end_tag_pos != -1:
+                    content_after = full_text[end_tag_pos + 1:end_tag_pos + 20]  # Show next 20 chars
+                    print(f"At position {pos}, after tag: '{repr(content_after)}'")
         
+        # Try the search
         assistant_char_start = full_text.find(assistant_marker)
+        print(f"assistant_char_start: {assistant_char_start}")
+        
         if assistant_char_start == -1:
+            # Try alternative searches
+            print("=== TRYING ALTERNATIVE SEARCHES ===")
+            
+            # Try with different variations
+            variations = [
+                "<|im_start|>assistant",
+                "<|im_start|>assistant\n",
+                "<|im_start|> assistant",
+                "<|im_start|>\nassistant",
+            ]
+            
+            for i, variation in enumerate(variations):
+                pos = full_text.find(variation)
+                print(f"Variation {i} '{repr(variation)}': {pos}")
+                if pos != -1:
+                    assistant_char_start = pos
+                    assistant_marker = variation
+                    break
+        
+        if assistant_char_start == -1:
+            print("ERROR: Still could not find assistant marker!")
             return None, None
+        
+        print(f"Found assistant marker at position: {assistant_char_start}")
         
         # Start after the header
         assistant_content_start = assistant_char_start + len(assistant_marker)
         
+        # For Qwen3, skip any whitespace after assistant marker
+        if is_qwen:
+            while (assistant_content_start < len(full_text) and 
+                   full_text[assistant_content_start] in ['\n', ' ', '\t']):
+                assistant_content_start += 1
+        
+        print(f"Assistant content starts at: {assistant_content_start}")
+        print(f"First 50 chars of assistant content: '{repr(full_text[assistant_content_start:assistant_content_start+50])}'")
+        
         # Find end of assistant response
-        eot_pos = full_text.find(eot_marker, assistant_content_start)
+        eot_pos = full_text.find(end_marker, assistant_content_start)
         if eot_pos == -1:
             assistant_content_end = len(full_text)
+            print(f"No end marker found, using end of text: {assistant_content_end}")
         else:
             assistant_content_end = eot_pos
+            print(f"Found end marker at: {eot_pos}")
         
         # Convert to token indices
         assistant_start_token = None
@@ -184,15 +269,21 @@ class NTMLBinaryDataset:
             # Find first token that starts in or after assistant content
             if assistant_start_token is None and char_start >= assistant_content_start:
                 assistant_start_token = token_idx
+                print(f"Assistant starts at token {token_idx} (char {char_start})")
             
             # Find first token that ends after assistant content
             if assistant_end_token is None and char_end >= assistant_content_end:
                 assistant_end_token = token_idx
+                print(f"Assistant ends at token {token_idx} (char {char_end})")
                 break
         
         # If we didn't find end, use end of sequence
         if assistant_end_token is None:
             assistant_end_token = len(offset_mapping)
+            print(f"Using end of sequence: {assistant_end_token}")
+        
+        print(f"Final result: tokens {assistant_start_token} to {assistant_end_token}")
+        print("=== END DEBUGGING ===")
         
         return assistant_start_token, assistant_end_token
     
@@ -204,8 +295,15 @@ class NTMLBinaryDataset:
         token_labels = [0] * len(offset_mapping)  # Default to 0 (truth)
         statement_assignments = [-1] * len(offset_mapping)  # -1 = not in any statement
         
+        # Detect model type - use the same logic as _find_assistant_token_boundaries
+        is_qwen = 'qwen' in self.config.model_name.lower()  # Use actual model name
+        
         # Find assistant response start in the chat template
-        assistant_marker = "<|start_header_id|>assistant<|end_header_id|>"
+        if is_qwen:
+            assistant_marker = "<|im_start|>assistant"
+        else:
+            assistant_marker = "<|start_header_id|>assistant<|end_header_id|>"
+        
         assistant_content_start = full_text.find(assistant_marker)
         if assistant_content_start != -1:
             assistant_content_start += len(assistant_marker)
@@ -213,7 +311,7 @@ class NTMLBinaryDataset:
             while assistant_content_start < len(full_text) and full_text[assistant_content_start] in ['\n', ' ', '\t']:
                 assistant_content_start += 1
         else:
-            logger.warning("Could not find assistant marker in chat template")
+            logger.warning(f"Could not find assistant marker '{assistant_marker}' in chat template")
             return token_labels, statement_assignments
         
         # Use the statement_level data which has positions relative to assistant response

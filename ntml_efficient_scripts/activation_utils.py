@@ -59,12 +59,15 @@ class NTMLActivationCache:
             return
         
         logger.info(f"Loading model: {self.config.model_name}")
+
+        self._ensure_qwen3_support()
         
         try:
             self.model = HookedTransformer.from_pretrained_no_processing(
                 self.config.model_name,
                 device=self.config.device,
                 dtype=self.config.torch_dtype,
+                trust_remote_code=True
             )
         except Exception as e:
             logger.warning(f"Error with from_pretrained_no_processing: {e}")
@@ -88,6 +91,48 @@ class NTMLActivationCache:
         
         self.model.eval()
         logger.info(f"Model loaded with dtype: {self.config.torch_dtype}")
+        
+    def _ensure_qwen3_support(self):
+        try:
+            qwen3_models = ["Qwen/Qwen3-32B",
+                       "Qwen/Qwen3-14B"]
+            
+            existing_names = set(loading_from_pretrained.OFFICIAL_MODEL_NAMES)
+            new_models = [model for model in qwen3_models if model not in existing_names]
+            already_present = [model for model in qwen3_models if model in existing_names]
+    
+            # Report already present models
+            if already_present:
+                print(f"Already present in TransformerLens ({len(already_present)} models):")
+                for model in already_present:
+                    logger.info(f"  ✓ {model}")
+    
+            # Add and report new models
+            if new_models:
+                loading_from_pretrained.OFFICIAL_MODEL_NAMES.extend(new_models)
+                logger.info(f"Successfully added to TransformerLens ({len(new_models)} models):")
+                for model in new_models:
+                    logger.info(f"  + {model}")
+            else:
+                if not already_present:  # No models at all
+                    logger.warning("No Qwen3 models were added (list was empty)")
+                # If already_present is not empty, we already reported those above
+                
+            # Summary
+            total_qwen3_models = len(qwen3_models)
+            logger.info(f"Qwen3 model support status: {len(already_present + new_models)}/{total_qwen3_models} models available")
+            
+        except ImportError as e:
+            logger.warning(f"Failed to import TransformerLens for Qwen3 model support: {e}")
+            logger.warning("Failed to add any Qwen3 models:")
+            for model in qwen3_models:
+                logger.warning(f"  ✗ {model}")
+        except Exception as e:
+            logger.warning(f"Unexpected error while adding Qwen3 models: {e}")
+            logger.warning("Status unknown for models:")
+            for model in qwen3_models:
+                logger.warning(f"  ? {model}")
+                
     
     def get_cache_paths(self, dataset_hash: str) -> Dict[str, Path]:
         """Get cache file paths for this dataset."""

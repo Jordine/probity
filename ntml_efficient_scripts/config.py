@@ -72,6 +72,9 @@ class NTMLBinaryTrainingConfig:
     # PyTorch-specific options  
     pytorch_bias: bool = True  # Whether to use bias in linear layer
     pytorch_normalize_weights: bool = True  # Whether to normalize probe directions
+
+    enable_thinking: bool = False  # Whether to enable thinking mode for Qwen3
+    model_family: str = field(default="auto")  # "llama", "qwen", or "auto"
     
     def __post_init__(self):
         """Post-initialization validation and setup."""
@@ -93,6 +96,15 @@ class NTMLBinaryTrainingConfig:
         # Validate dtype
         if self.dtype not in ["float32", "float16", "bfloat16"]:
             raise ValueError(f"Invalid dtype: {self.dtype}")
+
+        # Auto-detect model family
+        if self.model_family == "auto":
+            if "qwen" in self.model_name.lower():
+                self.model_family = "qwen"
+            elif "llama" in self.model_name.lower():
+                self.model_family = "llama"
+            else:
+                self.model_family = "unknown"
         
         # Validate device
         if self.device == "cuda" and not torch.cuda.is_available():
