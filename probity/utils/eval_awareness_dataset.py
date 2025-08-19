@@ -1,28 +1,18 @@
 """
-Build a token-level dataset for the Evaluation-Awareness experiment.
+Dataset loaders for the Evaluation-Awareness experiments.
 
-Positive class  = tokens whose text belongs to *evidence* phrases
-Negative class  = all other tokens in the <think>…</think> reasoning block
-                 (we down-sample so classes stay 50 / 50)
-
-Each ProbingExample contains exactly ONE token position (`TARGET`)
-and a binary label (1 = evidence, 0 = other-reasoning).
+• load_eval_awareness_dataset …  token-level   (old behaviour)
+• load_snippet_avg_dataset     …  snippet-level, averaged span (paper style)
 """
 
 from __future__ import annotations
 import json, random, re
 from pathlib import Path
-from typing import List, Dict, Tuple
+from typing import List, Tuple
+
 from transformers import AutoTokenizer
 
-
-import sys
-probity_root = Path(__file__).parent.parent
-sys.path.insert(0, str(probity_root))
-
-from probity.utils.qwen3_support import ensure_qwen3_transformerlens_support
-ensure_qwen3_transformerlens_support()
-
+# local imports
 from probity.datasets.base import (
     ProbingExample, ProbingDataset,
     CharacterPositions, Position
@@ -31,16 +21,15 @@ from probity.datasets.tokenized import TokenizedProbingDataset
 from probity.utils.qwen3_support import apply_qwen3_chat_template
 
 # --------------------------------------------------------------------- #
-# parameters you might tweak from outside
-MAX_LENGTH   = 1024          # context length fed to TL / TLens
-NEGATIVE_RATIO = 1.0         # keep (#neg) ≃ NEGATIVE_RATIO · (#pos) per convo
-RNG = random.Random(0)       # deterministic sampling
+MAX_LENGTH      = 1024
+NEGATIVE_RATIO  = 1.0
+RNG             = random.Random(0)
 # --------------------------------------------------------------------- #
 
-_QWEN_EOS = "<|endoftext|>"
-
+# ═══════════════════════════════════════════════════════════════════════
+#  Helper utilities shared by both loaders
+# ═══════════════════════════════════════════════════════════════════════
 def _insert_think_block(reasoning: str, answer: str) -> str:
-    """Return full assistant message with <think> block."""
     return f"<think>\n{reasoning.strip()}\n</think>\n{answer}"
 
 def _token_idxs_to_char_pos(ids: List[int], target_tok_idx: int,
@@ -50,6 +39,33 @@ def _token_idxs_to_char_pos(ids: List[int], target_tok_idx: int,
     return start, end
 
 
+def _prepare_chat_text(
+    tok,
+    conv: List[dict],
+    enable_thinking_flag: bool = False,
+) -> str:
+    system_prompt   = conv[0]["content"]
+    user_prompt     = conv[1]["content"]
+    assistant_ans   = conv[2]["content"]
+    assistant_reas  = conv[2]["reasoning"]
+    assistant_msg   = _insert_think_block(assistant_reas, assistant_ans)
+    messages = [
+        {"role": "system",    "content": system_prompt},
+        {"role": "user",      "content": user_prompt},
+        {"role": "assistant", "content": assistant_msg},
+    ]
+    return apply_qwen3_chat_template(
+        tok,
+        messages,
+        tokenize=False,
+        add_generation_prompt=False,
+        enable_thinking=enable_thinking_flag,
+    )
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  1) token-level "ratio" loader (unchanged)
+# ═══════════════════════════════════════════════════════════════════════
 def load_eval_awareness_dataset(json_path: str,
                                 model_name: str = "Qwen/Qwen3-32B",
                                 enable_thinking_flag: bool = False,
@@ -184,3 +200,113 @@ def load_eval_awareness_dataset(json_path: str,
     print(f"Tokenised dataset: {len(tokenised_ds.examples)} examples,"
           f"  position_types={tokenised_ds.position_types}\n")
     return tokenised_ds
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  2) snippet-level / averaged-span loader  (no extra judge fields)
+# ═══════════════════════════════════════════════════════════════════════
+def load_snippet_avg_dataset(
+    json_path: str,
+    model_name: str = "Qwen/Qwen3-32B",
+    enable_thinking_flag: bool = False,
+    max_len: int = MAX_LENGTH,
+    balance: bool = True,
+) -> TokenizedProbingDataset:
+    """
+    One example per *snippet*.
+
+    • positive  = any span listed under parsed_judge_response["evidence"]  
+    • negative  = the remaining text inside the same <think> … </think> block,
+                  split into coarse sentence-level chunks.
+
+    Hidden-state averaging is done later by passing `average_span=True` to
+    trainer.prepare_supervised_data (already wired in the script file).
+    """
+    print(f"\n### Loading SNIPPET-AVG dataset from {json_path}")
+    tok = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+    if tok.pad_token is None:
+        tok.pad_token = tok.eos_token
+
+    raw = json.load(open(json_path))
+    examples: List[ProbingExample] = []
+    total_pos, total_neg = 0, 0
+
+    for entry_id, entry in enumerate(raw["results"]):
+        conv  = entry["reasoning_traces_results"]["full_conversations"][0]
+        chat_text = _prepare_chat_text(tok, conv, enable_thinking_flag)
+
+        # --- locate <think> block -------------------------------------
+        m = re.search(r"<think>(.*?)</think>", chat_text, re.S)
+        if not m:
+            continue
+        think_s, think_e = m.span(1)
+        think_text = chat_text[think_s:think_e]
+
+        # positive snippets (exact strings)
+        pos_snips: List[str] = entry["reasoning_traces_results"]["parsed_judge_response"]["evidence"]
+
+        # mark occupied character ranges so we can carve out the rest
+        occupied: List[Tuple[int, int]] = []
+        for snip in pos_snips:
+            idx = think_text.find(snip)
+            if idx != -1:
+                occupied.append((idx, idx + len(snip)))
+
+        # negative snippets = remaining text, split on simple separators
+        neg_candidates = re.split(r"[.\n]", think_text)
+        neg_snips: List[str] = []
+        for chunk in neg_candidates:
+            chunk = chunk.strip()
+            if len(chunk) < 3:
+                continue
+            # skip if this chunk overlaps any positive span
+            chunk_start = think_text.find(chunk)
+            chunk_end   = chunk_start + len(chunk)
+            overlap = any(
+                not (chunk_end <= s or chunk_start >= e) for s, e in occupied
+            )
+            if not overlap:
+                neg_snips.append(chunk)
+
+        # optionally balance dataset (1-to-1)
+        if balance:
+            RNG.shuffle(neg_snips)
+            neg_snips = neg_snips[: len(pos_snips)]
+
+        # ---- helper to create a ProbingExample -----------------------
+
+        def add_example(snip: str, lbl: int):
+            global_start = chat_text.find(snip, think_s, think_e)
+            if global_start == -1:
+                return
+            examples.append(
+                ProbingExample(
+                    text=chat_text,
+                    label=lbl,
+                    label_text="evidence" if lbl == 1 else "non-evidence",
+                    character_positions=CharacterPositions(
+                        {"TARGET": Position(global_start,
+                                            global_start + len(snip))}
+                    ),
+                    attributes={
+                        "snippet_text": snip,
+                        "conversation_idx": entry_id,
+                        "category": entry["metadata"]["category"],
+                    },
+                )
+            )
+        for s in pos_snips:
+            add_example(s, 1)
+        for s in neg_snips:
+            add_example(s, 0)
+
+        total_pos += len(pos_snips)
+        total_neg += len(neg_snips)
+
+    print(f"Built {len(examples)} snippet-level examples "
+          f"({total_pos} pos / {total_neg} neg)")
+    return TokenizedProbingDataset.from_probing_dataset(
+        ProbingDataset(examples), tok,
+        padding="max_length", max_length=max_len,
+        truncation=True, add_special_tokens=False,
+    )
