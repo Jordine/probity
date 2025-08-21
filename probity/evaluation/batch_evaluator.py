@@ -47,38 +47,43 @@ class OptimizedBatchProbeEvaluator:
         
         # Cache for activations
         self._activation_cache = {}
+        
 
     def _ensure_qwen3_support(self):
-    """Add qwen3 32b in because they forgot to add it to the model table"""
+        """Add Qwen-3 models to TransformerLens’ model table.
+
+        (TL ≤ 0.7.0 forgot to register them.)
+        """
         try:
             qwen3_models = ["Qwen/Qwen3-32B",
-                           "Qwen/Qwen3-14B"]
-            
-            existing_names = set(loading_from_pretrained.OFFICIAL_MODEL_NAMES)
-            new_models = [model for model in qwen3_models if model not in existing_names]
-            already_present = [model for model in qwen3_models if model in existing_names]
-    
-            # Report already present models
+                            "Qwen/Qwen3-14B"]
+
+            existing_names = set(
+                loading_from_pretrained.OFFICIAL_MODEL_NAMES
+            )
+            new_models      = [m for m in qwen3_models
+                               if m not in existing_names]
+            already_present = [m for m in qwen3_models
+                               if m in existing_names]
+
+            # ── print status ─────────────────────────────────────────
             if already_present:
-                print(f"Already present in TransformerLens ({len(already_present)} models):")
-                for model in already_present:
-                    print(f"  ✓ {model}")
-    
-            # Add and report new models
+                print("Already in TransformerLens:")
+                for m in already_present:
+                    print(f"  ✓ {m}")
+
             if new_models:
-                loading_from_pretrained.OFFICIAL_MODEL_NAMES.extend(new_models)
-                print(f"Successfully added to TransformerLens ({len(new_models)} models):")
-                for model in new_models:
-                    print(f"  + {model}")
-            else:
-                if not already_present:  # No models at all
-                    print("No Qwen3 models were added (list was empty)")
-                # If already_present is not empty, we already reported those above
-                
-            # Summary
-            total_qwen3_models = len(qwen3_models)
-            print(f"Qwen3 model support status: {len(already_present + new_models)}/{total_qwen3_models} models available")
-            
+                loading_from_pretrained.OFFICIAL_MODEL_NAMES.extend(
+                    new_models
+                )
+                print("Added Qwen-3 support:")
+                for m in new_models:
+                    print(f"  + {m}")
+
+            total = len(qwen3_models)
+            print(f"Qwen-3 model support: "
+                  f"{len(already_present) + len(new_models)}/{total}")
+
         except ImportError as e:
             print(f"Failed to import TransformerLens for Qwen3 model support: {e}")
             print("Failed to add any Qwen3 models:")

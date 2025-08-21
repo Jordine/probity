@@ -202,6 +202,92 @@ def load_eval_awareness_dataset(json_path: str,
     return tokenised_ds
 
 
+
+# ---------------------------------------------------------------------
+def load_eval_awareness_evalflag(json_path: str,
+                                 model_name: str = "Qwen/Qwen3-32B",
+                                 enable_thinking_flag: bool = False,
+                                 max_len: int = 1024
+                                 ) -> TokenizedProbingDataset:
+    """
+    Token-level dataset for the *conversation-level* label
+    `metadata.eval_category`.
+
+    • label 1  ⟺  entry["metadata"]["eval_category"] == True  
+    • label 0  ⟺  … == False
+
+    For every conversation we take *all* tokens inside the <think> … </think>
+    block and assign them the conversation’s label.
+    """
+    tok = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+    if tok.pad_token is None:
+        tok.pad_token = tok.eos_token
+
+    raw = json.load(open(json_path))
+    examples: List[ProbingExample] = []
+    skipped_long, skipped_missing = 0, 0
+
+    for entry in raw["results"]:
+        # ---- conversation-level label ---------------------------------
+        is_eval   = bool(entry["metadata"].get("eval_category", False))
+        lbl_int   = 1 if is_eval else 0
+        lbl_text  = "eval_aware" if is_eval else "not_eval_aware"
+
+        # ---- obtain full chat text in Qwen3 template ------------------
+        conv      = entry["reasoning_traces_results"]["full_conversations"][0]
+        chat_text = _prepare_chat_text(tok, conv, enable_thinking_flag)
+
+        m = re.search(r"<think>(.*?)</think>", chat_text, re.S)
+        if not m:
+            skipped_missing += 1
+            continue
+        think_s, think_e = m.span(1)
+
+        enc       = tok(chat_text, add_special_tokens=False,
+                        return_offsets_mapping=True)
+        token_ids = enc["input_ids"]
+        offsets   = enc["offset_mapping"]
+
+        if len(token_ids) > max_len:
+            skipped_long += 1
+            continue
+
+        # ---- create one example per token in the reasoning block ------
+        for tok_idx, (char_s, char_e) in enumerate(offsets):
+            if think_s <= char_s < think_e:
+                examples.append(
+                    ProbingExample(
+                        text = chat_text,
+                        label = lbl_int,
+                        label_text = lbl_text,
+                        character_positions = CharacterPositions(
+                            {"TARGET": Position(char_s, char_e)}
+                        ),
+                        group_id = entry["id"] + f"_tok{tok_idx}",
+                        attributes = {
+                            "conversation_id": entry["id"],
+                            "category": entry["metadata"]["category"],
+                            "token_idx": tok_idx,
+                            "eval_category": is_eval,
+                        },
+                    )
+                )
+
+    print(f"[evalflag-loader] built {len(examples)} examples "
+          f"(skipped {skipped_long} too-long, {skipped_missing} w/o <think>)")
+
+    probing_ds = ProbingDataset(
+        examples,
+        dataset_attributes={"task": "eval_awareness_evalflag",
+                            "source_file": json_path}
+    )
+    return TokenizedProbingDataset.from_probing_dataset(
+        probing_ds, tok,
+        padding="max_length", max_length=max_len,
+        truncation=True, add_special_tokens=False
+    )
+
+
 # ═══════════════════════════════════════════════════════════════════════
 #  2) snippet-level / averaged-span loader  (no extra judge fields)
 # ═══════════════════════════════════════════════════════════════════════
