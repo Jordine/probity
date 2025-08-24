@@ -177,70 +177,67 @@ class OptimizedBatchProbeEvaluator:
                     all_activations[layer].append(cache[hook_point])
 
                 # Store tokens for later use - FIXED VERSION FOR EOS=PAD
+                # ──────────────────────────────────────────────────────
+                # Store tokens for later use (needed for probe forward)
+                # Works for both  pad==eos  (LLaMA-style)  and
+                # pad≠eos        (Qwen, GPT-*, etc.)
+                # ──────────────────────────────────────────────────────
                 for j, text in enumerate(batch_texts):
                     text_tokens = tokens["input_ids"][j]
-                    
-                    if tokenizer.pad_token_id is not None and tokenizer.pad_token_id == tokenizer.eos_token_id:
-                        # Special case: pad_token_id == eos_token_id
-                        # We need to find where padding starts (consecutive eos tokens)
-                        eos_positions = torch.where(text_tokens == tokenizer.eos_token_id)[0]
-                        
-                        if len(eos_positions) > 0:
-                            # Look for the first position where we have consecutive eos tokens
-                            # The real content should end with a single eos, then padding starts
-                            content_end_pos = len(text_tokens)  # Default to full length
-                            
-                            for i in range(len(eos_positions) - 1):
-                                pos = eos_positions[i].item()
-                                next_pos = eos_positions[i + 1].item()
-                                
-                                # If two eos tokens are consecutive, the second one starts padding
-                                if next_pos == pos + 1:
-                                    content_end_pos = next_pos
+
+                    # ---------- safe defaults (needed for debug print) ----------
+                    eos_positions   = torch.tensor([], dtype=torch.long,
+                                                   device=text_tokens.device)
+                    content_end_pos = len(text_tokens)
+
+                    # ---------- 1) pad token *equals* EOS -----------------------
+                    if (
+                        tokenizer.pad_token_id is not None
+                        and tokenizer.pad_token_id == tokenizer.eos_token_id
+                    ):
+                        eos_positions = torch.where(
+                            text_tokens == tokenizer.eos_token_id
+                        )[0]
+
+                        if eos_positions.numel() > 0:
+                            # find first double-EOS → start of padding
+                            for k in range(eos_positions.numel() - 1):
+                                if eos_positions[k + 1] == eos_positions[k] + 1:
+                                    content_end_pos = eos_positions[k + 1].item()
                                     break
-                            
-                            # If no consecutive eos found, check if the last tokens are all eos (padding)
-                            if content_end_pos == len(text_tokens):
-                                # Count consecutive eos tokens from the end
-                                consecutive_eos_from_end = 0
-                                for k in range(len(text_tokens) - 1, -1, -1):
-                                    if text_tokens[k] == tokenizer.eos_token_id:
-                                        consecutive_eos_from_end += 1
-                                    else:
-                                        break
-                                
-                                # If more than 1 consecutive eos at the end, assume padding
-                                if consecutive_eos_from_end > 1:
-                                    content_end_pos = len(text_tokens) - consecutive_eos_from_end + 1
-                            
-                            actual_tokens = text_tokens[:content_end_pos]
-                        else:
-                            # No eos tokens found
-                            actual_tokens = text_tokens
-                            
+                            else:
+                                # no double EOS: maybe a run of EOS at the end
+                                run = (text_tokens == tokenizer.eos_token_id).flip(0).cumprod(0)
+                                tail_len = int(run[-1].item())
+                                if tail_len > 1:
+                                    content_end_pos = len(text_tokens) - tail_len + 1
+
+                        actual_tokens = text_tokens[:content_end_pos]
+
+                    # ---------- 2) pad token is defined and != EOS --------------
                     elif tokenizer.pad_token_id is not None:
-                        # Normal case: different pad and eos tokens
-                        pad_positions = torch.where(text_tokens == tokenizer.pad_token_id)[0]
-                        if len(pad_positions) > 0:
-                            first_pad_pos = pad_positions[0].item()
-                            actual_tokens = text_tokens[:first_pad_pos]
-                        else:
-                            actual_tokens = text_tokens
+                        pad_positions = torch.where(
+                            text_tokens == tokenizer.pad_token_id
+                        )[0]
+                        if pad_positions.numel() > 0:
+                            content_end_pos = pad_positions[0].item()
+                        actual_tokens = text_tokens[:content_end_pos]
+
+                    # ---------- 3) no pad token at all --------------------------
                     else:
-                        # No pad token defined
                         actual_tokens = text_tokens
-                    
+
+                    # ---------- save & (optional) debug print -------------------
                     token_texts = tokenizer.convert_ids_to_tokens(actual_tokens)
                     all_tokens.append(token_texts)
-                    
-                    # Debug print for first few examples
+
                     if len(all_tokens) <= 3 or len(all_tokens) % 50 == 0:
                         print(f"Text {len(all_tokens)}: {len(token_texts)} tokens")
                         print(f"  First 5: {token_texts[:5]}")
-                        print(f"  Last 5: {token_texts[-5:]}")
-                        if len(eos_positions) > 0:
-                            print(f"  EOS positions: {eos_positions.tolist()}")
-                            print(f"  Content end position: {content_end_pos}")
+                        print(f"  Last 5 : {token_texts[-5:]}")
+                        if eos_positions.numel() > 0:
+                            print(f"  EOS positions        : {eos_positions.tolist()}")
+                            print(f"  Content-end position : {content_end_pos}")
 
         # Since batches may have different padding lengths, we need to pad all to the same length
         # Find the maximum sequence length across all batches
