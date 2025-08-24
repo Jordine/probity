@@ -98,6 +98,33 @@ def smart_cache_activations(model: HookedTransformer, dataset, layers: List[int]
             for hook in hook_points:
                 all_activations[hook].append(cache[hook].cpu())
     
+    # FIX: Find maximum sequence length across all batches for each hook point
+    max_seq_lens = {}
+    for hook in hook_points:
+        max_seq_len = 0
+        for batch_activations in all_activations[hook]:
+            max_seq_len = max(max_seq_len, batch_activations.shape[1])
+        max_seq_lens[hook] = max_seq_len
+        print(f"Maximum sequence length for {hook}: {max_seq_len}")
+    
+    # FIX: Pad all batches to the same length for each hook point
+    for hook in hook_points:
+        max_seq_len = max_seq_lens[hook]
+        padded_batches = []
+        for batch_activations in all_activations[hook]:
+            batch_size_actual, seq_len, hidden_size = batch_activations.shape
+            if seq_len < max_seq_len:
+                # Pad with zeros - maintain dtype
+                padding = torch.zeros(
+                    batch_size_actual, max_seq_len - seq_len, hidden_size, 
+                    dtype=batch_activations.dtype, device=batch_activations.device
+                )
+                padded_batch = torch.cat([batch_activations, padding], dim=1)
+            else:
+                padded_batch = batch_activations
+            padded_batches.append(padded_batch)
+        all_activations[hook] = padded_batches
+    
     # Create ActivationStore objects
     activation_stores = {}
     cache_base.mkdir(parents=True, exist_ok=True)
@@ -105,8 +132,9 @@ def smart_cache_activations(model: HookedTransformer, dataset, layers: List[int]
     for hook, activations in all_activations.items():
         layer = int(hook.split(".")[1])
         
-        # Stack all activations
+        # Stack all activations (now they should have consistent shapes)
         raw_activations = torch.cat(activations, dim=0)
+        print(f"Final activations for {hook}: {raw_activations.shape}, dtype: {raw_activations.dtype}")
         
         store = ActivationStore(
             raw_activations=raw_activations,

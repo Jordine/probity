@@ -22,7 +22,7 @@ from probity.probes import (
 )
 
 from probity.utils.dataset_loading import get_model_dtype
-
+from probity.utils.caching import smart_cache_activations
 
 class OptimizedBatchProbeEvaluator:
     """Optimized evaluator that runs model once and applies all probes"""
@@ -98,8 +98,49 @@ class OptimizedBatchProbeEvaluator:
         
         
     def get_batch_activations(self, texts: List[str], layers: List[int], 
-                            batch_size: int = 8) -> Dict[int, torch.Tensor]:
+                            batch_size: int = 8, disk_cache_dir: str | None = None) -> Dict[int, torch.Tensor]:
         """Get activations for all texts and layers efficiently"""
+
+        if disk_cache_dir is not None:
+            # Build a TokenizedProbingDataset wrapper around `texts`
+            tok = self.model.tokenizer
+            from probity.datasets.base import ProbingDataset, ProbingExample
+            pseudo_examples = [ProbingExample(text=t, label=0, label_text="") for t in texts]
+            pseudo_ds = ProbingDataset(pseudo_examples)  # quick hack
+            from probity.datasets.tokenized import TokenizedProbingDataset
+            tok_ds = TokenizedProbingDataset.from_probing_dataset(
+                pseudo_ds, tok, padding="longest"
+            )
+
+            stores = smart_cache_activations(
+                self.model, tok_ds, layers, disk_cache_dir,
+                batch_size, self.device, self.model_dtype
+            )
+            
+            # FIX: Extract activations from stores and convert to expected format
+            activations = {}
+            for layer in layers:
+                hook_point = f"blocks.{layer}.hook_resid_pre"
+                if hook_point in stores:
+                    activations[layer] = stores[hook_point].raw_activations.to(self.device)
+                else:
+                    raise KeyError(f"Hook point {hook_point} not found in cached stores")
+            
+            # FIX: Extract tokens from the tokenized dataset
+            tokens_by_text = []
+            for ex in tok_ds.examples:
+                # Get actual tokens (excluding padding)
+                actual_length = ex.sequence_length if hasattr(ex, 'sequence_length') else len(ex.tokens)
+                actual_tokens = ex.tokens[:actual_length]
+                token_texts = tok.convert_ids_to_tokens(actual_tokens)
+                tokens_by_text.append(token_texts)
+            
+            return {
+                'activations': activations,
+                'tokens_by_text': tokens_by_text
+            }
+            
+            
         
         # Create cache key
         cache_key = (tuple(sorted(texts)), tuple(sorted(layers)))
@@ -281,7 +322,7 @@ class OptimizedBatchProbeEvaluator:
         return result
     
     def evaluate_all_probes(self, texts: List[str], labels: List[int], 
-                          probe_configs: Dict[Tuple[int, str], BaseProbe]) -> Dict[Tuple[int, str], Dict]:
+                          probe_configs: Dict[Tuple[int, str], BaseProbe], batch_size: int = 8, disk_cache_dir: str | None = None) -> Dict[Tuple[int, str], Dict]:
         """Evaluate all probes efficiently using cached activations"""
         
         # Extract unique layers from probe configs
@@ -289,7 +330,7 @@ class OptimizedBatchProbeEvaluator:
         
         # Get activations for all required layers at once
         print("Getting activations for all layers...")
-        activation_data = self.get_batch_activations(texts, layers)
+        activation_data = self.get_batch_activations(texts, layers, batch_size=batch_size, disk_cache_dir=disk_cache_dir)
         activations = activation_data['activations']
         tokens_by_text = activation_data['tokens_by_text']
         

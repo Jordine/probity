@@ -305,7 +305,11 @@ def main() -> None:
 
     probes = collect_probes(Path(args.probe_dir))
     evaluator = OptimizedBatchProbeEvaluator(args.model_name, args.device)
-    results  = evaluator.evaluate_all_probes(texts, labels, probes)
+    results   = evaluator.evaluate_all_probes(
+        texts, labels, probes,
+        batch_size=args.batch_size,
+        disk_cache_dir="cache/eval_awareness"
+    )
 
     with open(out_dir / "evalflag_metrics.json", "w") as f:
         json.dump({f"{l}_{t}": r for (l, t), r in results.items()},
