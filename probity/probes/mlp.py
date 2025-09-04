@@ -46,20 +46,25 @@ class MLPProbe(BaseProbe[MLPProbeConfig]):
     # -------------------------------------------------------------------------
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
-        • [B, S, d]  → mean over S
-        • [B, d]     → kept as is
-        • [S, d]     → batch = 1, mean over S
+        • [B, S, d] → mean-pool over S → [B, d]
+        • [B, d]    → unchanged
+        • [S, d]    → batch=1, mean-pool over S → [1, d]
+
+        Returns [B, output_size].  For binary probes output_size = 1.
         """
         x = x.to(dtype=self.dtype)
 
-        if x.dim() == 3:              # [B, S, d]
+        if x.dim() == 3:          # [B, S, d]
             x = x.mean(dim=1)
-        elif x.dim() == 2:            # [B, d]  OR  [S, d]
-            pass    # no change
+        elif x.dim() == 2:        # [B, d]  or  [S, d]
+            pass
         else:
             raise ValueError(f"Unexpected input shape {x.shape}")
 
-        return self.mlp(x).squeeze()
+        out = self.mlp(x)         # [B, O]
+
+        # keep the second dim if O == 1 so it matches target shape [B, 1]
+        return out
 
     # -------------------------------------------------------------------------
     # BaseProbe requirements
