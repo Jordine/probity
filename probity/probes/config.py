@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Any, Literal
+from typing import Optional, Dict, Any, Literal, List
 import torch
 
 
@@ -103,3 +103,35 @@ class SklearnLogisticProbeConfig(LogisticProbeConfigBase):
     max_iter: int = 100
     random_state: int = 42
     solver: str = "lbfgs"  # Example of adding solver
+
+@dataclass
+class AttentionProbeConfig(ProbeConfig):
+    """Configuration for attention probe."""
+    n_heads: int = 1
+    temperature: float = 1.0
+    use_position_weights: bool = True
+    query_bias: bool = False
+    value_bias: bool = False
+    normalize_weights: bool = True
+    output_size: int = 1
+    bias: bool = True  # For compatibility
+
+@dataclass
+class MLPProbeConfig(ProbeConfig):
+    """Configuration for MLP probe."""
+    hidden_dims: List[int] = field(default_factory=lambda: [256, 128])
+    activation: str = 'relu'
+    dropout: float = 0.0
+    use_bias: bool = True
+    init_method: str = 'xavier'
+    output_size: int = 1
+    normalize_weights: bool = True  # Can set as False, not meaningful for MLPs
+    bias: bool = True  # For compatibility
+
+@dataclass 
+class EnhancedLogisticProbeConfig(LogisticProbeConfig):
+    """Extended config with hyperparameter sweep support."""
+    C: float = 1.0  # Regularization strength (for sklearn)
+    solver: str = 'lbfgs'
+    max_iter: int = 100
+    class_weight: Optional[str] = None  # 'balanced' or None
