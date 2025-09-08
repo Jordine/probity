@@ -129,6 +129,8 @@ def parse_args():
     parser.add_argument('--layers', nargs='+', default=['all'])
     parser.add_argument('--probe_save_dir', type=str, required=True)
     parser.add_argument('--cache_dir', type=str, default='./cache/contrastive')
+    parser.add_argument('--max_length', type=int, default=512, required=True,
+                   help='Maximum token length for sequences')
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--activation_batch_size', type=int, default=16, 
                        help='Batch size for activation collection (separate from training)')
@@ -183,7 +185,7 @@ def main():
     
     # Load dataset using the new loader
     print(f"Loading contrastive dataset from {dataset_path}")
-    dataset = load_contrastive_ntml_dataset(str(dataset_path), args.model_name)
+    dataset = load_contrastive_ntml_dataset(str(dataset_path), args.model_name, max_length=args.max_length)
     print(f"Dataset size: {len(dataset.examples)}")
     
     # Load model once
