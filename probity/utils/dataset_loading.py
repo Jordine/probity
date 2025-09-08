@@ -116,7 +116,10 @@ def find_statement_positions_in_chat(formatted_text: str, model_response: str, m
     
     return positions
 
-def load_lie_truth_dataset(json_path: str, tokenizer_name: str = "meta-llama/Llama-3.1-8B-Instruct") -> TokenizedProbingDataset:
+def load_lie_truth_dataset(json_path: str, 
+                           tokenizer_name: str = "meta-llama/Llama-3.1-8B-Instruct",
+                           max_length: int = 512,  # Now configurable
+                           warn_on_truncation: bool = True) -> TokenizedProbingDataset:
     """Load the lie/truth dataset from JSON format (works with both Llama and Qwen)"""
     with open(json_path, 'r') as f:
         data = json.load(f)
@@ -127,6 +130,14 @@ def load_lie_truth_dataset(json_path: str, tokenizer_name: str = "meta-llama/Lla
     
     model_type = detect_model_type(tokenizer_name)
     USER_PROMPT = "Hello there, please give me a few facts about yourself."
+    
+    # Track truncation statistics
+    truncation_stats = {
+        'total_examples': 0,
+        'truncated_examples': 0,
+        'max_original_length': 0,
+        'truncated_lengths': []
+    }
     
     def create_chat_messages(system_prompt, user_prompt, model_response):
         return [
@@ -153,9 +164,13 @@ def load_lie_truth_dataset(json_path: str, tokenizer_name: str = "meta-llama/Lla
         end_pos = start_pos + len(lie_statement)
         return Position(start=start_pos, end=end_pos)
     
+    print(f"Processing {len(data)} lie/truth pairs...")
+    print(f"Model type detected: {model_type}")
+    print(f"Max token length: {max_length}")
+    
     probing_examples = []
     
-    for item in data:
+    for i, item in enumerate(data):
         lie_statement = item["lie_statement"]
         
         # Truth version
@@ -189,6 +204,29 @@ def load_lie_truth_dataset(json_path: str, tokenizer_name: str = "meta-llama/Lla
             add_generation_prompt=False
         )
         
+        # Check token lengths before truncation
+        truth_tokens = tokenizer(truth_conv, add_special_tokens=False)['input_ids']
+        truth_len = len(truth_tokens)
+        truncation_stats['total_examples'] += 1
+        truncation_stats['max_original_length'] = max(truncation_stats['max_original_length'], truth_len)
+        
+        if truth_len > max_length:
+            truncation_stats['truncated_examples'] += 1
+            truncation_stats['truncated_lengths'].append(truth_len)
+            if warn_on_truncation and truncation_stats['truncated_examples'] <= 5:  # Warn for first 5
+                print(f"⚠️  Truncating truth example {i}: {truth_len} → {max_length} tokens")
+        
+        lie_tokens = tokenizer(lie_conv, add_special_tokens=False)['input_ids']
+        lie_len = len(lie_tokens)
+        truncation_stats['total_examples'] += 1
+        truncation_stats['max_original_length'] = max(truncation_stats['max_original_length'], lie_len)
+        
+        if lie_len > max_length:
+            truncation_stats['truncated_examples'] += 1
+            truncation_stats['truncated_lengths'].append(lie_len)
+            if warn_on_truncation and truncation_stats['truncated_examples'] <= 5:
+                print(f"⚠️  Truncating lie example {i}: {lie_len} → {max_length} tokens")
+        
         # Find positions
         truth_lie_pos = find_lie_statement_character_positions(truth_conv, lie_statement, model_type)
         lie_lie_pos = find_lie_statement_character_positions(lie_conv, lie_statement, model_type)
@@ -196,27 +234,79 @@ def load_lie_truth_dataset(json_path: str, tokenizer_name: str = "meta-llama/Lla
         if truth_lie_pos is None or lie_lie_pos is None:
             continue
         
+        # Check if lie statement positions would be truncated
+        if truth_lie_pos.start >= max_length * 4:  # Rough estimate: 1 token ≈ 4 chars
+            if warn_on_truncation:
+                print(f"⚠️  Lie statement in truth example {i} may be truncated")
+        
+        if lie_lie_pos.start >= max_length * 4:
+            if warn_on_truncation:
+                print(f"⚠️  Lie statement in lie example {i} may be truncated")
+        
         # Create examples
         truth_example = ProbingExample(
             text=truth_conv,
             label=0,  # Truth
             label_text="truth",
-            character_positions=CharacterPositions({"LIE_SPAN": truth_lie_pos})
+            character_positions=CharacterPositions({"LIE_SPAN": truth_lie_pos}),
+            attributes={
+                "example_id": f"truth_{i}",
+                "original_token_length": truth_len
+            }
         )
         
         lie_example = ProbingExample(
             text=lie_conv,
             label=1,  # Lie
             label_text="lie",
-            character_positions=CharacterPositions({"LIE_SPAN": lie_lie_pos})
+            character_positions=CharacterPositions({"LIE_SPAN": lie_lie_pos}),
+            attributes={
+                "example_id": f"lie_{i}",
+                "original_token_length": lie_len
+            }
         )
         
         probing_examples.extend([truth_example, lie_example])
     
+    # Print truncation summary
+    if truncation_stats['truncated_examples'] > 0:
+        print(f"\n⚠️  TRUNCATION WARNING:")
+        print(f"  • {truncation_stats['truncated_examples']}/{truncation_stats['total_examples']} "
+              f"({100*truncation_stats['truncated_examples']/truncation_stats['total_examples']:.1f}%) "
+              f"examples were truncated")
+        print(f"  • Max original length: {truncation_stats['max_original_length']} tokens")
+        print(f"  • Current max_length: {max_length} tokens")
+        if truncation_stats['truncated_lengths']:
+            avg_truncated = sum(truncation_stats['truncated_lengths']) / len(truncation_stats['truncated_lengths'])
+            print(f"  • Average truncated length: {avg_truncated:.0f} tokens")
+        print(f"\n  💡 Consider increasing max_length to {min(truncation_stats['max_original_length'], 8192)}")
+    
+    print(f"\nCreated {len(probing_examples)} examples")
+    
+    # Calculate statistics
+    truth_count = sum(1 for ex in probing_examples if ex.label == 0)
+    lie_count = sum(1 for ex in probing_examples if ex.label == 1)
+    
+    print(f"  • Truth examples: {truth_count}")
+    print(f"  • Lie examples: {lie_count}")
+    
+    if truth_count + lie_count > 0:
+        print(f"  • Balance: {lie_count/(truth_count + lie_count):.1%} lies")
+    else:
+        print("  • Balance: No examples found")
+    
     # Create probing dataset
     probing_dataset = ProbingDataset(
         examples=probing_examples,
-        dataset_attributes={"description": f"Truth vs Lie classification in {model_type} chat format"}
+        dataset_attributes={
+            "description": f"Truth vs Lie classification in {model_type} chat format",
+            "source_pairs": len(data),
+            "total_examples": len(probing_examples),
+            "truth_count": truth_count,
+            "lie_count": lie_count,
+            "max_length": max_length,
+            "truncation_stats": truncation_stats
+        }
     )
     
     # Convert to tokenized dataset
@@ -224,15 +314,18 @@ def load_lie_truth_dataset(json_path: str, tokenizer_name: str = "meta-llama/Lla
         dataset=probing_dataset,
         tokenizer=tokenizer,
         padding="max_length",
-        max_length=512,
+        max_length=max_length,  # Use the configurable max_length
         truncation=True,
         add_special_tokens=False  # Chat template already adds special tokens
     )
     
     return tokenized_dataset
 
-def load_contrastive_ntml_dataset(json_path: str, tokenizer_name: str = "meta-llama/Llama-3.1-8B-Instruct") -> TokenizedProbingDataset:
-    """Load contrastive NTML dataset from JSON format with proper truth/lie labeling (works with both Llama and Qwen)."""
+def load_contrastive_ntml_dataset(json_path: str, 
+                                 tokenizer_name: str = "meta-llama/Llama-3.1-8B-Instruct",
+                                 max_length: int = 512,  # Now configurable
+                                 warn_on_truncation: bool = True) -> TokenizedProbingDataset:
+    """Load contrastive NTML dataset with configurable max_length and truncation warnings."""
     
     with open(json_path, 'r') as f:
         conversations = json.load(f)
@@ -243,6 +336,14 @@ def load_contrastive_ntml_dataset(json_path: str, tokenizer_name: str = "meta-ll
     
     model_type = detect_model_type(tokenizer_name)
     USER_PROMPT = "Hello there, please give me a few facts about yourself."
+    
+    # Track truncation statistics
+    truncation_stats = {
+        'total_examples': 0,
+        'truncated_examples': 0,
+        'max_original_length': 0,
+        'truncated_lengths': []
+    }
     
     def create_chat_messages(system_prompt, user_prompt, model_response):
         return [
@@ -255,10 +356,11 @@ def load_contrastive_ntml_dataset(json_path: str, tokenizer_name: str = "meta-ll
     
     print(f"Processing {len(conversations)} conversations...")
     print(f"Model type detected: {model_type}")
+    print(f"Max token length: {max_length}")
     
     for conv in conversations:
         conv_id = conv['id']
-        lie_positions = set(conv['lie_ids'])  # Which statement indices are lies
+        lie_positions = set(conv['lie_ids'])
         
         # Process TRUTH VERSION
         truth_messages = create_chat_messages(
@@ -275,18 +377,34 @@ def load_contrastive_ntml_dataset(json_path: str, tokenizer_name: str = "meta-ll
             add_generation_prompt=False
         )
         
+        # Check token length before truncation
+        truth_tokens = tokenizer(truth_formatted, add_special_tokens=False)['input_ids']
+        truth_len = len(truth_tokens)
+        truncation_stats['total_examples'] += 1
+        truncation_stats['max_original_length'] = max(truncation_stats['max_original_length'], truth_len)
+        
+        if truth_len > max_length:
+            truncation_stats['truncated_examples'] += 1
+            truncation_stats['truncated_lengths'].append(truth_len)
+            if warn_on_truncation and truncation_stats['truncated_examples'] <= 5:  # Warn for first 5
+                print(f"⚠️  Truncating conversation {conv_id} (truth): {truth_len} → {max_length} tokens")
+        
         truth_statement_positions = find_statement_positions_in_chat(
             truth_formatted, 
             conv['truth_version']['model'],
             model_type
         )
         
-        # Create examples for each statement in truth version
+        # Create examples for truth version
         for i, position in enumerate(truth_statement_positions):
-            # In truth version, all statements are truthful (label=0)
+            # Check if this position would be truncated
+            if position.start >= max_length * 4:  # Rough estimate: 1 token ≈ 4 chars
+                if warn_on_truncation:
+                    print(f"⚠️  Statement {i} in {conv_id} (truth) may be truncated")
+            
             example = ProbingExample(
                 text=truth_formatted,
-                label=0,  # Always truthful in truth version
+                label=0,
                 label_text="truth",
                 character_positions=CharacterPositions({"LIE_SPAN": position}),
                 group_id=f"{conv_id}_truth_stmt{i}",
@@ -295,12 +413,13 @@ def load_contrastive_ntml_dataset(json_path: str, tokenizer_name: str = "meta-ll
                     "version": "truth",
                     "statement_idx": i,
                     "is_lie_position": i in lie_positions,
-                    "statement_count": len(truth_statement_positions)
+                    "statement_count": len(truth_statement_positions),
+                    "original_token_length": truth_len  # Store original length
                 }
             )
             probing_examples.append(example)
         
-        # Process LIE VERSION
+        # Process LIE VERSION (similar checks)
         lie_messages = create_chat_messages(
             conv['lie_version']['system'],
             USER_PROMPT,
@@ -315,20 +434,34 @@ def load_contrastive_ntml_dataset(json_path: str, tokenizer_name: str = "meta-ll
             add_generation_prompt=False
         )
         
+        # Check token length
+        lie_tokens = tokenizer(lie_formatted, add_special_tokens=False)['input_ids']
+        lie_len = len(lie_tokens)
+        truncation_stats['total_examples'] += 1
+        truncation_stats['max_original_length'] = max(truncation_stats['max_original_length'], lie_len)
+        
+        if lie_len > max_length:
+            truncation_stats['truncated_examples'] += 1
+            truncation_stats['truncated_lengths'].append(lie_len)
+            if warn_on_truncation and truncation_stats['truncated_examples'] <= 5:
+                print(f"⚠️  Truncating conversation {conv_id} (lie): {lie_len} → {max_length} tokens")
+        
         lie_statement_positions = find_statement_positions_in_chat(
             lie_formatted,
             conv['lie_version']['model'],
             model_type
         )
         
-        # Create examples for each statement in lie version
         for i, position in enumerate(lie_statement_positions):
-            # In lie version: lie if i in lie_positions, truth otherwise
+            if position.start >= max_length * 4:
+                if warn_on_truncation:
+                    print(f"⚠️  Statement {i} in {conv_id} (lie) may be truncated")
+            
             is_lie_statement = i in lie_positions
             
             example = ProbingExample(
                 text=lie_formatted,
-                label=1 if is_lie_statement else 0,  # 1 for lie, 0 for truth
+                label=1 if is_lie_statement else 0,
                 label_text="lie" if is_lie_statement else "truth",
                 character_positions=CharacterPositions({"LIE_SPAN": position}),
                 group_id=f"{conv_id}_lie_stmt{i}",
@@ -337,12 +470,26 @@ def load_contrastive_ntml_dataset(json_path: str, tokenizer_name: str = "meta-ll
                     "version": "lie",
                     "statement_idx": i,
                     "is_lie_position": i in lie_positions,
-                    "statement_count": len(lie_statement_positions)
+                    "statement_count": len(lie_statement_positions),
+                    "original_token_length": lie_len
                 }
             )
             probing_examples.append(example)
     
-    print(f"Created {len(probing_examples)} statement-level examples")
+    # Print truncation summary
+    if truncation_stats['truncated_examples'] > 0:
+        print(f"\n⚠️  TRUNCATION WARNING:")
+        print(f"  • {truncation_stats['truncated_examples']}/{truncation_stats['total_examples']} "
+              f"({100*truncation_stats['truncated_examples']/truncation_stats['total_examples']:.1f}%) "
+              f"conversations were truncated")
+        print(f"  • Max original length: {truncation_stats['max_original_length']} tokens")
+        print(f"  • Current max_length: {max_length} tokens")
+        if truncation_stats['truncated_lengths']:
+            avg_truncated = sum(truncation_stats['truncated_lengths']) / len(truncation_stats['truncated_lengths'])
+            print(f"  • Average truncated length: {avg_truncated:.0f} tokens")
+        print(f"\n  💡 Consider increasing max_length to {min(truncation_stats['max_original_length'], 8192)}")
+    
+    print(f"\nCreated {len(probing_examples)} statement-level examples")
     
     # Calculate statistics
     truth_count = sum(1 for ex in probing_examples if ex.label == 0)
@@ -351,13 +498,12 @@ def load_contrastive_ntml_dataset(json_path: str, tokenizer_name: str = "meta-ll
     print(f"  • Truth statements: {truth_count}")
     print(f"  • Lie statements: {lie_count}")
     
-    # Handle division by zero
     if truth_count + lie_count > 0:
         print(f"  • Balance: {lie_count/(truth_count + lie_count):.1%} lies")
     else:
         print("  • Balance: No examples found")
-        
-    # Create probing dataset
+    
+    # Create probing dataset with truncation info in attributes
     probing_dataset = ProbingDataset(
         examples=probing_examples,
         dataset_attributes={
@@ -365,7 +511,9 @@ def load_contrastive_ntml_dataset(json_path: str, tokenizer_name: str = "meta-ll
             "source_conversations": len(conversations),
             "total_examples": len(probing_examples),
             "truth_count": truth_count,
-            "lie_count": lie_count
+            "lie_count": lie_count,
+            "max_length": max_length,
+            "truncation_stats": truncation_stats
         }
     )
     
@@ -374,9 +522,9 @@ def load_contrastive_ntml_dataset(json_path: str, tokenizer_name: str = "meta-ll
         dataset=probing_dataset,
         tokenizer=tokenizer,
         padding="max_length",
-        max_length=312,
+        max_length=max_length,  # Use the configurable max_length
         truncation=True,
-        add_special_tokens=False  # Chat template already adds special tokens
+        add_special_tokens=False
     )
     
     return tokenized_dataset
