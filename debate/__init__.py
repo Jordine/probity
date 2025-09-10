@@ -1,48 +1,78 @@
 """
-Probity Debate Package
+Debate package for AI oversight with probe-based deception detection
 
-This package provides infrastructure for running debates with real-time deception probe scoring.
-Supports both transparent debates (where debaters see probe scores) and oversight debates 
-(where only judges see probe scores).
+This package implements debate-based oversight with optional integration
+of deception probes to improve debate outcomes.
 """
 
 from .types import (
     DebateType,
-    ProviderType, 
+    ProviderType,
+    DebateRole,
     ModelConfig,
     ProbeConfig,
     DebateConfig,
-    ConversationTurn,
-    ProbeScore,
-    DebateResult
+    DebateTurn,
+    DebateResult,
+    APPSProblem,
+    ProbeAccessConfig
 )
 
-from .config import (
-    ProbeInferenceConfig,
-    ConversationConfig,
-    DebateManagerConfig,
-    DefaultConfigs,
-    DEBATE_TOPICS
+from .providers import (
+    BaseProvider,
+    LocalProvider,
+    OpenAIProvider,
+    AnthropicProvider,
+    OpenRouterProvider,
+    create_provider
 )
+
+from .debate_manager import (
+    DebateManager,
+    ProbeScorer
+)
+
+from .dataset_loader import (
+    APPSDatasetLoader,
+    SolutionGenerator,
+    FlexibleDatasetLoader
+)
+
+from .analyze_results import DebateAnalyzer
 
 __version__ = "0.1.0"
-__author__ = "Soothcheck"
+__author__ = "Probity Debate System"
 
 __all__ = [
     # Types
     "DebateType",
     "ProviderType",
-    "ModelConfig", 
+    "DebateRole",
+    "ModelConfig",
     "ProbeConfig",
     "DebateConfig",
-    "ConversationTurn",
-    "ProbeScore",
+    "DebateTurn",
     "DebateResult",
+    "APPSProblem",
+    "ProbeAccessConfig",
     
-    # Config
-    "ProbeInferenceConfig",
-    "ConversationConfig", 
-    "DebateManagerConfig",
-    "DefaultConfigs",
-    "DEBATE_TOPICS"
+    # Providers
+    "BaseProvider",
+    "LocalProvider",
+    "OpenAIProvider",
+    "AnthropicProvider",
+    "OpenRouterProvider",
+    "create_provider",
+    
+    # Core
+    "DebateManager",
+    "ProbeScorer",
+    
+    # Dataset
+    "APPSDatasetLoader",
+    "SolutionGenerator",
+    "FlexibleDatasetLoader",
+    
+    # Analysis
+    "DebateAnalyzer"
 ]
