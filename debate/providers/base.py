@@ -4,7 +4,7 @@ import time
 import asyncio
 from dataclasses import dataclass
 
-from ..types import ModelConfig, ConversationTurn
+from ..types import ModelConfig, DebateTurn  # CORRECTED IMPORT
 
 
 @dataclass
@@ -43,7 +43,7 @@ class BaseModelProvider(ABC):
     
     def format_conversation(
         self, 
-        conversation: List[ConversationTurn],
+        conversation: List[DebateTurn],  # CORRECTED TYPE HINT
         role_mapping: Optional[Dict[str, str]] = None
     ) -> List[Dict[str, str]]:
         """Convert conversation turns to provider's message format"""
@@ -51,21 +51,21 @@ class BaseModelProvider(ABC):
         if role_mapping is None:
             role_mapping = {
                 "system": "system",
-                "debater1": "user", 
-                "debater2": "user",
+                "honest": "user", 
+                "dishonest": "user",
                 "judge": "assistant"
             }
         
         messages = []
         
         for turn in conversation:
-            if turn.speaker in role_mapping:
-                role = role_mapping[turn.speaker]
+            speaker_role = turn.speaker.value # Use the enum value
+            if speaker_role in role_mapping:
+                role = role_mapping[speaker_role]
                 
-                # Add speaker identification for multi-turn debates
                 content = turn.content
-                if turn.speaker in ["debater1", "debater2"] and role == "user":
-                    content = f"[{turn.speaker.upper()}]: {content}"
+                if speaker_role in ["honest", "dishonest"] and role == "user":
+                    content = f"[{speaker_role.upper()}]: {content}"
                 
                 messages.append({
                     "role": role,

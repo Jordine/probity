@@ -5,15 +5,15 @@ from enum import Enum
 
 class DebateType(Enum):
     """Types of debates supported"""
-    BASELINE = "baseline"  # No probes
-    DEBATER_ACCESS = "debater_access"  # Debaters see probes, judge doesn't
-    FULL_ACCESS = "full_access"  # Everyone sees probes
-    JUDGE_ONLY = "judge_only"  # Only judge sees probes
+    BASELINE = "baseline"
+    DEBATER_ACCESS = "debater_access"
+    FULL_ACCESS = "full_access"
+    JUDGE_ONLY = "judge_only"
 
 
 class ProviderType(Enum):
     """Supported model providers"""
-    LOCAL = "local"  # HuggingFace/TransformerLens
+    LOCAL = "local"
     OPENAI = "openai"
     ANTHROPIC = "anthropic"
     OPENROUTER = "openrouter"
@@ -34,10 +34,9 @@ class ModelConfig:
     api_key: Optional[str] = None
     base_url: Optional[str] = None
     generation_kwargs: Dict[str, Any] = field(default_factory=dict)
-    supports_probes: bool = False  # Only local models support probes
-    
+    supports_probes: bool = False
+
     def __post_init__(self):
-        # Only local models can have probes run on them
         self.supports_probes = (self.provider == ProviderType.LOCAL)
 
 
@@ -47,10 +46,10 @@ class ProbeConfig:
     probe_dir: str
     probe_types: List[str]
     layer: int
-    model_name: str  # Model being probed
+    model_name: str
     device: str = "cuda"
     enabled: bool = True
-    score_threshold: float = 0.7  # Threshold for flagging deception
+    score_threshold: float = 0.7
 
 
 @dataclass
@@ -68,14 +67,26 @@ class DebateConfig:
 
 
 @dataclass
+class ProbeScore:
+    """Holds the results of a single probe's scoring."""
+    probe_type: str
+    layer: int
+    tokens: List[str]
+    token_scores: List[float]
+    mean_score: float
+    metadata: Dict[str, Any]
+
+
+@dataclass
 class DebateTurn:
     """A single turn in the debate"""
     round: int
     speaker: DebateRole
     content: str
-    probe_scores: Optional[Dict[str, List[float]]] = None  # token-level scores
+    tokens: Optional[List[str]] = None
+    probe_scores: Optional[Dict[str, List[float]]] = None
     mean_probe_score: Optional[float] = None
-    flagged_claims: Optional[List[str]] = None  # Claims flagged as deceptive
+    flagged_claims: Optional[List[str]] = None
     timestamp: float = 0.0
     metadata: Dict[str, Any] = field(default_factory=dict)
 
@@ -105,8 +116,8 @@ class APPSProblem:
     input_output: List[Tuple[str, str]]
     difficulty: str
     tags: List[str]
-    
-    
+
+
 @dataclass
 class ProbeAccessConfig:
     """Configuration for probe access in debates"""
@@ -116,28 +127,21 @@ class ProbeAccessConfig:
     dishonest_can_see_opponent: bool = False
     judge_can_see_honest: bool = False
     judge_can_see_dishonest: bool = False
-    
+
     @classmethod
     def for_debate_type(cls, debate_type: DebateType) -> "ProbeAccessConfig":
-        """Create probe access config for a debate type"""
         if debate_type == DebateType.BASELINE:
-            return cls()  # No one sees probes
+            return cls()
         elif debate_type == DebateType.DEBATER_ACCESS:
-            return cls(
-                honest_can_see_opponent=True,
-                dishonest_can_see_opponent=True
-            )
+            return cls(honest_can_see_opponent=True, dishonest_can_see_opponent=True)
         elif debate_type == DebateType.FULL_ACCESS:
             return cls(
                 honest_can_see_opponent=True,
                 dishonest_can_see_opponent=True,
                 judge_can_see_honest=True,
-                judge_can_see_dishonest=True
+                judge_can_see_dishonest=True,
             )
         elif debate_type == DebateType.JUDGE_ONLY:
-            return cls(
-                judge_can_see_honest=True,
-                judge_can_see_dishonest=True
-            )
+            return cls(judge_can_see_honest=True, judge_can_see_dishonest=True)
         else:
             raise ValueError(f"Unknown debate type: {debate_type}")

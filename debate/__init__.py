@@ -1,8 +1,5 @@
 """
 Debate package for AI oversight with probe-based deception detection
-
-This package implements debate-based oversight with optional integration
-of deception probes to improve debate outcomes.
 """
 
 from .types import (
@@ -19,29 +16,24 @@ from .types import (
 )
 
 from .providers import (
-    BaseProvider,
-    LocalProvider,
+    BaseModelProvider,
+    LocalModelProvider,
     OpenAIProvider,
     AnthropicProvider,
     OpenRouterProvider,
     create_provider
 )
 
-from .debate_manager import (
-    DebateManager,
-    ProbeScorer
-)
-
-from .dataset_loader import (
-    APPSDatasetLoader,
-    SolutionGenerator,
-    FlexibleDatasetLoader
-)
-
+from .debate_manager import DebateManager
+from .dataset_loader import APPSDatasetLoader, SolutionGenerator, FlexibleDatasetLoader
 from .analyze_results import DebateAnalyzer
 
 __version__ = "0.1.0"
 __author__ = "Probity Debate System"
+
+# Create aliases for a cleaner public API to match the original intent
+BaseProvider = BaseModelProvider
+LocalProvider = LocalModelProvider
 
 __all__ = [
     # Types
@@ -56,7 +48,7 @@ __all__ = [
     "APPSProblem",
     "ProbeAccessConfig",
     
-    # Providers
+    # Providers (using aliases)
     "BaseProvider",
     "LocalProvider",
     "OpenAIProvider",
@@ -66,7 +58,6 @@ __all__ = [
     
     # Core
     "DebateManager",
-    "ProbeScorer",
     
     # Dataset
     "APPSDatasetLoader",
