@@ -1,0 +1,7 @@
+problem_id,error,success
+1383,"You are trying to access a gated repo.
+Make sure to have access to it at https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct.
+401 Client Error. (Request ID: Root=1-68c2f4b0-6ca12d4709e740fa4e4d2ccc;69a8753a-8cf5-41ed-99f4-6627d4ef6924)
+
+Cannot access gated repo for url https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct/resolve/main/config.json.
+Access to model meta-llama/Llama-3.1-8B-Instruct is restricted. You must have access to it and be authenticated to access it. Please log in.",False
