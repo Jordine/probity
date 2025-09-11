@@ -27,11 +27,16 @@ class AnthropicProvider(BaseModelProvider):
             if msg["role"] == "system":
                 system = msg["content"]
             else:
-                filtered_messages.append(msg)
+                # Ensure proper role mapping
+                role = msg["role"]
+                if role == "assistant":
+                    filtered_messages.append({"role": "assistant", "content": msg["content"]})
+                else:
+                    filtered_messages.append({"role": "user", "content": msg["content"]})
         
         try:
             # Merge generation kwargs
-            gen_kwargs = self.config.generation_kwargs.copy()
+            gen_kwargs = (self.config.generation_kwargs or {}).copy()
             gen_kwargs.update(kwargs)
             
             response = self.client.messages.create(
@@ -50,7 +55,8 @@ class AnthropicProvider(BaseModelProvider):
             metadata = {
                 "model": self.config.model_name,
                 "tokens_used": tokens_used,
-                "stop_reason": response.stop_reason
+                "stop_reason": response.stop_reason,
+                "latency": time.time() - start_time
             }
             
             return content, metadata
@@ -61,4 +67,4 @@ class AnthropicProvider(BaseModelProvider):
     
     def is_available(self) -> bool:
         """Check if provider is available"""
-        return self.client._api_key is not None
+        return hasattr(self.client, '_api_key') and self.client._api_key is not None

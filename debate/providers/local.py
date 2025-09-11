@@ -20,10 +20,7 @@ class LocalModelProvider(BaseModelProvider):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model_dtype = self._get_model_dtype()
         
-        # Load model and tokenizer
-        self._load_model()
-        
-        # Generation defaults
+        # Generation defaults - FIXED: Define before loading model
         self.default_gen_kwargs = {
             "max_new_tokens": 512,
             "temperature": 0.7,
@@ -31,9 +28,13 @@ class LocalModelProvider(BaseModelProvider):
             "repetition_penalty": 1.1,
             "top_p": 0.9,
             "top_k": 50,
-            "pad_token_id": None  # Will be set after tokenizer load
+            "pad_token_id": None
         }
+        # Update with config kwargs
         self.default_gen_kwargs.update(config.generation_kwargs or {})
+        
+        # Load model and tokenizer
+        self._load_model()
     
     def _get_model_dtype(self) -> torch.dtype:
         """Determine appropriate dtype for model"""
@@ -57,15 +58,15 @@ class LocalModelProvider(BaseModelProvider):
             if self.tokenizer.pad_token is None:
                 self.tokenizer.pad_token = self.tokenizer.eos_token
             
+            # Update pad_token_id in gen kwargs
+            self.default_gen_kwargs["pad_token_id"] = self.tokenizer.pad_token_id
+            
             # Load model
             self.model = HookedTransformer.from_pretrained_no_processing(
                 self.config.model_name,
                 device=self.device,
                 dtype=self.model_dtype
             )
-            
-            # Update default generation kwargs
-            self.default_gen_kwargs["pad_token_id"] = self.tokenizer.pad_token_id
             
             print(f"Successfully loaded {self.config.model_name}")
             print(f"Model dtype: {self.model_dtype}")
@@ -79,18 +80,11 @@ class LocalModelProvider(BaseModelProvider):
         self, 
         messages: List[Dict[str, str]], 
         **kwargs
-    ) -> GenerationResult:
+    ) -> tuple:  # FIXED: Return tuple as expected by DebateManager
         """Generate response from messages"""
         
         if not self.is_available():
-            return GenerationResult(
-                content="",
-                tokens_used=0,
-                latency=0.0,
-                metadata={},
-                success=False,
-                error="Model not available"
-            )
+            return "", {"error": "Model not available"}
         
         start_time = time.time()
         
@@ -108,7 +102,7 @@ class LocalModelProvider(BaseModelProvider):
                 return_tensors="pt",
                 padding=False,
                 truncation=False,
-                add_special_tokens=False  # Chat template already adds
+                add_special_tokens=False
             ).to(self.device)
             
             input_length = inputs["input_ids"].shape[1]
@@ -146,150 +140,28 @@ class LocalModelProvider(BaseModelProvider):
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
             
-            return GenerationResult(
-                content=generated_text.strip(),
-                tokens_used=total_tokens,
-                latency=latency,
-                metadata={
-                    "input_tokens": input_length,
-                    "output_tokens": output_length,
-                    "model_name": self.config.model_name,
-                    "device": str(self.device),
-                    "dtype": str(self.model_dtype),
-                    "generation_kwargs": gen_kwargs
-                },
-                success=True
-            )
+            metadata = {
+                "input_tokens": input_length,
+                "output_tokens": output_length,
+                "total_tokens": total_tokens,
+                "model_name": self.config.model_name,
+                "device": str(self.device),
+                "dtype": str(self.model_dtype),
+                "latency": latency
+            }
+            
+            return generated_text.strip(), metadata
             
         except Exception as e:
-            return GenerationResult(
-                content="",
-                tokens_used=0,
-                latency=time.time() - start_time,
-                metadata={},
-                success=False,
-                error=f"Generation failed: {str(e)}"
-            )
-    
-    def generate_with_activations(
-        self,
-        messages: List[Dict[str, str]],
-        hook_points: List[str],
-        **kwargs
-    ) -> tuple[GenerationResult, Optional[Dict[str, torch.Tensor]]]:
-        """
-        Generate response and return activations for specified hook points.
-        Useful for probe scoring during generation.
-        """
-        
-        if not self.is_available():
-            return GenerationResult(
-                content="",
-                tokens_used=0,
-                latency=0.0,
-                metadata={},
-                success=False,
-                error="Model not available"
-            ), None
-        
-        start_time = time.time()
-        
-        try:
-            # Format messages
-            formatted_text = self.tokenizer.apply_chat_template(
-                messages,
-                tokenize=False,
-                add_generation_prompt=False  # We want to run through the model
-            )
-            
-            # Tokenize
-            inputs = self.tokenizer(
-                formatted_text,
-                return_tensors="pt",
-                padding=False,
-                truncation=False,
-                add_special_tokens=False
-            ).to(self.device)
-            
-            # Run with cache to get activations
-            self.model.eval()
-            with torch.no_grad():
-                logits, cache = self.model.run_with_cache(
-                    inputs["input_ids"],
-                    names_filter=hook_points,
-                    return_cache_object=True
-                )
-            
-            # For generation, we need to extract just the last response
-            # This is a simplified version - you might need more sophisticated parsing
-            input_text = formatted_text
-            
-            # Find where assistant response starts
-            assistant_marker = "<|start_header_id|>assistant<|end_header_id|>"
-            if assistant_marker in input_text:
-                # Find the last occurrence (most recent assistant response)
-                last_assistant_pos = input_text.rfind(assistant_marker)
-                if last_assistant_pos != -1:
-                    response_start = last_assistant_pos + len(assistant_marker)
-                    generated_text = input_text[response_start:].strip()
-                else:
-                    generated_text = input_text
-            else:
-                # Fallback to last portion
-                generated_text = input_text.split("assistant")[-1].strip()
-            
-            # Clean up generated text
-            if "<|eot_id|>" in generated_text:
-                generated_text = generated_text.split("<|eot_id|>")[0].strip()
-            
-            # Calculate tokens
-            total_tokens = inputs["input_ids"].shape[1]
-            output_tokens = estimate_tokens(generated_text)
-            
-            latency = time.time() - start_time
-            self._update_usage(total_tokens)
-            
-            # Convert cache to CPU to save memory
-            cpu_cache = {}
-            for hook_point in hook_points:
-                if hook_point in cache:
-                    cpu_cache[hook_point] = cache[hook_point].cpu()
-            
-            # Clean up
-            del logits, cache
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-            
-            return GenerationResult(
-                content=generated_text,
-                tokens_used=total_tokens,
-                latency=latency,
-                metadata={
-                    "input_tokens": total_tokens - output_tokens,
-                    "output_tokens": output_tokens,
-                    "model_name": self.config.model_name,
-                    "hook_points": hook_points,
-                    "has_activations": True
-                },
-                success=True
-            ), cpu_cache
-            
-        except Exception as e:
-            return GenerationResult(
-                content="",
-                tokens_used=0,
-                latency=time.time() - start_time,
-                metadata={},
-                success=False,
-                error=f"Generation with activations failed: {str(e)}"
-            ), None
+            print(f"Generation failed: {str(e)}")
+            return "", {"error": f"Generation failed: {str(e)}"}
     
     def is_available(self) -> bool:
         """Check if model is loaded and available"""
         return (
             self.model is not None and 
             self.tokenizer is not None and
-            torch.cuda.is_available() if "cuda" in str(self.device) else True
+            (torch.cuda.is_available() if "cuda" in str(self.device) else True)
         )
     
     def get_model_info(self) -> Dict[str, Any]:
@@ -330,44 +202,3 @@ class LocalModelProvider(BaseModelProvider):
         
         self.clear_cache()
         print(f"Unloaded model {self.config.model_name}")
-
-
-# Utility functions for local models
-
-def get_available_local_models() -> List[str]:
-    """Get list of available local models (placeholder)"""
-    # This could scan HuggingFace cache or model directories
-    return [
-        "meta-llama/Llama-3.1-8B-Instruct",
-        "meta-llama/Llama-3.1-70B-Instruct", 
-        "mistralai/Mistral-7B-Instruct-v0.3",
-        "microsoft/Phi-3-mini-128k-instruct"
-    ]
-
-
-def estimate_memory_usage(model_name: str) -> Dict[str, float]:
-    """Estimate memory usage for a model"""
-    
-    # Rough estimates in GB
-    model_sizes = {
-        "7b": 14,    # ~14GB for 7B model in bfloat16
-        "8b": 16,    # ~16GB for 8B model
-        "13b": 26,   # ~26GB for 13B model
-        "70b": 140,  # ~140GB for 70B model
-    }
-    
-    model_lower = model_name.lower()
-    
-    for size_key, memory_gb in model_sizes.items():
-        if size_key in model_lower:
-            return {
-                "estimated_memory_gb": memory_gb,
-                "recommended_gpu_memory_gb": memory_gb * 1.2,  # Add overhead
-                "can_run_on_single_gpu": memory_gb <= 80
-            }
-    
-    return {
-        "estimated_memory_gb": "unknown",
-        "recommended_gpu_memory_gb": "unknown", 
-        "can_run_on_single_gpu": False
-    }

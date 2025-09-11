@@ -14,9 +14,11 @@ class ProbeInferenceConfig:
     probe_types: List[str]
     layer: int
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
-    batch_size: int = 1  # Usually 1 for real-time
+    batch_size: int = 1
     cache_activations: bool = True
     max_sequence_length: int = 4096
+    cache_dir: Optional[str] = None  # Added for activation caching
+    format_for_debaters: bool = True  # Added for formatting control
     
     def __post_init__(self):
         self.probe_dir = str(Path(self.probe_dir).resolve())

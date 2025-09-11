@@ -50,7 +50,8 @@ class ProbeConfig:
     device: str = "cuda"
     enabled: bool = True
     score_threshold: float = 0.7
-
+    cache_dir: Optional[str] = None  # For caching activations during debate
+    format_for_debaters: bool = True  # Whether to format scores for debater consumption
 
 @dataclass
 class DebateConfig:

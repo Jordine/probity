@@ -22,7 +22,7 @@ class OpenAIProvider(BaseModelProvider):
         
         try:
             # Merge generation kwargs
-            gen_kwargs = self.config.generation_kwargs.copy()
+            gen_kwargs = (self.config.generation_kwargs or {}).copy()
             gen_kwargs.update(kwargs)
             
             response = self.client.chat.completions.create(
@@ -40,7 +40,8 @@ class OpenAIProvider(BaseModelProvider):
             metadata = {
                 "model": self.config.model_name,
                 "tokens_used": tokens_used,
-                "finish_reason": response.choices[0].finish_reason
+                "finish_reason": response.choices[0].finish_reason,
+                "latency": time.time() - start_time
             }
             
             return content, metadata
@@ -52,7 +53,7 @@ class OpenAIProvider(BaseModelProvider):
     def is_available(self) -> bool:
         """Check if provider is available"""
         try:
-            self.client.models.list()
-            return True
+            # Just check if we have a valid client with API key
+            return self.client.api_key is not None
         except:
             return False
