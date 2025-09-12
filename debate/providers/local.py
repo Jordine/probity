@@ -20,22 +20,20 @@ class LocalModelProvider(BaseModelProvider):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model_dtype = self._get_model_dtype()
         
-        # Generation defaults - FIXED: Define before loading model
+        # Generation defaults for TransformerLens - INCREASED MAX LENGTH
         self.default_gen_kwargs = {
-            "max_new_tokens": 512,
+            "max_new_tokens": 8192,  # Increased from 512
             "temperature": 0.7,
             "do_sample": True,
-            "repetition_penalty": 1.1,
             "top_p": 0.9,
             "top_k": 50,
-            "pad_token_id": None
         }
         # Update with config kwargs
         self.default_gen_kwargs.update(config.generation_kwargs or {})
         
         # Load model and tokenizer
         self._load_model()
-    
+        
     def _get_model_dtype(self) -> torch.dtype:
         """Determine appropriate dtype for model"""
         bfloat16_models = ['llama', 'mistral', 'gemma', 'phi']
@@ -58,9 +56,6 @@ class LocalModelProvider(BaseModelProvider):
             if self.tokenizer.pad_token is None:
                 self.tokenizer.pad_token = self.tokenizer.eos_token
             
-            # Update pad_token_id in gen kwargs
-            self.default_gen_kwargs["pad_token_id"] = self.tokenizer.pad_token_id
-            
             # Load model
             self.model = HookedTransformer.from_pretrained_no_processing(
                 self.config.model_name,
@@ -80,7 +75,7 @@ class LocalModelProvider(BaseModelProvider):
         self, 
         messages: List[Dict[str, str]], 
         **kwargs
-    ) -> tuple:  # FIXED: Return tuple as expected by DebateManager
+    ) -> tuple:
         """Generate response from messages"""
         
         if not self.is_available():
@@ -96,47 +91,62 @@ class LocalModelProvider(BaseModelProvider):
                 add_generation_prompt=True
             )
             
-            # Tokenize input
-            inputs = self.tokenizer(
-                formatted_text,
-                return_tensors="pt",
-                padding=False,
-                truncation=False,
-                add_special_tokens=False
-            ).to(self.device)
+            # Count and print input tokens
+            input_tokens = self.tokenizer(formatted_text, return_tensors="pt")
+            input_length = input_tokens["input_ids"].shape[1]
             
-            input_length = inputs["input_ids"].shape[1]
+            # Print token count for debugging
+            print(f"[TOKEN COUNT] Input length: {input_length} tokens")
             
-            # Prepare generation kwargs
-            gen_kwargs = self.default_gen_kwargs.copy()
-            gen_kwargs.update(kwargs)
+            # Check if input is too long (warn but continue)
+            if input_length > 4096:
+                print(f"[WARNING] Input length {input_length} exceeds typical context window")
             
-            # Generate
+            # Map standard generation kwargs to HookedTransformer format
+            ht_gen_kwargs = {
+                "max_new_tokens": kwargs.get("max_new_tokens", 
+                                            self.default_gen_kwargs.get("max_new_tokens", 8192)),
+                "temperature": kwargs.get("temperature", 
+                                        self.default_gen_kwargs.get("temperature", 0.7)),
+                "do_sample": kwargs.get("do_sample", 
+                                       self.default_gen_kwargs.get("do_sample", True)),
+                "top_p": kwargs.get("top_p", 
+                                  self.default_gen_kwargs.get("top_p", 0.9)),
+                "top_k": kwargs.get("top_k", 
+                                  self.default_gen_kwargs.get("top_k", 50)),
+                "stop_at_eos": True,
+                "eos_token_id": self.tokenizer.eos_token_id,
+                "prepend_bos": False,  # Already included in chat template
+                "return_type": "str",
+                "verbose": False
+            }
+            
+            # Generate using HookedTransformer's method
             self.model.eval()
             with torch.no_grad():
-                outputs = self.model.generate(
-                    inputs["input_ids"],
-                    attention_mask=inputs.get("attention_mask"),
-                    **gen_kwargs
+                generated_text = self.model.generate(
+                    formatted_text,  # Pass string directly
+                    **ht_gen_kwargs
                 )
             
-            # Decode only the new tokens
-            new_tokens = outputs[0][input_length:]
-            generated_text = self.tokenizer.decode(
-                new_tokens, 
-                skip_special_tokens=True,
-                clean_up_tokenization_spaces=True
-            )
+            # Extract only the new generated content
+            if generated_text.startswith(formatted_text):
+                new_content = generated_text[len(formatted_text):].strip()
+            else:
+                new_content = generated_text.strip()
             
-            # Calculate usage
-            output_length = len(new_tokens)
+            # Calculate token usage
+            output_tokens = self.tokenizer(new_content, return_tensors="pt")
+            output_length = output_tokens["input_ids"].shape[1]
             total_tokens = input_length + output_length
+            
+            print(f"[TOKEN COUNT] Output length: {output_length} tokens, Total: {total_tokens} tokens")
+            
             latency = time.time() - start_time
             
             self._update_usage(total_tokens)
             
             # Clean up memory
-            del outputs
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
             
@@ -150,11 +160,14 @@ class LocalModelProvider(BaseModelProvider):
                 "latency": latency
             }
             
-            return generated_text.strip(), metadata
+            return new_content, metadata
             
         except Exception as e:
-            print(f"Generation failed: {str(e)}")
-            return "", {"error": f"Generation failed: {str(e)}"}
+            print(f"[ERROR] Generation failed: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            # NO FALLBACK - just return error and exit
+            raise e  # Re-raise the exception to stop execution
     
     def is_available(self) -> bool:
         """Check if model is loaded and available"""
