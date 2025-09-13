@@ -89,7 +89,7 @@ class LocalModelProvider(BaseModelProvider):
         # We ask HF to enlarge RoPE via YaRN scaling.  Factor 16 ⇒
         # 2 048 × 16 = 32 768 usable positions.
         #
-        self.model = HookedTransformer.from_pretrained_no_processing(
+        self.model = HookedTransformer.from_pretrained(
             self.config.model_name,
             device=self.device,
             dtype=self.dtype,
