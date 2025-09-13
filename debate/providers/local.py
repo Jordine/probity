@@ -1,17 +1,18 @@
 # debate/providers/local.py
 """
-LocalModelProvider – HuggingFace / Transformer-Lens backend
+LocalModelProvider -- HuggingFace / Transformer-Lens backend
+Works with Llama-3 and any other RoPE model.
 """
 
 from __future__ import annotations
 
 import gc
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional
 
 import torch
-from transformers import AutoConfig, AutoTokenizer
-from transformer_lens import HookedTransformer, HookedTransformerConfig
+from transformers import AutoTokenizer
+from transformer_lens import HookedTransformer
 
 from .base import BaseModelProvider
 from ..types import ModelConfig
@@ -22,7 +23,26 @@ from ..types import ModelConfig
 # --------------------------------------------------------------------------- #
 def _recommended_dtype(model_name: str) -> torch.dtype:
     bf16_families = ("llama", "mistral", "gemma", "phi", "qwen")
-    return torch.bfloat16 if any(x in model_name.lower() for x in bf16_families) else torch.float32
+    return (
+        torch.bfloat16
+        if any(x in model_name.lower() for x in bf16_families)
+        else torch.float32
+    )
+
+
+def _infer_rope_len(model: HookedTransformer) -> int:
+    """
+    Inspect the first block's rotary cache to know how long it really is.
+    Works for both GQA (Llama-3) and older MHA blocks.
+    """
+    blk = model.blocks[0]
+    rot = getattr(blk.attn, "rotary_emb", None)
+    if rot is None:  # fallback for older MHA
+        inner = getattr(blk.attn, "inner_attn", None)
+        rot = getattr(inner, "rotary_emb", None) if inner else None
+    if rot is None:
+        raise RuntimeError("Could not locate rotary_emb to infer context length")
+    return rot.cache_cos.size(0)  # sequence length
 
 
 # --------------------------------------------------------------------------- #
@@ -48,7 +68,6 @@ class LocalModelProvider(BaseModelProvider):
         }
         self.gen_defaults.update(config.generation_kwargs or {})
 
-        # components to be filled in -----------------------------------------
         self.tokenizer: Optional[AutoTokenizer] = None
         self.model: Optional[HookedTransformer] = None
 
@@ -65,20 +84,29 @@ class LocalModelProvider(BaseModelProvider):
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
-        # ------------ load the model exactly once ------------------------------
+        # ------------ load the model ------------------------------------------
+        #
+        # We ask HF to enlarge RoPE via YaRN scaling.  Factor 16 ⇒
+        # 2 048 × 16 = 32 768 usable positions.
+        #
         self.model = HookedTransformer.from_pretrained_no_processing(
             self.config.model_name,
-            device = self.device,
-            dtype  = self.dtype,
+            device=self.device,
+            dtype=self.dtype,
+            rope_scaling={"type": "yarn", "factor": 16.0},
         )
 
-        # ------------ enlarge the context window -------------------------------
-        self.model.cfg.n_ctx = 16000
+        # ------------ synchronise cfg.n_ctx -----------------------------------
+        true_ctx = 32768 #_infer_rope_len(self.model)
+        self.model.cfg.n_ctx = true_ctx
+        # (Optional) silence HF warnings in generation helpers
+        self.tokenizer.model_max_length = true_ctx
 
         print(
             f"✓ {self.config.model_name} loaded "
             f"(dtype={self.dtype}, device={self.device}, n_ctx={self.model.cfg.n_ctx})"
         )
+
     # --------------------------------------------------------------------- #
     # generation
     # --------------------------------------------------------------------- #
@@ -99,6 +127,12 @@ class LocalModelProvider(BaseModelProvider):
         prompt_len = prompt_ids.shape[1]
         print(f"[TOKEN COUNT] prompt = {prompt_len}")
 
+        if 'max_tokens' in self.gen_defaults:
+            self.gen_defaults['max_new_tokens'] = self.gen_defaults.pop('max_tokens')
+
+            print('this worked!!!!!!!!!!!!!!!!!!!!!')
+   
+        
         cfg = {**self.gen_defaults, **kwargs}
         safety = cfg.pop("safety_margin")
         ctx_limit = self.model.cfg.n_ctx
