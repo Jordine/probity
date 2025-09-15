@@ -1,7 +1,0 @@
-[
-  {
-    "problem_id": "1383",
-    "error": "CUDA out of memory. Tried to allocate 16.00 GiB. GPU 0 has a total capacity of 139.80 GiB of which 12.00 GiB is free. Process 3453200 has 127.79 GiB memory in use. Of the allocated memory 111.48 GiB is allocated by PyTorch, and 15.71 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)",
-    "success": false
-  }
-]

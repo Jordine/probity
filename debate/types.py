@@ -67,6 +67,7 @@ class DebateConfig:
     topic: Optional[str] = None
     problem_id: Optional[str] = None
     save_dir: str = "./debate_results"
+    probe_display_mode: str = "per_statement"
 
 
 @dataclass
