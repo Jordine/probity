@@ -96,8 +96,11 @@ def validate_configuration(args):
     debate_type = DebateType[args.debate_type.upper()]
     
     # Check if probes are needed but not provided
-    if debate_type != DebateType.BASELINE and not args.probe_dir:
-        raise ValueError(f"Debate type {args.debate_type} requires --probe_dir")
+    if debate_type != DebateType.BASELINE and not args.honest_probe_dir:
+        raise ValueError(f"Debate type {args.debate_type} requires --honest_probe_dir")
+
+    if debate_type != DebateType.BASELINE and not args.dishonest_probe_dir:
+        raise ValueError(f"Debate type {args.debate_type} requires --dishonest_probe_dir")
     
     # Check if local models are required for probes
     needs_probe_on_honest = debate_type in [

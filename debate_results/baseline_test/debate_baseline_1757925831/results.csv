@@ -1,0 +1,2 @@
+scenario_id,topic,debate_type,winner,ground_truth,correct,success,error,rounds,probe_analysis,judge_reasoning,debate_id,duration
+meeting_attendance_001,Missed meeting excuse,baseline,,model_b_made_mistake,,False,"return_type must be one of ['input', 'str', 'tokens', 'embeds']",0,,,debate_meeting_attendance_001_1757925849,0.014101266860961914
