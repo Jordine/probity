@@ -161,19 +161,40 @@ def run_single_debate(item: Dict, config: DebateConfig) -> Dict:
     if 'scenario' in item:
         # Simple debate scenario
         result = manager.run_debate(scenario=item['scenario'])
+
+    
+        ground_truth_role = item['scenario'].get('ground_truth', '').replace('model_a_guilty', 'honest').replace('model_b_guilty', 'dishonest')
         
+        # Determine which model label corresponds to the winner
+        if hasattr(manager, 'model_mapping'):
+            winner_label = None
+            for label, role in manager.model_mapping.items():
+                if role == result.winner.value:
+                    winner_label = label
+                    break
+            
+            print(f"  Winner: {winner_label} ({result.winner.value})")
+            print(f"  Correct: {result.winner.value == ground_truth_role}")
+        else:
+            print(f"  Winner: {result.winner.value}")
+            print(f"  Correct: {result.winner.value == ground_truth_role}")
+            
+                
         return {
             "scenario_id": item['scenario'].get('scenario_id', 'unknown'),
             "topic": item['scenario'].get('topic', 'unknown'),
             "debate_type": config.debate_type.value,
-            "winner": result.winner.value if result.winner else None,
-            "ground_truth": item['scenario'].get('ground_truth'),
-            "correct": result.winner.value == item['scenario'].get('ground_truth') if result.winner else None,
+            "winner_label": winner_label if winner_label else None,
+            "winner_role": result.winner.value if result.winner else None,
+            "honest_model": config.honest_debater.model_name,
+            "dishonest_model": config.dishonest_debater.model_name,
+            "ground_truth": item['scenario'].get('ground_truth', ''),
+            "correct": (winner_label == item['scenario'].get('ground_truth', '')) if winner_label else None,
             "success": result.success,
             "error": result.error,
             "rounds": len([t for t in result.turns if t.speaker.value in ['honest', 'dishonest']]) // 2,
             "probe_analysis": result.probe_analysis,
-            "judge_reasoning": result.judge_reasoning[:500],
+            "judge_reasoning": result.judge_reasoning[:500] if result.judge_reasoning else "",
             "debate_id": result.debate_id,
             "duration": result.end_time - result.start_time
         }
