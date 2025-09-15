@@ -1,192 +1,240 @@
-import torch
+# debate/inference/probe_debate_inference.py
+"""
+Role-aware probe inference.
+
+The generic attributes `model_name` and `probe_dir` have been removed.
+Instead, we load *either* the honest or the dishonest bundle depending
+on `role ∈ {"honest", "dishonest"}`.
+"""
+
+from __future__ import annotations
+
+import time
 import json
-import numpy as np
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any
-from transformer_lens import HookedTransformer
+
+import numpy as np
+import torch
 from transformers import AutoTokenizer
-import time
+from transformer_lens import HookedTransformer
 
 from probity.probes import BaseProbe
-from probity.utils.caching import smart_cache_activations
 from probity.utils.dataset_loading import get_model_dtype
 from ..types import ProbeScore
 from ..config import ProbeInferenceConfig
 
 
 class ProbeDebateInference:
-    """Real-time probe inference for debate conversations with efficient caching."""
-    
-    def __init__(self, config: ProbeInferenceConfig):
+    """
+    Real-time probe inference for debate conversations – **role aware**.
+
+    Parameters
+    ----------
+    config : ProbeInferenceConfig
+        Dataclass that now stores *separate* fields for honest vs.
+        dishonest models and probe directories.
+    role : {"honest", "dishonest"}
+        Which bundle to load.  Must match a key in the dataclass.
+    """
+
+    def __init__(self, config: ProbeInferenceConfig, role: str = "honest"):
+        if role not in {"honest", "dishonest"}:
+            raise ValueError("role must be 'honest' or 'dishonest'")
+
         self.config = config
+        self.role = role
         self.device = torch.device(config.device)
-        
-        print(f"Loading model {config.model_name} for probe inference...")
-        self.model_dtype = get_model_dtype(config.model_name)
-        
+
+        # ------------------------------------------------------------------
+        # Pick the correct model / probe directory for the given role
+        # ------------------------------------------------------------------
+        if role == "honest":
+            self.model_name: str = config.honest_model_name
+            self.probe_dir: Path = Path(config.honest_probe_dir)
+        else:
+            self.model_name = config.dishonest_model_name
+            self.probe_dir = Path(config.dishonest_probe_dir)
+
+        print(f"[ProbeDebateInference] Loading {role} model '{self.model_name}' ...")
+        self.model_dtype = get_model_dtype(self.model_name)
+
         self.model = HookedTransformer.from_pretrained_no_processing(
-            config.model_name,
-            device=config.device,
-            dtype=self.model_dtype
+            self.model_name,
+            device=self.device,
+            dtype=self.model_dtype,
         )
         self.model.eval()
-        
-        self.tokenizer = AutoTokenizer.from_pretrained(config.model_name)
+
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
-        
-        self.probes = self._load_probes()
-        self.activation_cache = {}  # Cache for activations
-        
-        print(f"Loaded {len(self.probes)} probes for layer {config.layer}")
-    
+
+        self.probes: Dict[str, BaseProbe] = self._load_probes()
+        self.activation_cache: Dict[Any, torch.Tensor] = {}
+
+        print(f"[ProbeDebateInference] • {len(self.probes)} probes loaded "
+              f"(layer {config.layer}) for role='{role}'")
+
+    # ────────────────────────────────────────────────────────────────────
+    # Internal helpers
+    # ────────────────────────────────────────────────────────────────────
     def _load_probes(self) -> Dict[str, BaseProbe]:
-        """Load probes from saved files."""
-        probes = {}
-        probe_dir = Path(self.config.probe_dir)
-        
+        """Load the probe objects that correspond to `self.role`."""
+        probes: Dict[str, BaseProbe] = {}
+
         for probe_type in self.config.probe_types:
-            # Try .pt format first (as used in training)
-            pt_path = probe_dir / probe_type / f"layer_{self.config.layer}_probe.pt"
-            
-            if pt_path.exists():
-                try:
-                    probe_dict = torch.load(str(pt_path), map_location=self.config.device, weights_only=False)
-                    
-                    # Extract probe from saved state
-                    if 'probe_type' in probe_dict:
-                        from probity.probes import LogisticProbe, PCAProbe, MeanDifferenceProbe
-                        probe_classes = {
-                            'LogisticProbe': LogisticProbe,
-                            'PCAProbe': PCAProbe,
-                            'MeanDifferenceProbe': MeanDifferenceProbe,
-                        }
-                        probe_class = probe_classes.get(probe_dict['probe_type'])
-                        if probe_class:
-                            probe = probe_class(probe_dict['config'])
-                            probe.load_state_dict(probe_dict['state_dict'])
-                            probe = probe.to(self.config.device)
-                            probes[probe_type] = probe
-                except Exception as e:
-                    print(f"Failed to load {probe_type} probe: {e}")
-        
+            probe_path = self.probe_dir / probe_type / f"layer_{self.config.layer}_probe.pt"
+            if not probe_path.exists():
+                print(f"[WARN] Expected probe file not found: {probe_path}")
+                continue
+
+            try:
+                checkpoint = torch.load(
+                    probe_path,
+                    map_location=self.device,
+                    weights_only=False,
+                )
+                # Dynamically pick the concrete class
+                from probity.probes import LogisticProbe, PCAProbe, MeanDifferenceProbe
+
+                probe_cls_map = {
+                    "LogisticProbe": LogisticProbe,
+                    "PCAProbe": PCAProbe,
+                    "MeanDifferenceProbe": MeanDifferenceProbe,
+                }
+                cls_name = checkpoint.get("probe_type")
+                probe_cls = probe_cls_map.get(cls_name)
+
+                if probe_cls is None:
+                    print(f"[WARN] Unknown probe class '{cls_name}' in {probe_path}")
+                    continue
+
+                probe: BaseProbe = probe_cls(checkpoint["config"])
+                probe.load_state_dict(checkpoint["state_dict"])
+                probe = probe.to(self.device)
+                probes[probe_type] = probe
+
+            except Exception as exc:  # pylint: disable=broad-except
+                print(f"[ERROR] Could not load probe '{probe_type}': {exc}")
+
         return probes
-    
+
+    # ────────────────────────────────────────────────────────────────────
+    # Public API
+    # ────────────────────────────────────────────────────────────────────
     def score_new_response(
-        self, 
+        self,
         conversation_history: List[Dict[str, str]],
         new_response: str,
         speaker: str,
-        cache_dir: Optional[str] = None
+        *,
+        cache_dir: Optional[str] = None,
     ) -> Tuple[List[ProbeScore], Dict[str, Any]]:
         """
-        Score ONLY the new assistant response tokens and return formatted scores.
-        
-        Returns:
-            Tuple of (probe_scores, formatted_output)
+        Score **only** the *new* assistant response and return
+        (list-of-ProbeScore, formatted_output-dict).
         """
-        full_messages = conversation_history + [{"role": "assistant", "content": new_response}]
-        
-        formatted_text = self.tokenizer.apply_chat_template(
-            full_messages, tokenize=False, add_generation_prompt=False
+        full_msgs = conversation_history + [{"role": "assistant", "content": new_response}]
+        formatted = self.tokenizer.apply_chat_template(
+            full_msgs, tokenize=False, add_generation_prompt=False
         )
-        
-        tokens_info = self.tokenizer(
-            formatted_text, return_tensors="pt", add_special_tokens=False, return_offsets_mapping=True
+
+        tok = self.tokenizer(
+            formatted,
+            return_tensors="pt",
+            add_special_tokens=False,
+            return_offsets_mapping=True,
         ).to(self.device)
-        
-        # Find assistant response tokens
-        assistant_start_idx = self._find_last_assistant_start(tokens_info["input_ids"][0])
-        
-        if assistant_start_idx is None:
-            print("Warning: Could not locate assistant response in tokens")
+
+        # Index where the assistant’s answer starts
+        assist_start = self._find_last_assistant_start(tok["input_ids"][0])
+        if assist_start is None:
+            print("[ProbeDebateInference] Could not locate assistant tokens")
             return [], {}
-        
-        assistant_tokens = tokens_info["input_ids"][0, assistant_start_idx:]
-        
-        # Get activations efficiently (using caching if available)
-        hook_point = f"blocks.{self.config.layer}.hook_resid_pre"
-        
+
+        assist_ids = tok["input_ids"][0, assist_start:]
+
+        # ── Activations (cached) ─────────────────────────────────────────
+        hook = f"blocks.{self.config.layer}.hook_resid_pre"
+        cache_key = (formatted, hook)
         with torch.no_grad():
-            # Check cache first
-            cache_key = (formatted_text, hook_point)
             if cache_key in self.activation_cache:
-                all_activations = self.activation_cache[cache_key]
+                activations = self.activation_cache[cache_key]
             else:
                 _, cache = self.model.run_with_cache(
-                    tokens_info["input_ids"], names_filter=[hook_point],
-                    return_cache_object=True, stop_at_layer=self.config.layer + 1
+                    tok["input_ids"],
+                    names_filter=[hook],
+                    return_cache_object=True,
+                    stop_at_layer=self.config.layer + 1,
                 )
-                all_activations = cache[hook_point].squeeze(0)
-                # Cache for reuse
-                self.activation_cache[cache_key] = all_activations
-            
-            assistant_activations = all_activations[assistant_start_idx:]
-        
-        # Get token strings for the assistant response
-        assistant_token_strs = self.tokenizer.convert_ids_to_tokens(assistant_tokens.cpu().tolist())
-        
-        # Clean tokens for display
-        clean_tokens = self._clean_tokens_for_display(assistant_token_strs)
-        
-        probe_scores = []
-        token_scores_by_probe = {}
-        
+                activations = cache[hook].squeeze(0)
+                self.activation_cache[cache_key] = activations
+
+            assist_act = activations[assist_start:]
+
+        # ── Token strings & cleaning ─────────────────────────────────────
+        assist_tok_str = self.tokenizer.convert_ids_to_tokens(assist_ids.cpu().tolist())
+        clean_tokens = self._clean_tokens_for_display(assist_tok_str)
+
+        # ── Probe evaluation ────────────────────────────────────────────
+        probe_scores: List[ProbeScore] = []
+        scores_by_probe: Dict[str, List[float]] = {}
+
         with torch.no_grad():
-            for probe_type, probe in self.probes.items():
+            for p_type, probe in self.probes.items():
                 try:
-                    # Ensure dtype compatibility
-                    if assistant_activations.dtype != probe.dtype:
-                        assistant_activations = assistant_activations.to(dtype=probe.dtype)
-                    
-                    # Get raw scores
-                    token_scores = probe(assistant_activations)
-                    
-                    # Apply sigmoid for logistic probes
-                    if probe.__class__.__name__ == 'LogisticProbe':
-                        token_scores = torch.sigmoid(token_scores)
-                    
-                    scores_list = token_scores.cpu().squeeze().tolist()
-                    if isinstance(scores_list, float):
-                        scores_list = [scores_list]
-                    
-                    # Normalize non-logistic scores to [0,1]
-                    if probe.__class__.__name__ != 'LogisticProbe':
-                        scores_list = self._normalize_scores(scores_list)
-                    
-                    # Store for formatting
-                    token_scores_by_probe[probe_type] = scores_list
-                    
-                    probe_scores.append(ProbeScore(
-                        probe_type=probe_type,
-                        layer=self.config.layer,
-                        tokens=clean_tokens,
-                        token_scores=scores_list,
-                        mean_score=float(np.mean(scores_list)),
-                        metadata={"timestamp": time.time(), "speaker": speaker}
-                    ))
-                except Exception as e:
-                    print(f"Error scoring with {probe_type} probe: {e}")
-        
-        # Format scores for human/model readability
-        formatted_output = self._format_scores_for_debate(clean_tokens, token_scores_by_probe, speaker)
-        
+                    act = assist_act.to(dtype=probe.dtype, copy=False)
+
+                    raw = probe(act)
+                    if probe.__class__.__name__ == "LogisticProbe":
+                        raw = torch.sigmoid(raw)
+
+                    scores = raw.cpu().squeeze().tolist()
+                    if isinstance(scores, float):
+                        scores = [scores]
+
+                    if probe.__class__.__name__ != "LogisticProbe":
+                        scores = self._normalize_scores(scores)
+
+                    scores_by_probe[p_type] = scores
+                    probe_scores.append(
+                        ProbeScore(
+                            probe_type=p_type,
+                            layer=self.config.layer,
+                            tokens=clean_tokens,
+                            token_scores=scores,
+                            mean_score=float(np.mean(scores)),
+                            metadata={
+                                "timestamp": time.time(),
+                                "speaker": speaker,
+                                "role": self.role,
+                            },
+                        )
+                    )
+                except Exception as exc:  # pylint: disable=broad-except
+                    print(f"[ProbeDebateInference] Error in probe '{p_type}': {exc}")
+
+        # Human / model readable format
+        formatted_output = self._format_scores_for_debate(clean_tokens, scores_by_probe, speaker)
         return probe_scores, formatted_output
-    
-    def _clean_tokens_for_display(self, tokens: List[str]) -> List[str]:
-        """Clean tokenizer artifacts for better readability."""
-        clean = []
-        for token in tokens:
-            # Handle Llama-style tokens
-            if token.startswith('Ġ'):
-                token = ' ' + token[1:]
-            elif token in ['Ċ', '\u010a']:
-                token = '\n'
-            # Handle other special tokens
-            elif token.startswith('<') and token.endswith('>'):
-                continue  # Skip special tokens
-            clean.append(token)
+
+    # ────────────────────────────────────────────────────────────────────
+    # Utility routines (unchanged except for style tweaks)
+    # ────────────────────────────────────────────────────────────────────
+    @staticmethod
+    def _clean_tokens_for_display(tokens: List[str]) -> List[str]:
+        clean: List[str] = []
+        for tok in tokens:
+            if tok.startswith("Ġ"):
+                tok = " " + tok[1:]
+            elif tok in {"Ċ", "\u010a"}:
+                tok = "\n"
+            elif tok.startswith("<") and tok.endswith(">"):
+                continue
+            clean.append(tok)
         return clean
+
     
     def _format_scores_for_debate(
         self, 
