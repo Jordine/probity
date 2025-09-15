@@ -1,0 +1,44 @@
+{
+  "args": {
+    "debate_type": "baseline",
+    "honest_model": "meta-llama/Llama-3.1-8B-Instruct",
+    "dishonest_model": "meta-llama/Llama-3.1-8B-Instruct",
+    "judge_model": "claude-sonnet-4-20250514",
+    "honest_provider": "local",
+    "dishonest_provider": "local",
+    "judge_provider": "anthropic",
+    "openai_api_key": null,
+    "anthropic_api_key": null,
+    "openrouter_api_key": null,
+    "honest_probe_dir": null,
+    "dishonest_probe_dir": null,
+    "probe_types": [
+      "logistic",
+      "pca",
+      "meandiff"
+    ],
+    "probe_layer": 15,
+    "probe_threshold": 0.7,
+    "dataset": "simple_debate",
+    "dataset_path": "data/debate_data/contextual_debates.jsonl",
+    "difficulty": null,
+    "n_problems": 1,
+    "max_rounds": 3,
+    "save_dir": "./debate_results/baseline_test",
+    "experiment_name": null,
+    "device": "cuda",
+    "seed": 42,
+    "debug": false
+  },
+  "debate_type": "baseline",
+  "models": {
+    "honest": "meta-llama/Llama-3.1-8B-Instruct",
+    "dishonest": "meta-llama/Llama-3.1-8B-Instruct",
+    "judge": "claude-sonnet-4-20250514"
+  },
+  "probe_config": {
+    "enabled": false,
+    "types": [],
+    "layer": null
+  }
+}

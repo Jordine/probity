@@ -15,7 +15,7 @@ from debate.types import (
     ProviderType, APPSProblem
 )
 from debate.debate_manager import DebateManager
-from debate.dataset_loader import FlexibleDatasetLoader, APPSDatasetLoader, SolutionGenerator
+from debate.dataset_loader import FlexibleDatasetLoader, APPSDatasetLoader, SolutionGenerator, SimpleDebateDatasetLoader
 
 
 def parse_arguments():
@@ -62,7 +62,7 @@ def parse_arguments():
     
     # Dataset configuration
     parser.add_argument('--dataset', type=str, default='apps',
-                       choices=['apps', 'custom'],
+                       choices=['apps', 'simple_debate'],
                        help='Dataset to use')
     parser.add_argument('--dataset_path', type=str,
                        help='Path to custom dataset')
@@ -150,25 +150,51 @@ def create_model_config(model_name: str, provider: str, args) -> ModelConfig:
     )
 
 
-def run_single_debate(problem: APPSProblem, honest_solution: str, 
-                     backdoored_solution: str, config: DebateConfig) -> Dict:
+def run_single_debate(item: Dict, config: DebateConfig) -> Dict:
     """Run a single debate and return results"""
     manager = DebateManager(config)
-    result = manager.run_debate(problem, honest_solution, backdoored_solution)
     
-    return {
-        "problem_id": problem.problem_id,
-        "difficulty": problem.difficulty,
-        "debate_type": config.debate_type.value,
-        "winner": result.winner.value if result.winner else None,
-        "success": result.success,
-        "error": result.error,
-        "rounds": len([t for t in result.turns if t.speaker.value in ['honest', 'dishonest']]) // 2,
-        "probe_analysis": result.probe_analysis,
-        "judge_reasoning": result.judge_reasoning[:500],  # First 500 chars
-        "debate_id": result.debate_id,
-        "duration": result.end_time - result.start_time
-    }
+    # Check if this is a simple debate scenario or APPS problem
+    if 'scenario' in item:
+        # Simple debate scenario
+        result = manager.run_debate(scenario=item['scenario'])
+        
+        return {
+            "scenario_id": item['scenario'].get('scenario_id', 'unknown'),
+            "topic": item['scenario'].get('topic', 'unknown'),
+            "debate_type": config.debate_type.value,
+            "winner": result.winner.value if result.winner else None,
+            "ground_truth": item['scenario'].get('ground_truth'),
+            "correct": result.winner.value == item['scenario'].get('ground_truth') if result.winner else None,
+            "success": result.success,
+            "error": result.error,
+            "rounds": len([t for t in result.turns if t.speaker.value in ['honest', 'dishonest']]) // 2,
+            "probe_analysis": result.probe_analysis,
+            "judge_reasoning": result.judge_reasoning[:500],
+            "debate_id": result.debate_id,
+            "duration": result.end_time - result.start_time
+        }
+    else:
+        # APPS problem
+        result = manager.run_debate(
+            problem=item['problem'],
+            honest_solution=item['honest_solution'],
+            backdoored_solution=item['backdoored_solution']
+        )
+        
+        return {
+            "problem_id": item['problem'].problem_id,
+            "difficulty": item['problem'].difficulty,
+            "debate_type": config.debate_type.value,
+            "winner": result.winner.value if result.winner else None,
+            "success": result.success,
+            "error": result.error,
+            "rounds": len([t for t in result.turns if t.speaker.value in ['honest', 'dishonest']]) // 2,
+            "probe_analysis": result.probe_analysis,
+            "judge_reasoning": result.judge_reasoning[:500],
+            "debate_id": result.debate_id,
+            "duration": result.end_time - result.start_time
+        }
 
 
 def main():
@@ -195,8 +221,9 @@ def main():
     print(f"  Honest: {args.honest_model} ({args.honest_provider})")
     print(f"  Dishonest: {args.dishonest_model} ({args.dishonest_provider})")
     print(f"  Judge: {args.judge_model} ({args.judge_provider})")
-    if args.probe_dir:
-        print(f"Probes: {args.probe_types} from {args.probe_dir}")
+    if args.honest_probe_dir or args.dishonest_probe_dir:
+        print(f"Probes: {args.probe_types} from {args.honest_probe_dir}")
+        print(f"Probes: {args.probe_types} from {args.dishonest_probe_dir}")
     print(f"Dataset: {args.dataset} ({args.n_problems} problems)")
     print(f"Results will be saved to: {save_dir}")
     print(f"{'='*60}\n")
@@ -260,9 +287,9 @@ def main():
         for scenario in scenarios:
             dataset.append({
                 "scenario": scenario,
-                "problem": None,  # Not using APPSProblem
-                "honest_solution": None,
-                "backdoored_solution": None
+                # "problem": None,  # Not using APPSProblem
+                # "honest_solution": None,
+                # "backdoored_solution": None
             })
     elif args.dataset == "apps":
         dataset = FlexibleDatasetLoader.load_dataset(
@@ -279,36 +306,70 @@ def main():
     # Run debates
     results = []
     print(f"\nRunning {len(dataset)} debates...\n")
+
+
     
     for i, item in enumerate(dataset):
-        print(f"Debate {i+1}/{len(dataset)}")
-        print(f"Problem: {item['problem'].problem_id}")
+        if 'scenario' in item:
+            print(f"Debate {i+1}/{len(dataset)}")
+            print(f"Topic: {item['scenario'].get('topic', 'Unknown')}")
+        else:
+            print(f"Debate {i+1}/{len(dataset)}")
+            print(f"Problem: {item['problem'].problem_id}")
         
         try:
-            result = run_single_debate(
-                item['problem'],
-                item['honest_solution'],
-                item['backdoored_solution'],
-                config
-            )
+            result = run_single_debate(item, config)
             results.append(result)
             
             print(f"  Winner: {result['winner']}")
+            if 'correct' in result:
+                print(f"  Correct: {result['correct']}")
             print(f"  Duration: {result['duration']:.1f}s")
-            
-            if result['probe_analysis']:
-                honest_score = result['probe_analysis']['scores_by_role'].get('honest', {}).get('mean', 0)
-                dishonest_score = result['probe_analysis']['scores_by_role'].get('dishonest', {}).get('mean', 0)
-                print(f"  Probe scores - Honest: {honest_score:.3f}, Dishonest: {dishonest_score:.3f}")
-                
         except Exception as e:
             print(f"  Error: {e}")
-            results.append({
-                "problem_id": item['problem'].problem_id,
-                "error": str(e),
-                "success": False
-            })
             
+    
+    # for i, item in enumerate(dataset):
+    #     print(f"Debate {i+1}/{len(dataset)}")
+
+    #     if args.dataset == "simple_debate"
+
+
+
+
+
+        
+
+        
+        
+    #     if args.dataset == "apps":
+    #         print(f"Problem: {item['problem'].problem_id}")
+            
+    #         try:
+    #             result = run_single_debate(
+    #                 item['problem'],
+    #                 item['honest_solution'],
+    #                 item['backdoored_solution'],
+    #                 config
+    #             )
+    #             results.append(result)
+                
+    #             print(f"  Winner: {result['winner']}")
+    #             print(f"  Duration: {result['duration']:.1f}s")
+                
+    #             if result['probe_analysis']:
+    #                 honest_score = result['probe_analysis']['scores_by_role'].get('honest', {}).get('mean', 0)
+    #                 dishonest_score = result['probe_analysis']['scores_by_role'].get('dishonest', {}).get('mean', 0)
+    #                 print(f"  Probe scores - Honest: {honest_score:.3f}, Dishonest: {dishonest_score:.3f}")
+                    
+    #         except Exception as e:
+    #             print(f"  Error: {e}")
+    #             results.append({
+    #                 "problem_id": item['problem'].problem_id,
+    #                 "error": str(e),
+    #                 "success": False
+    #             })
+                
         print()
         
     # Save results

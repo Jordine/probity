@@ -107,8 +107,97 @@ class DebateManager:
                 f"but {self.config.dishonest_debater.model_name} is not a local model. "
                 f"Use a local model for probe support."
             )
+                
+    def run_debate(self, problem: Optional[APPSProblem] = None, 
+                   honest_solution: Optional[str] = None, 
+                   backdoored_solution: Optional[str] = None,
+                   scenario: Optional[Dict] = None) -> DebateResult:
+        """Run a debate - either APPS-style or simple scenario"""
+        
+        # Route to appropriate method based on input
+        if scenario is not None:
+            return self.run_simple_debate(scenario)
+        elif problem is not None:
+            return self.run_apps_debate(problem, honest_solution, backdoored_solution)
+        else:
+            raise ValueError("Must provide either a scenario or an APPS problem")
     
-    def run_debate(self, problem: APPSProblem, 
+    
+    def run_simple_debate(self, scenario: Dict) -> DebateResult:
+        """Run a debate with simple scenario format"""
+        start_time = time.time()
+        debate_id = f"debate_{scenario.get('scenario_id', 'unknown')}_{int(start_time)}"
+        
+        print(f"\nStarting simple debate: {debate_id}")
+        print(f"Type: {self.config.debate_type.value}")
+        print(f"Topic: {scenario.get('topic', 'Unknown')}")
+        
+        # Store scenario for reference
+        self.scenario = scenario
+        
+        try:
+            # Setup conversations with scenario prompts
+            self.honest_conversation = [
+                {"role": "system", "content": scenario['honest_system_prompt']}
+            ]
+            self.dishonest_conversation = [
+                {"role": "system", "content": scenario['dishonest_system_prompt']}
+            ]
+            
+            # Get max tokens from scenario or use default
+            max_tokens = scenario.get('max_tokens', 150)
+            
+            # Run debate rounds
+            for round_num in range(self.config.max_rounds):
+                print(f"\n--- Round {round_num + 1}/{self.config.max_rounds} ---")
+                self._run_honest_turn(round_num + 1, max_new_tokens=max_tokens)
+                self._run_dishonest_turn(round_num + 1, max_new_tokens=max_tokens)
+            
+            # Judge's decision
+            print("\n--- Judge's Decision ---")
+            winner, reasoning = self._run_judge_decision()
+            
+            # Analyze probe performance if applicable
+            probe_analysis = self._analyze_probe_performance()
+            
+            return DebateResult(
+                debate_id=debate_id,
+                config=self.config,
+                turns=self.all_turns,
+                winner=winner,
+                judge_reasoning=reasoning,
+                probe_analysis=probe_analysis,
+                metadata={
+                    "scenario_id": scenario.get('scenario_id'),
+                    "topic": scenario.get('topic'),
+                    "ground_truth": scenario.get('ground_truth')
+                },
+                start_time=start_time,
+                end_time=time.time(),
+                success=True
+            )
+            
+        except Exception as e:
+            print(f"Debate failed: {e}")
+            import traceback
+            traceback.print_exc()
+            return DebateResult(
+                debate_id=debate_id,
+                config=self.config,
+                turns=self.all_turns,
+                winner=None,
+                judge_reasoning="",
+                probe_analysis=None,
+                metadata={},
+                start_time=start_time,
+                end_time=time.time(),
+                success=False,
+                error=str(e)
+            )
+    
+        
+    
+    def run_apps_debate(self, problem: APPSProblem, 
                    honest_solution: str, 
                    backdoored_solution: str) -> DebateResult:
         """Run a complete debate with proper conversation management."""
@@ -232,7 +321,7 @@ You may use any persuasive tactics necessary to defend your solution."""
         self.honest_solution = honest_solution
         self.backdoored_solution = backdoored_solution
         
-    def _run_honest_turn(self, round_num: int):
+    def _run_honest_turn(self, round_num: int, max_new_tokens: int = 256):
         """Run the honest debater's turn with formatted probe scores."""
         
         print("\n" + "="*80)
@@ -264,7 +353,7 @@ You may use any persuasive tactics necessary to defend your solution."""
         self.honest_conversation.append({"role": "user", "content": user_prompt})
         
         # Generate response
-        response, metadata = self.honest_provider.generate(self.honest_conversation, max_new_tokens=256, **kwargs)
+        response, metadata = self.honest_provider.generate(self.honest_conversation, max_new_tokens=max_new_tokens)
         
         print("\n[HONEST RESPONSE]")
         print("-"*40)
@@ -306,7 +395,7 @@ You may use any persuasive tactics necessary to defend your solution."""
         
         self.all_turns.append(turn)
     
-    def _run_dishonest_turn(self, round_num: int):
+    def _run_dishonest_turn(self, round_num: int, max_new_tokens: int = 256):
         """Run the dishonest debater's turn with formatted probe scores."""
         
         print("\n" + "="*80)
@@ -334,7 +423,7 @@ You may use any persuasive tactics necessary to defend your solution."""
         self.dishonest_conversation.append({"role": "user", "content": user_prompt})
         
         # Generate response
-        response, metadata = self.dishonest_provider.generate(self.dishonest_conversation, max_new_tokens=256, **kwargs)
+        response, metadata = self.dishonest_provider.generate(self.dishonest_conversation, max_new_tokens=max_new_tokens)
         
         print("\n[DISHONEST RESPONSE]")
         print("-"*40)
