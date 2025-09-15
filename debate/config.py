@@ -9,8 +9,10 @@ from .types import DebateType, ProviderType, ModelConfig, ProbeConfig, DebateCon
 @dataclass
 class ProbeInferenceConfig:
     """Configuration for real-time probe inference"""
-    model_name: str
-    probe_dir: str
+    honest_model_name: str  # Model name for honest debater probes
+    dishonest_model_name: str  # Model name for dishonest debater probes
+    honest_probe_dir: str  # Probe directory for honest debater
+    dishonest_probe_dir: str  # Probe directory for dishonest debater
     probe_types: List[str]
     layer: int
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
@@ -22,7 +24,6 @@ class ProbeInferenceConfig:
     
     def __post_init__(self):
         self.probe_dir = str(Path(self.probe_dir).resolve())
-
 
 @dataclass
 class ConversationConfig:
@@ -82,7 +83,7 @@ class DefaultConfigs:
     def gpt4_turbo() -> ModelConfig:
         return ModelConfig(
             provider=ProviderType.OPENAI,
-            model_name="gpt-4-turbo-preview",
+            model_name="gpt-4o",
             generation_kwargs={
                 "max_tokens": 512,
                 "temperature": 0.7
@@ -93,7 +94,7 @@ class DefaultConfigs:
     def claude_sonnet() -> ModelConfig:
         return ModelConfig(
             provider=ProviderType.ANTHROPIC,
-            model_name="claude-3-sonnet-20240229",
+            model_name="claude-sonnet-4-20250514",
             generation_kwargs={
                 "max_tokens": 512,
                 "temperature": 0.7

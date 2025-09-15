@@ -43,15 +43,17 @@ class ModelConfig:
 @dataclass
 class ProbeConfig:
     """Configuration for probe scoring"""
-    probe_dir: str
+    honest_probe_dir: str  # Probe directory for honest debater
+    dishonest_probe_dir: str  # Probe directory for dishonest debater
     probe_types: List[str]
     layer: int
-    model_name: str
+    honest_model_name: str  # Model name for honest debater probes
+    dishonest_model_name: str  # Model name for dishonest debater probes
     device: str = "cuda"
     enabled: bool = True
     score_threshold: float = 0.7
-    cache_dir: Optional[str] = None  # For caching activations during debate
-    format_for_debaters: bool = True  # Whether to format scores for debater consumption
+    cache_dir: Optional[str] = None
+    format_for_debaters: bool = True
 
 @dataclass
 class DebateConfig:

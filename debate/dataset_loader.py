@@ -7,6 +7,55 @@ from datasets import load_dataset
 from .types import APPSProblem
 
 
+class SimpleDebateDatasetLoader:
+    """Loader for simple debate scenarios that fit in limited context"""
+    
+    def __init__(self, dataset_path: str, seed: int = 42):
+        """
+        Initialize simple debate dataset loader
+        
+        Args:
+            dataset_path: Path to JSONL file with debate scenarios
+            seed: Random seed for sampling
+        """
+        self.dataset_path = Path(dataset_path)
+        self.random = random.Random(seed)
+        self.scenarios = []
+        self._load_dataset()
+        
+    def _load_dataset(self):
+        """Load debate scenarios from JSONL file"""
+        print(f"Loading simple debate dataset from {self.dataset_path}")
+        
+        if not self.dataset_path.exists():
+            raise FileNotFoundError(f"Dataset not found: {self.dataset_path}")
+        
+        with open(self.dataset_path, 'r') as f:
+            for line in f:
+                if line.strip():
+                    scenario = json.loads(line)
+                    self.scenarios.append(scenario)
+        
+        print(f"Loaded {len(self.scenarios)} debate scenarios")
+    
+    def get_scenario(self, index: int) -> Dict:
+        """Get a specific scenario by index"""
+        return self.scenarios[index]
+    
+    def get_random_scenario(self) -> Dict:
+        """Get a random scenario"""
+        return self.random.choice(self.scenarios)
+    
+    def get_scenarios_batch(self, n: int, shuffle: bool = True) -> List[Dict]:
+        """Get a batch of scenarios"""
+        scenarios = self.scenarios.copy()
+        
+        if shuffle:
+            self.random.shuffle(scenarios)
+        
+        return scenarios[:n]
+
+
 class APPSDatasetLoader:
     """Loader for APPS dataset problems"""
     

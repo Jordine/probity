@@ -48,8 +48,10 @@ def parse_arguments():
     parser.add_argument('--openrouter_api_key', type=str, help='OpenRouter API key')
     
     # Probe configuration
-    parser.add_argument('--probe_dir', type=str, 
-                       help='Directory containing trained probes')
+    parser.add_argument('--honest_probe_dir', type=str, 
+                       help='Directory containing trained probes for honest debater')
+    parser.add_argument('--dishonest_probe_dir', type=str,
+                       help='Directory containing trained probes for dishonest debater')
     parser.add_argument('--probe_types', nargs='+', 
                        default=['logistic', 'pca', 'meandiff'],
                        help='Types of probes to use')
@@ -208,12 +210,14 @@ def main():
     
     # Create probe configuration if needed
     probe_config = None
-    if args.probe_dir and debate_type != DebateType.BASELINE:
+    if (args.honest_probe_dir or args.dishonest_probe_dir) and debate_type != DebateType.BASELINE:
         probe_config = ProbeConfig(
-            probe_dir=args.probe_dir,
+            honest_probe_dir=args.honest_probe_dir,
+            dishonest_probe_dir=args.dishonest_probe_dir,
             probe_types=args.probe_types,
             layer=args.probe_layer,
-            model_name=args.honest_model,  # Assuming we probe the same model type
+            honest_model_name=args.honest_model,
+            dishonest_model_name=args.dishonest_model,
             device=args.device,
             score_threshold=args.probe_threshold
         )
@@ -245,16 +249,29 @@ def main():
                 "layer": args.probe_layer if probe_config else None
             }
         }, f, indent=2)
-    
-    # Load dataset
+
+
     print("Loading dataset...")
-    dataset = FlexibleDatasetLoader.load_dataset(
-        args.dataset,
-        difficulty=args.difficulty,
-        n_problems=args.n_problems,
-        shuffle=True,
-        path=args.dataset_path
-    )
+    if args.dataset == "simple_debate":
+        loader = SimpleDebateDatasetLoader(args.dataset_path, seed=args.seed)
+        dataset = []
+        scenarios = loader.get_scenarios_batch(n=args.n_problems, shuffle=True)
+        
+        for scenario in scenarios:
+            dataset.append({
+                "scenario": scenario,
+                "problem": None,  # Not using APPSProblem
+                "honest_solution": None,
+                "backdoored_solution": None
+            })
+    elif args.dataset == "apps":
+        dataset = FlexibleDatasetLoader.load_dataset(
+            args.dataset,
+            difficulty=args.difficulty,
+            n_problems=args.n_problems,
+            shuffle=True,
+            path=args.dataset_path
+        )
     
     # Save dataset for reproducibility
     FlexibleDatasetLoader.save_dataset(dataset, save_dir / "dataset.json")
