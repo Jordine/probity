@@ -43,3 +43,6 @@ dependencies = [
 
 [tool.setuptools]
 packages = ["probity"]
+
+[project.scripts]
+patch-transformer-lens = "probity.patch_tl:main"
