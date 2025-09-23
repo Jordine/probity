@@ -55,6 +55,116 @@ class SimpleDebateDatasetLoader:
         
         return scenarios[:n]
 
+class QuALITYDatasetLoader:
+    """Loader for QuALITY dataset with story and reading comprehension questions"""
+    
+    def __init__(self, csv_path: Optional[str] = None, seed: int = 42):
+        self.csv_path = Path(csv_path) if csv_path else None
+        self.random = random.Random(seed)
+        self.dataset = []
+        self._load_dataset()
+        
+    def _load_dataset(self):
+        """Load QuALITY dataset from HuggingFace (same method as their repo)"""
+        print("Loading QuALITY dataset from HuggingFace...")
+        
+        # Parse dataset using same approach as their code
+        import requests
+        import tempfile
+        import os
+        
+        # Download and parse the dataset files they use
+        for split in ["train", "dev"]:
+            dataset_name = f"QuALITY.v1.0.1.htmlstripped.{split}"
+            url = f"https://github.com/nyu-mll/quality/blob/main/data/v1.0.1/{dataset_name}?raw=true"
+            
+            response = requests.get(url)
+            response.raise_for_status()
+            
+            # Parse each line as JSON (their format)
+            for line in response.text.splitlines():
+                if line.strip():
+                    item = json.loads(line)
+                    
+                    # Extract questions with best distractor selection
+                    for question_obj in item.get('questions', []):
+                        # Find best distractor based on validation data
+                        best_distractor_idx = self._get_best_distractor_index(question_obj)
+                        correct_idx = question_obj['gold_label'] - 1  # Convert to 0-indexed
+                        
+                        self.dataset.append({
+                            'question_id': f"{item['article_id']}_{question_obj.get('question', '').replace(' ', '_')[:20]}",
+                            'story': item['article'],
+                            'story_title': item['title'],
+                            'question': question_obj['question'],
+                            'answers': question_obj['options'],
+                            'correct_answer': question_obj['options'][correct_idx],
+                            'incorrect_answer': question_obj['options'][best_distractor_idx],
+                            'gold_label': question_obj['gold_label'],
+                            'difficulty': question_obj.get('difficult', 0),
+                            'metadata': {
+                                'article_id': item['article_id'],
+                                'set_unique_id': item.get('set_unique_id', ''),
+                                'source': item.get('source', ''),
+                            }
+                        })
+        
+        # Filter by CSV if provided
+        if self.csv_path and self.csv_path.exists():
+            csv_df = pd.read_csv(self.csv_path)
+            valid_questions = set(zip(csv_df['question'], csv_df['story_title']))
+            
+            self.dataset = [
+                q for q in self.dataset 
+                if (q['question'], q['story_title']) in valid_questions
+            ]
+        
+        print(f"Loaded {len(self.dataset)} QuALITY questions")
+    
+    def _get_best_distractor_index(self, question_obj):
+        """Get index of best distractor from validation data"""
+        validations = question_obj.get('validation', [])
+        if not validations:
+            # Fallback: pick first non-correct option
+            correct_idx = question_obj['gold_label'] - 1
+            for i in range(len(question_obj['options'])):
+                if i != correct_idx:
+                    return i
+        
+        # Count votes for best distractor
+        distractor_votes = {}
+        for v in validations:
+            if 'untimed_best_distractor' in v:
+                idx = v['untimed_best_distractor'] - 1  # Convert to 0-indexed
+                if idx != question_obj['gold_label'] - 1:
+                    distractor_votes[idx] = distractor_votes.get(idx, 0) + 1
+        
+        if distractor_votes:
+            return max(distractor_votes, key=distractor_votes.get)
+        
+        # Fallback
+        correct_idx = question_obj['gold_label'] - 1
+        for i in range(len(question_obj['options'])):
+            if i != correct_idx:
+                return i
+        return 0
+    
+    def get_problem(self, index: int) -> QuALITYProblem:
+        """Get a specific problem by index"""
+        item = self.dataset[index]
+        return QuALITYProblem(**item)
+    
+    def get_random_problem(self) -> QuALITYProblem:
+        """Get a random problem"""
+        item = self.random.choice(self.dataset)
+        return QuALITYProblem(**item)
+    
+    def get_problems_batch(self, n: int, shuffle: bool = True) -> List[QuALITYProblem]:
+        """Get batch of problems"""
+        items = self.dataset.copy()
+        if shuffle:
+            self.random.shuffle(items)
+        return [QuALITYProblem(**item) for item in items[:n]]
 
 class APPSDatasetLoader:
     """Loader for APPS dataset problems"""

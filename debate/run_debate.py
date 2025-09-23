@@ -12,7 +12,7 @@ import pandas as pd
 
 from debate.types import (
     DebateConfig, DebateType, ModelConfig, ProbeConfig, 
-    ProviderType, APPSProblem
+    ProviderType, APPSProblem, QualityProblem 
 )
 from debate.debate_manager import DebateManager
 from debate.dataset_loader import FlexibleDatasetLoader, APPSDatasetLoader, SolutionGenerator, SimpleDebateDatasetLoader
@@ -64,8 +64,8 @@ def parse_arguments():
                        help='How to display probe scores to debaters')
     
     # Dataset configuration
-    parser.add_argument('--dataset', type=str, default='apps',
-                       choices=['apps', 'simple_debate'],
+    parser.add_argument('--dataset', type=str, required=True,
+                       choices=['apps', 'simple_debate', 'quality'],
                        help='Dataset to use')
     parser.add_argument('--dataset_path', type=str,
                        help='Path to custom dataset')
@@ -158,8 +158,6 @@ def create_model_config(model_name: str, provider: str, args) -> ModelConfig:
 
 # Fixed sections for debate_manager.py
 
-# Fixed sections for debate_manager.py
-
 def run_single_debate(item: Dict, config: DebateConfig) -> Dict:
     """Run a single debate and return results"""
     manager = DebateManager(config)
@@ -215,6 +213,33 @@ def run_single_debate(item: Dict, config: DebateConfig) -> Dict:
             "debate_id": result.debate_id,
             "duration": result.end_time - result.start_time
         }
+
+
+    elif 'quality_problem' in item:
+        # QuALITY debate
+        result = manager.run_debate(quality_problem=item['quality_problem'])
+        
+        # Determine correctness
+        ground_truth = "honest"  # Honest always defends correct in QuALITY
+        correct = (result.winner == DebateRole.HONEST) if result.winner else None
+        
+        return {
+            "problem_id": item['quality_problem'].question_id,
+            "story_title": item['quality_problem'].story_title,
+            "question": item['quality_problem'].question,
+            "debate_type": config.debate_type.value,
+            "winner": result.winner.value if result.winner else None,
+            "correct": correct,
+            "success": result.success,
+            "error": result.error if hasattr(result, 'error') else None,
+            "rounds": len([t for t in result.turns if t.speaker.value in ['honest', 'dishonest']]) // 2,
+            "probe_analysis": result.probe_analysis,
+            "judge_reasoning": result.judge_reasoning[:500] if result.judge_reasoning else "",
+            "debate_id": result.debate_id,
+            "duration": result.end_time - result.start_time
+        }
+
+    
     else:
         # APPS problem (unchanged)
         result = manager.run_debate(
@@ -333,6 +358,15 @@ def main():
                 # "honest_solution": None,
                 # "backdoored_solution": None
             })
+
+    elif args.dataset == "quality":
+        loader = QuALITYDatasetLoader(csv_path=args.dataset_path, seed=args.seed)
+        dataset = []
+        problems = loader.get_problems_batch(n=args.n_problems, shuffle=True)
+        
+        for problem in problems:
+            dataset.append({"quality_problem": problem})
+        
     elif args.dataset == "apps":
         dataset = FlexibleDatasetLoader.load_dataset(
             args.dataset,
@@ -341,6 +375,8 @@ def main():
             shuffle=True,
             path=args.dataset_path
         )
+
+
     
     # Save dataset for reproducibility
     FlexibleDatasetLoader.save_dataset(dataset, save_dir / "dataset.json")

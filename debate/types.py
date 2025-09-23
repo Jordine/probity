@@ -121,6 +121,20 @@ class APPSProblem:
     difficulty: str
     tags: List[str]
 
+@dataclass
+class QuALITYProblem:
+    """QuALITY dataset problem"""
+    question_id: str
+    story: str
+    story_title: str
+    question: str
+    correct_answer: str
+    incorrect_answer: str
+    answers: List[str]  # All answer options
+    gold_label: int  # Index of correct answer
+    difficulty: Optional[int] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
 
 @dataclass
 class ProbeAccessConfig:
