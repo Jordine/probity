@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List, Dict, Optional, Tuple
 from datasets import load_dataset
 
-from .types import APPSProblem
+from .types import APPSProblem, QuALITYProblem
 
 
 class SimpleDebateDatasetLoader:
