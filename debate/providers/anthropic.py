@@ -39,13 +39,15 @@ class AnthropicProvider(BaseModelProvider):
             gen_kwargs = (self.config.generation_kwargs or {}).copy()
             gen_kwargs.update(kwargs)
             
-            response = self.client.messages.create(
-                model=self.config.model_name,
-                messages=filtered_messages,
-                system=system,
-                max_tokens=gen_kwargs.get("max_tokens", 512),
-                temperature=gen_kwargs.get("temperature", 0.7),
-            )
+            api_params = {
+                "model": self.config.model_name,
+                "messages": filtered_messages,
+                "max_tokens": gen_kwargs.get("max_tokens", 512),
+                "temperature": gen_kwargs.get("temperature", 0.7),
+            }
+            if system is not None:
+                api_params["system"] = system
+            response = self.client.messages.create(**api_params)
             
             content = response.content[0].text
             tokens_used = response.usage.input_tokens + response.usage.output_tokens
