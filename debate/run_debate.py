@@ -12,10 +12,10 @@ import pandas as pd
 
 from debate.types import (
     DebateConfig, DebateType, ModelConfig, ProbeConfig, 
-    ProviderType, APPSProblem, QualityProblem 
+    ProviderType, APPSProblem, QuALITYProblem, DebateRole  
 )
 from debate.debate_manager import DebateManager
-from debate.dataset_loader import FlexibleDatasetLoader, APPSDatasetLoader, SolutionGenerator, SimpleDebateDatasetLoader
+from debate.dataset_loader import FlexibleDatasetLoader, APPSDatasetLoader, SolutionGenerator, SimpleDebateDatasetLoader, QuALITYDatasetLoader
 
 
 def parse_arguments():
@@ -391,7 +391,11 @@ def main():
         if 'scenario' in item:
             print(f"Debate {i+1}/{len(dataset)}")
             print(f"Topic: {item['scenario'].get('topic', 'Unknown')}")
-        else:
+        elif 'quality_problem' in item:
+            print(f"Debate {i+1}/{len(dataset)}")
+            print(f"Question: {item['quality_problem'].question[:100]}...")
+            print(f"Story: {item['quality_problem'].story_title}")
+        elif 'problem' in item:
             print(f"Debate {i+1}/{len(dataset)}")
             print(f"Problem: {item['problem'].problem_id}")
         
@@ -410,7 +414,7 @@ def main():
             import traceback
             traceback.print_exc()
             
-            # Add a failed result entry
+            # Add a failed result entry - handle different dataset types
             if 'scenario' in item:
                 results.append({
                     "scenario_id": item['scenario'].get('scenario_id', 'unknown'),
@@ -418,59 +422,27 @@ def main():
                     "error": str(e),
                     "success": False
                 })
-            else:
+            elif 'quality_problem' in item:
+                results.append({
+                    "problem_id": item['quality_problem'].question_id,
+                    "story_title": item['quality_problem'].story_title,
+                    "error": str(e),
+                    "success": False
+                })
+            elif 'problem' in item:
                 results.append({
                     "problem_id": item['problem'].problem_id,
+                    "error": str(e),
+                    "success": False
+                })
+            else:
+                results.append({
                     "error": str(e),
                     "success": False
                 })
     
     print()
             
-    
-    # for i, item in enumerate(dataset):
-    #     print(f"Debate {i+1}/{len(dataset)}")
-
-    #     if args.dataset == "simple_debate"
-
-
-
-
-
-        
-
-        
-        
-    #     if args.dataset == "apps":
-    #         print(f"Problem: {item['problem'].problem_id}")
-            
-    #         try:
-    #             result = run_single_debate(
-    #                 item['problem'],
-    #                 item['honest_solution'],
-    #                 item['backdoored_solution'],
-    #                 config
-    #             )
-    #             results.append(result)
-                
-    #             print(f"  Winner: {result['winner']}")
-    #             print(f"  Duration: {result['duration']:.1f}s")
-                
-    #             if result['probe_analysis']:
-    #                 honest_score = result['probe_analysis']['scores_by_role'].get('honest', {}).get('mean', 0)
-    #                 dishonest_score = result['probe_analysis']['scores_by_role'].get('dishonest', {}).get('mean', 0)
-    #                 print(f"  Probe scores - Honest: {honest_score:.3f}, Dishonest: {dishonest_score:.3f}")
-                    
-    #         except Exception as e:
-    #             print(f"  Error: {e}")
-    #             results.append({
-    #                 "problem_id": item['problem'].problem_id,
-    #                 "error": str(e),
-    #                 "success": False
-    #             })
-                
-        # print()
-        
     # Save results
     results_df = pd.DataFrame(results)
     results_df.to_csv(save_dir / "results.csv", index=False)

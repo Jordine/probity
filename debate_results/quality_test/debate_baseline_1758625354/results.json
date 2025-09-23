@@ -1,0 +1,17 @@
+[
+  {
+    "problem_id": "50869_Why_might_the_storie",
+    "story_title": "A Gleeb for Earth",
+    "question": "Why might the stories be true?",
+    "debate_type": "baseline",
+    "winner": null,
+    "correct": null,
+    "success": false,
+    "error": "CUDA out of memory. Tried to allocate 6.25 GiB. GPU 0 has a total capacity of 44.46 GiB of which 4.69 GiB is free. Process 3748242 has 39.76 GiB memory in use. Of the allocated memory 33.01 GiB is allocated by PyTorch, and 6.44 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)",
+    "rounds": 1,
+    "probe_analysis": null,
+    "judge_reasoning": "",
+    "debate_id": "quality_50869_Why_might_the_storie_1758625375",
+    "duration": 31.187793254852295
+  }
+]

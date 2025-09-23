@@ -12,6 +12,7 @@ from .types import (
     DebateTurn,
     DebateResult,
     APPSProblem,
+    QuALITYProblem,
     ProbeAccessConfig
 )
 
@@ -46,6 +47,7 @@ __all__ = [
     "DebateTurn",
     "DebateResult",
     "APPSProblem",
+    "QuALITYProblem",
     "ProbeAccessConfig",
     
     # Providers (using aliases)

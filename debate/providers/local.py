@@ -17,7 +17,7 @@ from .base import BaseModelProvider
 from ..types import ModelConfig
 
 
-MAX_CONTEXT = 2048          # Hard budget (model n_ctx may be larger)
+MAX_CONTEXT = 8192          # Hard budget (model n_ctx may be larger)
 SAFETY_MARGIN = 128         # Reserve space for generation & headers
 
 

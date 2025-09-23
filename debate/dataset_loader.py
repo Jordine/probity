@@ -3,6 +3,7 @@ import random
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple
 from datasets import load_dataset
+import pandas as pd
 
 from .types import APPSProblem, QuALITYProblem
 
@@ -64,38 +65,52 @@ class QuALITYDatasetLoader:
         self.dataset = []
         self._load_dataset()
         
+    
     def _load_dataset(self):
-        """Load QuALITY dataset from HuggingFace (same method as their repo)"""
+        """Load QuALITY dataset from HuggingFace"""
         print("Loading QuALITY dataset from HuggingFace...")
         
-        # Parse dataset using same approach as their code
         import requests
-        import tempfile
-        import os
+        import pandas as pd
         
-        # Download and parse the dataset files they use
         for split in ["train", "dev"]:
             dataset_name = f"QuALITY.v1.0.1.htmlstripped.{split}"
-            url = f"https://github.com/nyu-mll/quality/blob/main/data/v1.0.1/{dataset_name}?raw=true"
+            url = f"https://raw.githubusercontent.com/nyu-mll/quality/main/data/v1.0.1/{dataset_name}"
             
+            print(f"Downloading {split} split from {url}...")
             response = requests.get(url)
             response.raise_for_status()
             
-            # Parse each line as JSON (their format)
-            for line in response.text.splitlines():
-                if line.strip():
+            # Clean problematic characters (from the reference code)
+            text = response.text.replace("\u2028", "").replace("\u2029", "")  # unusual line terminators
+            text = text.replace("\xa0", " ")  # non-breaking space
+            
+            lines = text.splitlines()
+            print(f"Processing {len(lines)} articles in {split} split...")
+            
+            for i, line in enumerate(lines):
+                if not line.strip():
+                    continue
+                    
+                try:
                     item = json.loads(line)
                     
-                    # Extract questions with best distractor selection
                     for question_obj in item.get('questions', []):
-                        # Find best distractor based on validation data
+                        if not question_obj.get('question') or not question_obj.get('options'):
+                            continue
+                            
                         best_distractor_idx = self._get_best_distractor_index(question_obj)
-                        correct_idx = question_obj['gold_label'] - 1  # Convert to 0-indexed
+                        correct_idx = question_obj['gold_label'] - 1
+                        
+                        if correct_idx < 0 or correct_idx >= len(question_obj['options']):
+                            continue
+                        if best_distractor_idx < 0 or best_distractor_idx >= len(question_obj['options']):
+                            continue
                         
                         self.dataset.append({
                             'question_id': f"{item['article_id']}_{question_obj.get('question', '').replace(' ', '_')[:20]}",
                             'story': item['article'],
-                            'story_title': item['title'],
+                            'story_title': item.get('title', 'Unknown'),
                             'question': question_obj['question'],
                             'answers': question_obj['options'],
                             'correct_answer': question_obj['options'][correct_idx],
@@ -108,18 +123,37 @@ class QuALITYDatasetLoader:
                                 'source': item.get('source', ''),
                             }
                         })
+                        
+                except json.JSONDecodeError as e:
+                    print(f"Warning: Skipping malformed JSON at line {i+1}: {str(e)[:100]}")
+                    continue
+                except Exception as e:
+                    print(f"Warning: Skipping article at line {i+1}: {str(e)[:100]}")
+                    continue
         
-        # Filter by CSV if provided
+        # Filter by CSV if provided - FIX THE COLUMN NAMES
         if self.csv_path and self.csv_path.exists():
-            csv_df = pd.read_csv(self.csv_path)
-            valid_questions = set(zip(csv_df['question'], csv_df['story_title']))
-            
-            self.dataset = [
-                q for q in self.dataset 
-                if (q['question'], q['story_title']) in valid_questions
-            ]
+            try:
+                csv_df = pd.read_csv(self.csv_path)
+                
+                # Check which columns exist
+                if 'question' in csv_df.columns:
+                    # Just filter by question text since story_title isn't in the CSV
+                    valid_questions = set(csv_df['question'].tolist())
+                    
+                    original_count = len(self.dataset)
+                    self.dataset = [
+                        q for q in self.dataset 
+                        if q['question'] in valid_questions
+                    ]
+                    print(f"Filtered from {original_count} to {len(self.dataset)} questions using CSV")
+                else:
+                    print(f"Warning: CSV doesn't have 'question' column. Available columns: {csv_df.columns.tolist()}")
+            except Exception as e:
+                print(f"Warning: Could not filter by CSV: {e}")
         
-        print(f"Loaded {len(self.dataset)} QuALITY questions")
+        print(f"Successfully loaded {len(self.dataset)} QuALITY questions")
+    
     
     def _get_best_distractor_index(self, question_obj):
         """Get index of best distractor from validation data"""
@@ -352,9 +386,28 @@ class FlexibleDatasetLoader:
         
         serializable_dataset = []
         for item in dataset:
-            serializable_item = item.copy()
-            if isinstance(item.get("problem"), APPSProblem):
-                serializable_item["problem"] = item["problem"].__dict__
+            serializable_item = {}
+            
+            for key, value in item.items():
+                if isinstance(value, APPSProblem):
+                    serializable_item[key] = value.__dict__
+                elif isinstance(value, QuALITYProblem):
+                    # Convert QuALITYProblem to dict
+                    serializable_item[key] = {
+                        "question_id": value.question_id,
+                        "story": value.story,
+                        "story_title": value.story_title,
+                        "question": value.question,
+                        "correct_answer": value.correct_answer,
+                        "incorrect_answer": value.incorrect_answer,
+                        "answers": value.answers,
+                        "gold_label": value.gold_label,
+                        "difficulty": value.difficulty,
+                        "metadata": value.metadata
+                    }
+                else:
+                    serializable_item[key] = value
+                    
             serializable_dataset.append(serializable_item)
             
         with open(path, 'w') as f:
