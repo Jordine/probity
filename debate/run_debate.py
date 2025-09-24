@@ -57,11 +57,12 @@ def parse_arguments():
                        help='Types of probes to use')
     parser.add_argument('--probe_layer', type=int, default=15,
                        help='Layer to extract activations from')
-    parser.add_argument('--probe_threshold', type=float, default=0.7,
-                       help='Threshold for flagging deceptive claims')
     parser.add_argument('--probe_display_mode', type=str, default='per_statement',
                        choices=['per_token', 'per_statement', 'summary_only'],
                        help='How to display probe scores to debaters')
+    parser.add_argument('--judge_probe_display_mode', type=str, default='summary_only',
+                   choices=['per_token', 'per_statement', 'summary_only'],
+                   help='How to display probe scores to judge')
     
     # Dataset configuration
     parser.add_argument('--dataset', type=str, required=True,
@@ -311,8 +312,7 @@ def main():
             layer=args.probe_layer,
             honest_model_name=args.honest_model,
             dishonest_model_name=args.dishonest_model,
-            device=args.device,
-            score_threshold=args.probe_threshold
+            device=args.device
         )
         
     config = DebateConfig(
@@ -323,7 +323,8 @@ def main():
         debate_type=debate_type,
         max_rounds=args.max_rounds,
         save_dir=str(save_dir),
-        probe_display_mode=args.probe_display_mode  
+        probe_display_mode=args.probe_display_mode,
+        judge_probe_display_mode=args.judge_probe_display_mode  
     )
     
     # Save configuration
