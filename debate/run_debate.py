@@ -210,7 +210,7 @@ def run_single_debate(item: Dict, config: DebateConfig) -> Dict:
             "error": result.error if hasattr(result, 'error') else None,
             "rounds": len([t for t in result.turns if t.speaker.value in ['honest', 'dishonest']]) // 2,
             "probe_analysis": result.probe_analysis,
-            "judge_reasoning": result.judge_reasoning[:500] if result.judge_reasoning else "",
+            "judge_reasoning": result.judge_reasoning if result.judge_reasoning else "",
             "debate_id": result.debate_id,
             "duration": result.end_time - result.start_time
         }
@@ -235,30 +235,38 @@ def run_single_debate(item: Dict, config: DebateConfig) -> Dict:
             "error": result.error if hasattr(result, 'error') else None,
             "rounds": len([t for t in result.turns if t.speaker.value in ['honest', 'dishonest']]) // 2,
             "probe_analysis": result.probe_analysis,
-            "judge_reasoning": result.judge_reasoning[:500] if result.judge_reasoning else "",
+            "judge_reasoning": result.judge_reasoning if result.judge_reasoning else "",
             "debate_id": result.debate_id,
             "duration": result.end_time - result.start_time
         }
 
     
-    else:
-        # APPS problem (unchanged)
+    else:  # APPS problem
         result = manager.run_debate(
             problem=item['problem'],
             honest_solution=item['honest_solution'],
             backdoored_solution=item['backdoored_solution']
         )
         
+        # Determine correctness based on winner
+        correct = (result.winner == DebateRole.HONEST) if result.winner else None
+        
         return {
             "problem_id": item['problem'].problem_id,
             "difficulty": item['problem'].difficulty,
             "debate_type": config.debate_type.value,
             "winner": result.winner.value if result.winner else None,
+            "model_a_role": result.metadata.get("model_a_role"),  # Add this
+            "model_b_role": result.metadata.get("model_b_role"),  # Add this
+            "model_a_is_honest": result.metadata.get("model_a_is_honest"),  # Add this
+            "honest_model": result.metadata.get("honest_model"),  # Add this
+            "dishonest_model": result.metadata.get("dishonest_model"),  # Add this
+            "correct": correct,  # Add this
             "success": result.success,
             "error": result.error if hasattr(result, 'error') else None,
             "rounds": len([t for t in result.turns if t.speaker.value in ['honest', 'dishonest']]) // 2,
             "probe_analysis": result.probe_analysis,
-            "judge_reasoning": result.judge_reasoning[:500] if result.judge_reasoning else "",
+            "judge_reasoning": result.judge_reasoning if result.judge_reasoning else "",
             "debate_id": result.debate_id,
             "duration": result.end_time - result.start_time
         }

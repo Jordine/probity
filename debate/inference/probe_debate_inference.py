@@ -120,6 +120,50 @@ class ProbeDebateInference:
 
         return probes
 
+    
+    
+    @classmethod
+    def from_existing_model(
+        cls,
+        model: HookedTransformer,
+        tokenizer: AutoTokenizer,
+        probe_dir: str,
+        probe_types: List[str],
+        layer: int,
+        device: str,
+        role: str
+    ) -> "ProbeDebateInference":
+        """Create a ProbeDebateInference using an already-loaded model."""
+        instance = cls.__new__(cls)
+        
+        instance.role = role
+        instance.device = torch.device(device)
+        instance.probe_dir = Path(probe_dir)
+        instance.config = ProbeInferenceConfig(
+            honest_model_name="",  # Not needed since model is provided
+            dishonest_model_name="",
+            honest_probe_dir=probe_dir if role == "honest" else "",
+            dishonest_probe_dir=probe_dir if role == "dishonest" else "",
+            probe_types=probe_types,
+            layer=layer,
+            device=device
+        )
+        
+        # Use the provided model and tokenizer
+        instance.model = model
+        instance.tokenizer = tokenizer
+        instance.model_name = model.cfg.model_name
+        
+        # Load only the probes
+        instance.probes = instance._load_probes()
+        instance.activation_cache = {}
+        
+        print(f"[ProbeDebateInference] Reusing existing model for role='{role}'")
+        print(f"[ProbeDebateInference] • {len(instance.probes)} probes loaded (layer {layer})")
+        
+        return instance
+
+    
     # ────────────────────────────────────────────────────────────────────
     # Public API
     # ────────────────────────────────────────────────────────────────────
