@@ -323,8 +323,9 @@ def load_lie_truth_dataset(json_path: str,
 
 def load_contrastive_ntml_dataset(json_path: str, 
                                  tokenizer_name: str = "meta-llama/Llama-3.1-8B-Instruct",
-                                 max_length: int = 512,  # Now configurable
-                                 warn_on_truncation: bool = True) -> TokenizedProbingDataset:
+                                 max_length: int = 512,
+                                 warn_on_truncation: bool = True,
+                                 train_on_diff_statements_only: bool = False) -> TokenizedProbingDataset:
     """Load contrastive NTML dataset with configurable max_length and truncation warnings."""
     
     with open(json_path, 'r') as f:
@@ -357,124 +358,188 @@ def load_contrastive_ntml_dataset(json_path: str,
     print(f"Processing {len(conversations)} conversations...")
     print(f"Model type detected: {model_type}")
     print(f"Max token length: {max_length}")
+    if train_on_diff_statements_only:
+        print("Mode: Contrastive pairs at lie positions only (balanced 50/50)")
+    else:
+        print("Mode: All statements from lie version (imbalanced ~80/20)")
     
     for conv in conversations:
         conv_id = conv['id']
         lie_positions = set(conv['lie_ids'])
-        
-        # Process TRUTH VERSION
-        truth_messages = create_chat_messages(
-            conv['truth_version']['system'],
-            USER_PROMPT,
-            conv['truth_version']['model']
-        )
-        
-        truth_formatted = apply_chat_template_unified(
-            tokenizer,
-            truth_messages,
-            model_type=model_type,
-            tokenize=False,
-            add_generation_prompt=False
-        )
-        
-        # Check token length before truncation
-        truth_tokens = tokenizer(truth_formatted, add_special_tokens=False)['input_ids']
-        truth_len = len(truth_tokens)
-        truncation_stats['total_examples'] += 1
-        truncation_stats['max_original_length'] = max(truncation_stats['max_original_length'], truth_len)
-        
-        if truth_len > max_length:
-            truncation_stats['truncated_examples'] += 1
-            truncation_stats['truncated_lengths'].append(truth_len)
-            if warn_on_truncation and truncation_stats['truncated_examples'] <= 5:  # Warn for first 5
-                print(f"⚠️  Truncating conversation {conv_id} (truth): {truth_len} → {max_length} tokens")
-        
-        truth_statement_positions = find_statement_positions_in_chat(
-            truth_formatted, 
-            conv['truth_version']['model'],
-            model_type
-        )
-        
-        # Create examples for truth version
-        for i, position in enumerate(truth_statement_positions):
-            # Check if this position would be truncated
-            if position.start >= max_length * 4:  # Rough estimate: 1 token ≈ 4 chars
-                if warn_on_truncation:
-                    print(f"⚠️  Statement {i} in {conv_id} (truth) may be truncated")
+
+        if train_on_diff_statements_only:
+            # VERSION 4: Only process lie positions as contrastive pairs
             
-            example = ProbingExample(
-                text=truth_formatted,
-                label=0,
-                label_text="truth",
-                character_positions=CharacterPositions({"LIE_SPAN": position}),
-                group_id=f"{conv_id}_truth_stmt{i}",
-                attributes={
-                    "conversation_id": conv_id,
-                    "version": "truth",
-                    "statement_idx": i,
-                    "is_lie_position": i in lie_positions,
-                    "statement_count": len(truth_statement_positions),
-                    "original_token_length": truth_len  # Store original length
-                }
+            # Process TRUTH VERSION
+            truth_messages = create_chat_messages(
+                conv['truth_version']['system'],
+                USER_PROMPT,
+                conv['truth_version']['model']
             )
-            probing_examples.append(example)
-        
-        # Process LIE VERSION (similar checks)
-        lie_messages = create_chat_messages(
-            conv['lie_version']['system'],
-            USER_PROMPT,
-            conv['lie_version']['model']
-        )
-        
-        lie_formatted = apply_chat_template_unified(
-            tokenizer,
-            lie_messages,
-            model_type=model_type,
-            tokenize=False,
-            add_generation_prompt=False
-        )
-        
-        # Check token length
-        lie_tokens = tokenizer(lie_formatted, add_special_tokens=False)['input_ids']
-        lie_len = len(lie_tokens)
-        truncation_stats['total_examples'] += 1
-        truncation_stats['max_original_length'] = max(truncation_stats['max_original_length'], lie_len)
-        
-        if lie_len > max_length:
-            truncation_stats['truncated_examples'] += 1
-            truncation_stats['truncated_lengths'].append(lie_len)
-            if warn_on_truncation and truncation_stats['truncated_examples'] <= 5:
-                print(f"⚠️  Truncating conversation {conv_id} (lie): {lie_len} → {max_length} tokens")
-        
-        lie_statement_positions = find_statement_positions_in_chat(
-            lie_formatted,
-            conv['lie_version']['model'],
-            model_type
-        )
-        
-        for i, position in enumerate(lie_statement_positions):
-            if position.start >= max_length * 4:
-                if warn_on_truncation:
-                    print(f"⚠️  Statement {i} in {conv_id} (lie) may be truncated")
             
-            is_lie_statement = i in lie_positions
-            
-            example = ProbingExample(
-                text=lie_formatted,
-                label=1 if is_lie_statement else 0,
-                label_text="lie" if is_lie_statement else "truth",
-                character_positions=CharacterPositions({"LIE_SPAN": position}),
-                group_id=f"{conv_id}_lie_stmt{i}",
-                attributes={
-                    "conversation_id": conv_id,
-                    "version": "lie",
-                    "statement_idx": i,
-                    "is_lie_position": i in lie_positions,
-                    "statement_count": len(lie_statement_positions),
-                    "original_token_length": lie_len
-                }
+            truth_formatted = apply_chat_template_unified(
+                tokenizer,
+                truth_messages,
+                model_type=model_type,
+                tokenize=False,
+                add_generation_prompt=False
             )
-            probing_examples.append(example)
+            
+            # Check token length
+            truth_tokens = tokenizer(truth_formatted, add_special_tokens=False)['input_ids']
+            truth_len = len(truth_tokens)
+            truncation_stats['total_examples'] += 1
+            truncation_stats['max_original_length'] = max(truncation_stats['max_original_length'], truth_len)
+            
+            if truth_len > max_length:
+                truncation_stats['truncated_examples'] += 1
+                truncation_stats['truncated_lengths'].append(truth_len)
+                if warn_on_truncation and truncation_stats['truncated_examples'] <= 5:
+                    print(f"⚠️  Truncating conversation {conv_id} (truth): {truth_len} → {max_length} tokens")
+            
+            truth_statement_positions = find_statement_positions_in_chat(
+                truth_formatted, 
+                conv['truth_version']['model'],
+                model_type
+            )
+            
+            # Process LIE VERSION
+            lie_messages = create_chat_messages(
+                conv['lie_version']['system'],
+                USER_PROMPT,
+                conv['lie_version']['model']
+            )
+            
+            lie_formatted = apply_chat_template_unified(
+                tokenizer,
+                lie_messages,
+                model_type=model_type,
+                tokenize=False,
+                add_generation_prompt=False
+            )
+            
+            # Check token length
+            lie_tokens = tokenizer(lie_formatted, add_special_tokens=False)['input_ids']
+            lie_len = len(lie_tokens)
+            truncation_stats['total_examples'] += 1
+            truncation_stats['max_original_length'] = max(truncation_stats['max_original_length'], lie_len)
+            
+            if lie_len > max_length:
+                truncation_stats['truncated_examples'] += 1
+                truncation_stats['truncated_lengths'].append(lie_len)
+                if warn_on_truncation and truncation_stats['truncated_examples'] <= 5:
+                    print(f"⚠️  Truncating conversation {conv_id} (lie): {lie_len} → {max_length} tokens")
+            
+            lie_statement_positions = find_statement_positions_in_chat(
+                lie_formatted,
+                conv['lie_version']['model'],
+                model_type
+            )
+            
+            # Only create examples for lie positions (contrastive pairs)
+            for i in lie_positions:
+                if i < len(truth_statement_positions) and i < len(lie_statement_positions):
+                    # Check if positions would be truncated
+                    if truth_statement_positions[i].start >= max_length * 4:
+                        if warn_on_truncation:
+                            print(f"⚠️  Statement {i} in {conv_id} (truth) may be truncated")
+                    if lie_statement_positions[i].start >= max_length * 4:
+                        if warn_on_truncation:
+                            print(f"⚠️  Statement {i} in {conv_id} (lie) may be truncated")
+                    
+                    # Truth version at this position (label=0, truthful context)
+                    truth_example = ProbingExample(
+                        text=truth_formatted,
+                        label=0,  # Truthful (because truthful system prompt)
+                        label_text="truth",
+                        character_positions=CharacterPositions({"LIE_SPAN": truth_statement_positions[i]}),
+                        group_id=f"{conv_id}_contrastive_stmt{i}",
+                        attributes={
+                            "conversation_id": conv_id,
+                            "version": "truth",
+                            "statement_idx": i,
+                            "is_contrastive_pair": True,
+                            "original_token_length": truth_len
+                        }
+                    )
+                    probing_examples.append(truth_example)
+                    
+                    # Lie version at this position (label=1, deceptive context)
+                    lie_example = ProbingExample(
+                        text=lie_formatted,
+                        label=1,  # Deceptive (because deceptive system prompt)
+                        label_text="lie",
+                        character_positions=CharacterPositions({"LIE_SPAN": lie_statement_positions[i]}),
+                        group_id=f"{conv_id}_contrastive_stmt{i}",
+                        attributes={
+                            "conversation_id": conv_id,
+                            "version": "lie",
+                            "statement_idx": i,
+                            "is_contrastive_pair": True,
+                            "original_token_length": lie_len
+                        }
+                    )
+                    probing_examples.append(lie_example)
+                    
+        else:
+            # VERSION 3: Process only LIE VERSION with all statements
+            lie_messages = create_chat_messages(
+                conv['lie_version']['system'],
+                USER_PROMPT,
+                conv['lie_version']['model']
+            )
+            
+            lie_formatted = apply_chat_template_unified(
+                tokenizer,
+                lie_messages,
+                model_type=model_type,
+                tokenize=False,
+                add_generation_prompt=False
+            )
+            
+            # Check token length
+            lie_tokens = tokenizer(lie_formatted, add_special_tokens=False)['input_ids']
+            lie_len = len(lie_tokens)
+            truncation_stats['total_examples'] += 1
+            truncation_stats['max_original_length'] = max(truncation_stats['max_original_length'], lie_len)
+            
+            if lie_len > max_length:
+                truncation_stats['truncated_examples'] += 1
+                truncation_stats['truncated_lengths'].append(lie_len)
+                if warn_on_truncation and truncation_stats['truncated_examples'] <= 5:
+                    print(f"⚠️  Truncating conversation {conv_id} (lie): {lie_len} → {max_length} tokens")
+            
+            lie_statement_positions = find_statement_positions_in_chat(
+                lie_formatted,
+                conv['lie_version']['model'],
+                model_type
+            )
+            
+            # Create examples for all statements in lie version
+            for i, position in enumerate(lie_statement_positions):
+                if position.start >= max_length * 4:
+                    if warn_on_truncation:
+                        print(f"⚠️  Statement {i} in {conv_id} (lie) may be truncated")
+                
+                is_lie_statement = i in lie_positions
+                
+                example = ProbingExample(
+                    text=lie_formatted,
+                    label=1 if is_lie_statement else 0,
+                    label_text="lie" if is_lie_statement else "truth",
+                    character_positions=CharacterPositions({"LIE_SPAN": position}),
+                    group_id=f"{conv_id}_lie_stmt{i}",
+                    attributes={
+                        "conversation_id": conv_id,
+                        "version": "lie",
+                        "statement_idx": i,
+                        "is_lie_position": i in lie_positions,
+                        "statement_count": len(lie_statement_positions),
+                        "original_token_length": lie_len
+                    }
+                )
+                probing_examples.append(example)
+
     
     # Print truncation summary
     if truncation_stats['truncated_examples'] > 0:
@@ -504,16 +569,18 @@ def load_contrastive_ntml_dataset(json_path: str,
         print("  • Balance: No examples found")
     
     # Create probing dataset with truncation info in attributes
+    mode_description = "contrastive pairs only" if train_on_diff_statements_only else "all statements from lie version"
     probing_dataset = ProbingDataset(
         examples=probing_examples,
         dataset_attributes={
-            "description": f"Contrastive truth vs lie classification in {model_type} chat format",
+            "description": f"Contrastive NTML dataset ({mode_description}) in {model_type} chat format",
             "source_conversations": len(conversations),
             "total_examples": len(probing_examples),
             "truth_count": truth_count,
             "lie_count": lie_count,
             "max_length": max_length,
-            "truncation_stats": truncation_stats
+            "truncation_stats": truncation_stats,
+            "train_on_diff_statements_only": train_on_diff_statements_only
         }
     )
     
@@ -522,7 +589,7 @@ def load_contrastive_ntml_dataset(json_path: str,
         dataset=probing_dataset,
         tokenizer=tokenizer,
         padding="max_length",
-        max_length=max_length,  # Use the configurable max_length
+        max_length=max_length,
         truncation=True,
         add_special_tokens=False
     )
