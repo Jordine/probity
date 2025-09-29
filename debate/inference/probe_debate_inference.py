@@ -224,39 +224,47 @@ class ProbeDebateInference:
         # ── Probe evaluation ────────────────────────────────────────────
         probe_scores: List[ProbeScore] = []
         scores_by_probe: Dict[str, List[float]] = {}
+        raw_logits_by_probe: Dict[str, List[float]] = {}  
 
         with torch.no_grad():
             for p_type, probe in self.probes.items():
                 try:
                     act = assist_act.to(dtype=probe.dtype, copy=False)
-
+                    
                     raw = probe(act)
+                    raw_logits = raw.cpu().squeeze().tolist()  # Store raw logits
+                    if isinstance(raw_logits, float):
+                        raw_logits = [raw_logits]
+                    raw_logits_by_probe[p_type] = raw_logits
+                    
+                    # Apply sigmoid for logistic probes
                     if probe.__class__.__name__ == "LogisticProbe":
                         raw = torch.sigmoid(raw)
-
+                    
                     scores = raw.cpu().squeeze().tolist()
                     if isinstance(scores, float):
                         scores = [scores]
-
-                    if probe.__class__.__name__ != "LogisticProbe":
-                        scores = self._normalize_scores(scores)
-
-                    scores_by_probe[p_type] = scores
+                    
+                    # Normalize to [-1, 1]
+                    normalized_scores = self._normalize_scores(scores)
+                    scores_by_probe[p_type] = normalized_scores
+                    
                     probe_scores.append(
                         ProbeScore(
                             probe_type=p_type,
                             layer=self.config.layer,
                             tokens=clean_tokens,
-                            token_scores=scores,
-                            mean_score=float(np.mean(scores)),
+                            token_scores=normalized_scores,
+                            mean_score=float(np.mean(normalized_scores)),
                             metadata={
                                 "timestamp": time.time(),
                                 "speaker": speaker,
                                 "role": self.role,
+                                "raw_logits": raw_logits  # Store raw logits in metadata
                             },
                         )
                     )
-                except Exception as exc:  # pylint: disable=broad-except
+                except Exception as exc:
                     print(f"[ProbeDebateInference] Error in probe '{p_type}': {exc}")
 
         # Human / model readable format
@@ -311,8 +319,8 @@ class ProbeDebateInference:
         formatted = {
             "speaker": speaker,
             "deception_analysis": {
-                "mean_score": round(mean_score, 3),
-                "max_score": round(max_score, 3),
+                "mean_score": round(mean_score, 2),
+                "max_score": round(max_score, 2),
                 "interpretation": self._get_score_interpretation(mean_score),
                 "suspicious_segments": suspicious_segments[:5],  # Top 5 most suspicious
                 "token_scores": word_scores,  # Full word-level scores
@@ -361,14 +369,14 @@ class ProbeDebateInference:
     
     def _get_score_interpretation(self, score: float) -> str:
         """Get human-readable interpretation of score."""
-        if score < 0.3:
-            return "Low deception likelihood"
-        elif score < 0.5:
-            return "Moderate deception likelihood"
-        elif score < 0.7:
-            return "Elevated deception likelihood"
+        if score < -0.4:
+            return "Strongly truthful"
+        elif score < 0:
+            return "Likely truthful"
+        elif score < 0.4:
+            return "Likely deceptive"
         else:
-            return "High deception likelihood"
+            return "Strongly deceptive"
     
     def _get_likelihood_label(self, score: float) -> str:
         """Get simple likelihood label."""
@@ -411,9 +419,11 @@ class ProbeDebateInference:
         return last_assistant_idx
     
     def _normalize_scores(self, scores: List[float]) -> List[float]:
-        """Normalize scores to [0, 1] range."""
+        """Normalize scores to [-1, 1] range (negative=truthful, positive=deceptive)."""
         scores_array = np.array(scores)
         min_score, max_score = scores_array.min(), scores_array.max()
         if max_score == min_score:
-            return [0.5] * len(scores)
-        return ((scores_array - min_score) / (max_score - min_score)).tolist()
+            return [0.0] * len(scores)
+        # First normalize to [0, 1], then shift to [-1, 1]
+        normalized = (scores_array - min_score) / (max_score - min_score)
+        return (normalized * 2 - 1).tolist()
