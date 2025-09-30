@@ -13,6 +13,8 @@ import pandas as pd
 from datetime import datetime
 import re
 import numpy as np
+from tqdm import tqdm
+import sys
 
 from debate.providers import create_provider
 from debate.types import ModelConfig, ProviderType, DebateRole
@@ -443,7 +445,7 @@ class BatchJudgeEvaluator:
         
         # Results file for incremental saving
         self.results_file = self.output_dir / "judge_evaluation_results.jsonl"
-        
+            
     def evaluate_all_transcripts(
         self,
         judge_configs: List[Tuple[str, ModelConfig]],
@@ -452,98 +454,132 @@ class BatchJudgeEvaluator:
     ) -> pd.DataFrame:
         """
         Evaluate all transcripts with multiple judges and probe configurations.
-        
-        Args:
-            judge_configs: List of (name, ModelConfig) tuples for different judges
-            probe_modes: List of (mode_name, include_probes, display_mode) tuples
-            verbose: Whether to print detailed progress
         """
         
         results = []
         transcript_files = list(self.transcripts_dir.glob("*.json"))
         
         if not transcript_files:
-            print(f"No transcript files found in {self.transcripts_dir}")
+            print(f"❌ No transcript files found in {self.transcripts_dir}")
             return pd.DataFrame()
         
         print(f"\n{'='*60}")
-        print(f"Evaluating {len(transcript_files)} transcripts")
-        print(f"Judges: {[name for name, _ in judge_configs]}")
-        print(f"Modes: {[name for name, _, _ in probe_modes]}")
+        print(f"EVALUATION SETUP")
         print(f"{'='*60}")
+        print(f"📁 Transcripts: {len(transcript_files)}")
+        print(f"👨‍⚖️ Judges: {[name for name, _ in judge_configs]}")
+        print(f"🔍 Evaluation modes: {[name for name, _, _ in probe_modes]}")
         
-        total_evaluations = len(transcript_files) * len(judge_configs) * len(probe_modes)
-        current_eval = 0
-        
+        # Calculate total evaluations
+        total_evaluations = 0
         for transcript_file in transcript_files:
-            print(f"\nProcessing: {transcript_file.name}")
-            
-            # Load transcript
             with open(transcript_file, 'r') as f:
                 transcript = json.load(f)
-            
-            debate_id = transcript['debate_id']
             experiment_mode = transcript.get('experiment_mode', 'unknown')
             
-            # Evaluate with each judge and probe configuration
-            for judge_name, judge_config in judge_configs:
-                evaluator = TranscriptJudgeEvaluator(judge_config, verbose)
-                
-                for mode_name, include_probes, display_mode in probe_modes:
-                    current_eval += 1
-                    
+            for judge_name, _ in judge_configs:
+                for mode_name, _, _ in probe_modes:
                     # Skip invalid combinations
                     if experiment_mode == 'baseline_judge' and mode_name in ['debater_only', 'full_access']:
                         continue
                     if experiment_mode == 'debater_full' and mode_name in ['baseline', 'judge_only']:
                         continue
-                    
-                    print(f"  [{current_eval}/{total_evaluations}] Judge: {judge_name}, Mode: {mode_name}")
-                    
-                    try:
-                        # Evaluate
-                        result = evaluator.evaluate_transcript(
-                            transcript,
-                            include_probes,
-                            display_mode
-                        )
-                        
-                        # Add metadata
-                        result['debate_id'] = debate_id
-                        result['experiment_mode'] = experiment_mode
-                        result['evaluation_mode'] = mode_name
-                        result['judge_name'] = judge_name
-                        result['transcript_file'] = transcript_file.name
-                        result['timestamp'] = datetime.now().isoformat()
-                        
-                        # Save immediately (incremental saving)
-                        with open(self.results_file, 'a') as f:
-                            f.write(json.dumps(result) + '\n')
-                        
-                        # Update transcript file with judge results
-                        judge_key = f"{mode_name}_{judge_name}"
-                        transcript['judge_results'][judge_key] = result
-                        
-                        results.append(result)
-                        
-                        if verbose:
-                            print(f"    Winner: {result['winner_label']} ({result['winner_role']})")
-                            print(f"    Correct: {result['correct']}")
-                        
-                    except Exception as e:
-                        print(f"    ERROR: {e}")
-                        error_result = {
-                            'debate_id': debate_id,
-                            'judge_name': judge_name,
-                            'evaluation_mode': mode_name,
-                            'error': str(e),
-                            'timestamp': datetime.now().isoformat()
-                        }
-                        results.append(error_result)
+                    total_evaluations += 1
+        
+        print(f"📊 Total evaluations to run: {total_evaluations}")
+        print(f"{'='*60}\n")
+        
+        # Create progress bar for overall progress
+        with tqdm(total=total_evaluations, desc="Overall Progress", unit="eval") as pbar:
             
-            # Save updated transcript with all judge results
-            with open(transcript_file, 'w') as f:
-                json.dump(transcript, f, indent=2)
+            # Process each transcript
+            for transcript_idx, transcript_file in enumerate(transcript_files, 1):
+                
+                # Load transcript
+                tqdm.write(f"\n📄 [{transcript_idx}/{len(transcript_files)}] Processing: {transcript_file.name}")
+                
+                with open(transcript_file, 'r') as f:
+                    transcript = json.load(f)
+                
+                debate_id = transcript['debate_id']
+                experiment_mode = transcript.get('experiment_mode', 'unknown')
+                
+                # Evaluate with each judge and probe configuration
+                for judge_name, judge_config in judge_configs:
+                    evaluator = TranscriptJudgeEvaluator(judge_config, verbose=False)  # Disable verbose for cleaner output
+                    
+                    for mode_name, include_probes, display_mode in probe_modes:
+                        
+                        # Skip invalid combinations
+                        if experiment_mode == 'baseline_judge' and mode_name in ['debater_only', 'full_access']:
+                            continue
+                        if experiment_mode == 'debater_full' and mode_name in ['baseline', 'judge_only']:
+                            continue
+                        
+                        # Update progress bar description
+                        pbar.set_description(f"Judge: {judge_name[:15]}, Mode: {mode_name[:15]}")
+                        
+                        try:
+                            # Show what we're evaluating
+                            if verbose:
+                                tqdm.write(f"  ⚖️ Judge: {judge_name}, Mode: {mode_name}")
+                            
+                            # Evaluate
+                            start_time = time.time()
+                            result = evaluator.evaluate_transcript(
+                                transcript,
+                                include_probes,
+                                display_mode
+                            )
+                            eval_time = time.time() - start_time
+                            
+                            # Add metadata
+                            result['debate_id'] = debate_id
+                            result['experiment_mode'] = experiment_mode
+                            result['evaluation_mode'] = mode_name
+                            result['judge_name'] = judge_name
+                            result['transcript_file'] = transcript_file.name
+                            result['timestamp'] = datetime.now().isoformat()
+                            
+                            # Save immediately (incremental saving)
+                            with open(self.results_file, 'a') as f:
+                                f.write(json.dumps(result) + '\n')
+                            
+                            # Update transcript file with judge results
+                            judge_key = f"{mode_name}_{judge_name}"
+                            transcript['judge_results'][judge_key] = result
+                            
+                            results.append(result)
+                            
+                            # Show result
+                            if verbose:
+                                winner_symbol = "✓" if result.get('correct') else "✗" if result.get('correct') is False else "?"
+                                tqdm.write(f"    {winner_symbol} Winner: {result.get('winner_label', 'N/A')} "
+                                         f"({result.get('winner_role', 'N/A')}) - {eval_time:.1f}s")
+                            
+                        except Exception as e:
+                            tqdm.write(f"    ❌ ERROR: {str(e)[:100]}")
+                            error_result = {
+                                'debate_id': debate_id,
+                                'judge_name': judge_name,
+                                'evaluation_mode': mode_name,
+                                'error': str(e),
+                                'timestamp': datetime.now().isoformat()
+                            }
+                            results.append(error_result)
+                        
+                        # Update progress
+                        pbar.update(1)
+                
+                # Save updated transcript with all judge results
+                with open(transcript_file, 'w') as f:
+                    json.dump(transcript, f, indent=2)
+                
+                tqdm.write(f"  💾 Saved updated transcript")
+        
+        print(f"\n{'='*60}")
+        print("CREATING SUMMARY")
+        print(f"{'='*60}")
         
         # Create summary DataFrame
         df = pd.DataFrame(results)
@@ -554,6 +590,7 @@ class BatchJudgeEvaluator:
         # Save summary CSV
         summary_csv = self.output_dir / "judge_evaluation_summary.csv"
         df.to_csv(summary_csv, index=False)
+        print(f"📊 Summary saved to: {summary_csv}")
         
         return df
     
@@ -659,6 +696,28 @@ def main():
 
     
     args = parser.parse_args()
+
+    # Add immediate feedback
+    print("\n" + "="*60)
+    print("DEBATE TRANSCRIPT JUDGE EVALUATOR")
+    print("="*60)
+    
+    # Setup paths
+    transcripts_dir = Path(args.transcripts_dir)
+    if not transcripts_dir.exists():
+        print(f"❌ Error: Transcripts directory not found: {transcripts_dir}")
+        return 1
+    
+    print(f"✓ Found transcripts directory: {transcripts_dir}")
+    
+    # Count transcript files
+    transcript_files = list(transcripts_dir.glob("*.json"))
+    print(f"✓ Found {len(transcript_files)} transcript files")
+    
+    if not transcript_files:
+        print("❌ No transcript files found!")
+        return 1
+    
     
     # Setup paths
     transcripts_dir = Path(args.transcripts_dir)
@@ -758,6 +817,7 @@ def main():
         print(f"\nFiltered to {len(transcript_files)} transcripts")
     
     # Run evaluation
+    print("\nStarting evaluation...")
     evaluator = BatchJudgeEvaluator(transcripts_dir, output_dir)
     results_df = evaluator.evaluate_all_transcripts(
         judge_configs,
@@ -765,11 +825,13 @@ def main():
         verbose=args.verbose
     )
     
-    print(f"\nEvaluation complete!")
-    print(f"Results saved to: {output_dir}")
+    print(f"\n{'='*60}")
+    print("✅ EVALUATION COMPLETE!")
+    print(f"{'='*60}")
+    print(f"📁 Results saved to: {output_dir}")
+    print(f"📊 Total evaluations: {len(results_df)}")
+    print(f"✓ Successful: {len(results_df[~results_df.get('error', pd.Series([False]*len(results_df)))])}")
     
-    return 0
-
 
 if __name__ == "__main__":
     exit(main())

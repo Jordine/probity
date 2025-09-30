@@ -94,8 +94,8 @@ class DebateManager:
     def _init_probe_scorers(self) -> None:
         """Create honest & dishonest ProbeDebateInference instances."""
         if (self.config.probe_config is None or
-                self.config.debate_type == DebateType.BASELINE or
                 not self._can_use_probes()):
+            print("[DEBUG] Not initializing probe scorers (no config or can't use probes)")
             return
     
         pc = self.config.probe_config

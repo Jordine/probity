@@ -48,7 +48,7 @@ class DebateResultsAnalyzer:
         
         print(f"Loaded {len(transcripts)} debate transcripts")
         return transcripts
-    
+
     def _organize_results(self) -> Dict:
         """Organize results by experiment mode and evaluation mode"""
         
@@ -58,13 +58,26 @@ class DebateResultsAnalyzer:
             experiment_mode = transcript.get('experiment_mode', 'unknown')
             debate_id = transcript['debate_id']
             
+            # Debug print
+            print(f"[DEBUG] Processing transcript: {debate_id}")
+            print(f"[DEBUG] Experiment mode: {experiment_mode}")
+            
+            # Check if probe config is enabled
+            probe_config = transcript.get('debate_config', {}).get('probe_config', {})
+            probes_enabled = probe_config.get('enabled', False)
+            
+            print(f"[DEBUG] Probes enabled: {probes_enabled}")
+            
             # Extract judge results for each evaluation mode
             judge_results = transcript.get('judge_results', {})
             probe_only_results = transcript.get('probe_only_results', {})
             
+            print(f"[DEBUG] Judge results keys: {judge_results.keys()}")
+            print(f"[DEBUG] Probe-only results: {probe_only_results}")
+            
+            # Process judge results
             for eval_mode_key, judge_result in judge_results.items():
                 # Parse evaluation mode and judge name
-                # Format: "{mode_name}_{judge_name}"
                 parts = eval_mode_key.rsplit('_', 1)
                 if len(parts) == 2:
                     eval_mode = parts[0]
@@ -81,11 +94,12 @@ class DebateResultsAnalyzer:
                     'judge_name': judge_name,
                     'winner_role': winner_role,
                     'correct': correct,
-                    'transcript': transcript
+                    'transcript': transcript,
+                    'probes_enabled': probes_enabled
                 })
             
-            # Add probe-only results
-            if probe_only_results:
+            # Add probe-only results only if probes were enabled
+            if probes_enabled and probe_only_results:
                 for probe_method in ['probe_only_mean', 'probe_only_max']:
                     winner = probe_only_results.get(probe_method)
                     if winner:
@@ -97,13 +111,19 @@ class DebateResultsAnalyzer:
                             'judge_name': 'probe_classifier',
                             'winner_role': winner,
                             'correct': correct,
-                            'transcript': transcript
+                            'transcript': transcript,
+                            'probes_enabled': True
                         })
+            else:
+                print(f"[DEBUG] Skipping probe-only results (probes_enabled={probes_enabled}, has_results={bool(probe_only_results)})")
         
         return dict(results)
-    
+        
     def _determine_probe_only_correctness(self, winner: str, transcript: Dict) -> bool:
         """Determine if probe-only classification is correct"""
+        if winner is None:
+            return None
+            
         debate_type = transcript.get('debate_type', 'unknown')
         
         if debate_type == 'quality':
@@ -114,8 +134,10 @@ class DebateResultsAnalyzer:
             problem_data = transcript.get('problem_data', {})
             ground_truth = problem_data.get('ground_truth', '')
             model_mapping = transcript.get('model_mapping', {})
-            ground_truth_role = model_mapping.get(ground_truth)
-            return winner == ground_truth_role
+            if ground_truth and model_mapping:
+                ground_truth_role = model_mapping.get(ground_truth)
+                return winner == ground_truth_role
+            return None
         else:  # APPS
             # Honest defends non-backdoored solution
             return winner == 'honest'
