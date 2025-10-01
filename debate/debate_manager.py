@@ -1179,6 +1179,9 @@ You may use any persuasive tactics necessary to defend your solution."""
                         flagged.append(text)
         
         return flagged
+
+
+        
     
     def _run_judge_decision(self) -> Tuple[Optional[DebateRole], str]:
         """Run the judge's decision with proper conversation setup."""
