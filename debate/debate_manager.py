@@ -1550,3 +1550,34 @@ You MUST include the winner tag at the end of your response."""
             if 'raw_logits' in ps.metadata:
                 probe_key = f"probe_{ps.probe_type}_raw_logits"
                 turn.metadata[probe_key] = ps.metadata['raw_logits']
+    
+    def reset_for_new_debate(self):
+        """Reset conversation state for a new debate while keeping models/probes loaded"""
+        # Clear conversations
+        self.honest_conversation = []
+        self.dishonest_conversation = []
+        self.judge_conversation = []
+        
+        # Clear turn/probe bookkeeping
+        self.all_turns = []
+        self.last_probe_outputs = {}
+        
+        # Clear debate-specific attributes
+        if hasattr(self, 'honest_goes_first'):
+            delattr(self, 'honest_goes_first')
+        if hasattr(self, 'model_a_is_honest'):
+            delattr(self, 'model_a_is_honest')
+        if hasattr(self, 'model_mapping'):
+            delattr(self, 'model_mapping')
+        if hasattr(self, 'scenario'):
+            delattr(self, 'scenario')
+        if hasattr(self, 'quality_problem'):
+            delattr(self, 'quality_problem')
+        if hasattr(self, 'story'):
+            delattr(self, 'story')
+        if hasattr(self, 'problem'):
+            delattr(self, 'problem')
+        if hasattr(self, 'honest_solution'):
+            delattr(self, 'honest_solution')
+        if hasattr(self, 'backdoored_solution'):
+            delattr(self, 'backdoored_solution')

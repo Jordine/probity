@@ -38,6 +38,11 @@ class NoJudgeDebateRunner:
         # Create summary file for tracking progress
         self.summary_file = save_dir / "transcript_summary.jsonl"
         
+        # Create DebateManager once and reuse it
+        print("Loading models and probes once...")
+        self.manager = DebateManager(config)
+        print("Models and probes loaded successfully!")
+        
     def _calculate_probe_only_winners(self, manager: DebateManager) -> Dict[str, str]:
         """Calculate probe-only winners based on mean and max scores"""
         
@@ -114,7 +119,8 @@ class NoJudgeDebateRunner:
     def run_debate_no_judge(self, item: Dict, debate_idx: int) -> Dict:
         """Run a single debate without judge decision"""
         
-        manager = DebateManager(self.config)
+        # Reset the manager for a new debate (keeps models loaded)
+        self.manager.reset_for_new_debate()
         
         # Determine debate type and problem ID
         if 'scenario' in item:
@@ -140,13 +146,13 @@ class NoJudgeDebateRunner:
         debate_id = f"{debate_type}_{problem_id}_{self.experiment_mode}_{int(start_time)}"
         
         try:
-            # Setup debate based on type
+            # Setup debate based on type (using the existing manager)
             if debate_type == "simple":
-                manager.run_simple_debate_setup(item['scenario'])
+                self.manager.run_simple_debate_setup(item['scenario'])
             elif debate_type == "quality":
-                manager.run_quality_debate_setup(item['quality_problem'])
+                self.manager.run_quality_debate_setup(item['quality_problem'])
             else:
-                manager.run_apps_debate_setup(
+                self.manager.run_apps_debate_setup(
                     item['problem'], 
                     item['honest_solution'], 
                     item['backdoored_solution']
@@ -155,15 +161,15 @@ class NoJudgeDebateRunner:
             # Run debate rounds (but not judge)
             for round_num in range(self.config.max_rounds):
                 print(f"  Round {round_num + 1}/{self.config.max_rounds}")
-                if manager.honest_goes_first:
-                    manager._run_honest_turn(round_num + 1)
-                    manager._run_dishonest_turn(round_num + 1)
+                if self.manager.honest_goes_first:
+                    self.manager._run_honest_turn(round_num + 1)
+                    self.manager._run_dishonest_turn(round_num + 1)
                 else:
-                    manager._run_dishonest_turn(round_num + 1)
-                    manager._run_honest_turn(round_num + 1)
+                    self.manager._run_dishonest_turn(round_num + 1)
+                    self.manager._run_honest_turn(round_num + 1)
             
             # Extract and save comprehensive transcript
-            transcript = self._create_transcript(manager, item, debate_id, debate_type)
+            transcript = self._create_transcript(self.manager, item, debate_id, debate_type)
             
             # Save immediately (incremental saving)
             transcript_file = self.transcripts_dir / f"{debate_id}.json"
