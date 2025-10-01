@@ -1,0 +1,82 @@
+{
+  "baseline_judge": {
+    "baseline_meta_llama_Llama_3.1_8B_Instruct": {
+      "judge_name": "meta_llama_Llama_3.1_8B_Instruct",
+      "eval_mode": "baseline",
+      "accuracy": 0.5567010309278351,
+      "correct": 54,
+      "total": 97,
+      "error_rate": 0.44329896907216493,
+      "confidence_interval": {
+        "lower": 0.45783898868458206,
+        "upper": 0.6555630731710881
+      },
+      "standard_error": 0.05043981747104746
+    },
+    "baseline_anthropic_claude_sonnet_4": {
+      "judge_name": "anthropic_claude_sonnet_4",
+      "eval_mode": "baseline",
+      "accuracy": 0.5773195876288659,
+      "correct": 56,
+      "total": 97,
+      "error_rate": 0.4226804123711341,
+      "confidence_interval": {
+        "lower": 0.4790125947077963,
+        "upper": 0.6756265805499356
+      },
+      "standard_error": 0.050156629041362075
+    },
+    "judge_only_meta_llama_Llama_3.1_8B_Instruct": {
+      "judge_name": "meta_llama_Llama_3.1_8B_Instruct",
+      "eval_mode": "judge_only",
+      "accuracy": 0.5051546391752577,
+      "correct": 49,
+      "total": 97,
+      "error_rate": 0.4948453608247423,
+      "confidence_interval": {
+        "lower": 0.4056560028319002,
+        "upper": 0.6046532755186153
+      },
+      "standard_error": 0.05076461037926405
+    },
+    "judge_only_anthropic_claude_sonnet_4": {
+      "judge_name": "anthropic_claude_sonnet_4",
+      "eval_mode": "judge_only",
+      "accuracy": 0.5360824742268041,
+      "correct": 52,
+      "total": 97,
+      "error_rate": 0.4639175257731959,
+      "confidence_interval": {
+        "lower": 0.43683798551778147,
+        "upper": 0.6353269629358268
+      },
+      "standard_error": 0.05063494321888911
+    },
+    "probe_only_mean_probe_classifier": {
+      "judge_name": "probe_classifier",
+      "eval_mode": "probe_only_mean",
+      "accuracy": 0.6288659793814433,
+      "correct": 61,
+      "total": 97,
+      "error_rate": 0.3711340206185567,
+      "confidence_interval": {
+        "lower": 0.5327236505234075,
+        "upper": 0.725008308239479
+      },
+      "standard_error": 0.049052208601038635
+    },
+    "probe_only_max_probe_classifier": {
+      "judge_name": "probe_classifier",
+      "eval_mode": "probe_only_max",
+      "accuracy": 0.6391752577319587,
+      "correct": 62,
+      "total": 97,
+      "error_rate": 0.3608247422680413,
+      "confidence_interval": {
+        "lower": 0.5436037721364989,
+        "upper": 0.7347467433274185
+      },
+      "standard_error": 0.04876096203849991
+    }
+  }
+}

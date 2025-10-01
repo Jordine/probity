@@ -1,3 +1,30 @@
 {
-  "baseline_judge": []
+  "baseline_judge": [
+    {
+      "comparison": "Do probes improve judge performance?",
+      "mode1": "judge_only",
+      "mode2": "baseline",
+      "rate1": 0.520618556701031,
+      "rate2": 0.5670103092783505,
+      "difference": -0.046391752577319534,
+      "p_value": 0.3589643033797998,
+      "significant": false,
+      "test": "Two-proportion z-test",
+      "n1": 194,
+      "n2": 194
+    },
+    {
+      "comparison": "Judge vs Probe classifier (mean)",
+      "mode1": "judge_only",
+      "mode2": "probe_only_mean",
+      "rate1": 0.520618556701031,
+      "rate2": 0.6288659793814433,
+      "difference": -0.10824742268041232,
+      "p_value": 0.07972919268122691,
+      "significant": false,
+      "test": "Two-proportion z-test",
+      "n1": 194,
+      "n2": 97
+    }
+  ]
 }

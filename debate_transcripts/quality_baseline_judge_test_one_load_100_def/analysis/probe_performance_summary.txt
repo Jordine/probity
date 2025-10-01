@@ -1,0 +1,23 @@
+PROBE PERFORMANCE METRICS
+================================================================================
+
+Experiment Mode: baseline_judge
+--------------------------------------------------------------------------------
+AUROC: 0.5623
+AUPRC: 0.5592
+F1 Score: 0.5397
+Precision: 0.5543
+Recall: 0.5258
+Optimal Threshold: 0.2360
+
+Confusion Matrix:
+  True Positives: 153
+  True Negatives: 168
+  False Positives: 123
+  False Negatives: 138
+
+Score Statistics:
+  Honest Mean ± Std: 0.2040 ± 0.1708
+  Dishonest Mean ± Std: 0.2425 ± 0.1668
+  Total Samples: 582
+

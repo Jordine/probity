@@ -4,4 +4,20 @@ STATISTICAL SIGNIFICANCE ANALYSIS
 Experiment Mode: baseline_judge
 --------------------------------------------------------------------------------
 
+Do probes improve judge performance?
+  judge_only: 0.521 (n=194)
+  baseline: 0.567 (n=194)
+  Difference: -0.046
+  Test: Two-proportion z-test
+  p-value: 0.3590 ns
+  Significant: NO
+
+Judge vs Probe classifier (mean)
+  judge_only: 0.521 (n=194)
+  probe_only_mean: 0.629 (n=97)
+  Difference: -0.108
+  Test: Two-proportion z-test
+  p-value: 0.0797 ns
+  Significant: NO
+
 
