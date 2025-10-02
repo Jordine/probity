@@ -1,35 +1,44 @@
 # debate/providers/local.py
 """
-LocalModelProvider -- HuggingFace / Transformer-Lens backend
-Fixed version:
-  • Robust extraction of the assistant’s completion from token IDs
-  • Hard 2048-token context budget with safety margin
+LocalModelProvider with multi-GPU support
 """
 
 import torch
 import time
+import gc
 from typing import List, Dict, Any, Optional
 from transformer_lens import HookedTransformer
 from transformers import AutoTokenizer
-import gc
+import warnings
 
 from .base import BaseModelProvider
 from ..types import ModelConfig
 
 
-MAX_CONTEXT = 8192          # Hard budget (model n_ctx may be larger)
-SAFETY_MARGIN = 128         # Reserve space for generation & headers
+MAX_CONTEXT = 8192          # Hard budget
+SAFETY_MARGIN = 128         # Reserve space
 
 
 class LocalModelProvider(BaseModelProvider):
-    """Provider for local HuggingFace / Transformer-Lens models"""
+    """Provider for local HuggingFace / Transformer-Lens models with multi-GPU support"""
 
     def __init__(self, config: ModelConfig):
         super().__init__(config)
 
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        # Determine device - either specified GPU or auto-detect
+        self.device_id = config.device_id
+        if self.device_id is not None:
+            if not torch.cuda.is_available():
+                raise ValueError("CUDA not available but device_id specified")
+            if self.device_id >= torch.cuda.device_count():
+                raise ValueError(f"Device {self.device_id} not available. Only {torch.cuda.device_count()} GPUs found.")
+            self.device = torch.device(f"cuda:{self.device_id}")
+        else:
+            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        
+        print(f"[LocalModelProvider] Using device: {self.device}")
+        
         self.model_dtype = self._get_model_dtype()
-
         self.tokenizer: Optional[AutoTokenizer] = None
         self.model: Optional[HookedTransformer] = None
         self._load_model()
@@ -44,61 +53,54 @@ class LocalModelProvider(BaseModelProvider):
         }
         self.default_gen_kwargs.update(config.generation_kwargs or {})
 
-    # ────────────────────────────────────────────────────────────────────
-    # Loading helpers
-    # ────────────────────────────────────────────────────────────────────
     def _get_model_dtype(self) -> torch.dtype:
-        bf16_families = ["llama", "mistral", "gemma", "phi"]
+        bf16_families = ["llama", "mistral", "gemma", "phi", "qwen"]
         return torch.bfloat16 if any(m in self.config.model_name.lower() for m in bf16_families) else torch.float32
 
     def _load_model(self):
-        print(f"Loading local model {self.config.model_name}...")
+        print(f"Loading local model {self.config.model_name} on {self.device}...")
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.config.model_name, use_fast=True)
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
-        self.model = HookedTransformer.from_pretrained_no_processing(
-            self.config.model_name,
-            device=self.device,
-            dtype=self.model_dtype,
-        )
-        print("✓ Model loaded")
+        # Load model with specific device assignment
+        with torch.cuda.device(self.device) if 'cuda' in str(self.device) else warnings.catch_warnings():
+            self.model = HookedTransformer.from_pretrained_no_processing(
+                self.config.model_name,
+                device=self.device,
+                dtype=self.model_dtype,
+            )
+        
+        # Print memory usage
+        if 'cuda' in str(self.device):
+            allocated = torch.cuda.memory_allocated(self.device) / 1024**3
+            reserved = torch.cuda.memory_reserved(self.device) / 1024**3
+            print(f"✓ Model loaded on {self.device} - Allocated: {allocated:.2f}GB, Reserved: {reserved:.2f}GB")
+        else:
+            print("✓ Model loaded on CPU")
 
-    # ────────────────────────────────────────────────────────────────────
-    # Main generation
-    # ────────────────────────────────────────────────────────────────────
-    def generate(
-        self,
-        messages: List[Dict[str, str]],
-        **kwargs,
-    ) -> tuple:
-        """
-        Return (assistant_completion:str, metadata:dict)
-        The completion is extracted from token IDs – eliminates prompt duplication.
-        """
+    def generate(self, messages: List[Dict[str, str]], **kwargs) -> tuple:
+        """Generate with proper device handling"""
         if not self.is_available():
             return "", {"error": "Model not available"}
 
         start = time.time()
 
-        # ------------------------------------------------------------------
-        # 1. Build the chat prompt string
-        # ------------------------------------------------------------------
+        # Build the chat prompt string
         prompt_str = self.tokenizer.apply_chat_template(
             messages,
             tokenize=False,
             add_generation_prompt=True,
         )
 
-        # ------------------------------------------------------------------
-        # 2. Tokenise once
-        # ------------------------------------------------------------------
+        # Tokenize and move to correct device
         prompt_ids = self.tokenizer(
             prompt_str,
             return_tensors="pt",
             add_special_tokens=False
-        )["input_ids"].to(self.device)        # [1, prompt_len]
+        )["input_ids"].to(self.device)
+        
         prompt_len = prompt_ids.shape[1]
 
         # Context-length protection
@@ -106,41 +108,52 @@ class LocalModelProvider(BaseModelProvider):
         max_new = gen_cfg.get("max_new_tokens", 256)
 
         if prompt_len + max_new + SAFETY_MARGIN > MAX_CONTEXT:
-            # Reduce generation length so we never exceed 2048
             allowed_new = max(1, MAX_CONTEXT - prompt_len - SAFETY_MARGIN)
             print(f"[CTX] Truncating max_new_tokens from {max_new} → {allowed_new}")
             gen_cfg["max_new_tokens"] = allowed_new
             max_new = allowed_new
 
-        # ------------------------------------------------------------------
-        # 3. Generate
-        # ------------------------------------------------------------------
+        # Generate on the model's device
         self.model.eval()
         with torch.no_grad():
-            out_ids = self.model.generate(
-                prompt_ids,
-                max_new_tokens=max_new,
-                temperature=gen_cfg["temperature"],
-                do_sample=gen_cfg["do_sample"],
-                top_p=gen_cfg["top_p"],
-                top_k=gen_cfg["top_k"],
-                eos_token_id=self.tokenizer.eos_token_id,
-                stop_at_eos=True,
-                prepend_bos=False,
-                return_type="input",          # gives ndarray of token ids
-            )
+            # Set the current device context for generation
+            if 'cuda' in str(self.device):
+                with torch.cuda.device(self.device):
+                    out_ids = self.model.generate(
+                        prompt_ids,
+                        max_new_tokens=max_new,
+                        temperature=gen_cfg["temperature"],
+                        do_sample=gen_cfg["do_sample"],
+                        top_p=gen_cfg["top_p"],
+                        top_k=gen_cfg["top_k"],
+                        eos_token_id=self.tokenizer.eos_token_id,
+                        stop_at_eos=True,
+                        prepend_bos=False,
+                        return_type="input",
+                    )
+            else:
+                out_ids = self.model.generate(
+                    prompt_ids,
+                    max_new_tokens=max_new,
+                    temperature=gen_cfg["temperature"],
+                    do_sample=gen_cfg["do_sample"],
+                    top_p=gen_cfg["top_p"],
+                    top_k=gen_cfg["top_k"],
+                    eos_token_id=self.tokenizer.eos_token_id,
+                    stop_at_eos=True,
+                    prepend_bos=False,
+                    return_type="input",
+                )
 
         out_ids = torch.tensor(out_ids, device=self.device)
-        completion_ids = out_ids[0, prompt_len:]          # slice OFF the prompt
+        completion_ids = out_ids[0, prompt_len:]
         completion_str = self.tokenizer.decode(
             completion_ids,
             skip_special_tokens=True,
             clean_up_tokenization_spaces=True
         ).lstrip()
 
-        # ------------------------------------------------------------------
-        # 4. Accounting & metadata
-        # ------------------------------------------------------------------
+        # Accounting & metadata
         output_len = completion_ids.numel()
         total_tokens = prompt_len + output_len
         latency = time.time() - start
@@ -156,24 +169,21 @@ class LocalModelProvider(BaseModelProvider):
             "dtype": str(self.model_dtype),
         }
 
-        # ------------------------------------------------------------------
-        # 5. Cleanup
-        # ------------------------------------------------------------------
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
+        # Cleanup for this specific device
+        if 'cuda' in str(self.device):
+            with torch.cuda.device(self.device):
+                torch.cuda.empty_cache()
         gc.collect()
 
         return completion_str, metadata
 
-    # ────────────────────────────────────────────────────────────────────
-    # House-keeping
-    # ────────────────────────────────────────────────────────────────────
     def is_available(self) -> bool:
         return self.model is not None and self.tokenizer is not None
 
     def clear_cache(self):
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
+        if 'cuda' in str(self.device):
+            with torch.cuda.device(self.device):
+                torch.cuda.empty_cache()
         gc.collect()
 
     def unload_model(self):

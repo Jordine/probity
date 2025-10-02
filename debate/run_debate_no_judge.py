@@ -24,6 +24,7 @@ from debate.dataset_loader import (
     QuALITYDatasetLoader, APPSDatasetLoader, SolutionGenerator
 )
 
+from debate.utils.gpu_utils import detect_gpu_configuration, can_fit_models
 
 class NoJudgeDebateRunner:
     """Run debates without judge decision, save full transcripts with probe data"""
@@ -358,8 +359,8 @@ class NoJudgeDebateRunner:
         return df
 
 
-def create_model_config(model_name: str, provider: str, args) -> ModelConfig:
-    """Create model configuration"""
+def create_model_config(model_name: str, provider: str, args, device_id: Optional[int] = None) -> ModelConfig:
+    """Create model configuration with optional GPU assignment"""
     provider_type = ProviderType[provider.upper()]
     
     # Get API key if needed
@@ -375,11 +376,13 @@ def create_model_config(model_name: str, provider: str, args) -> ModelConfig:
         provider=provider_type,
         model_name=model_name,
         api_key=api_key,
+        device_id=device_id,  
         generation_kwargs={
             "temperature": 0.7,
             "max_tokens": 512
         }
     )
+
 
 
 def main():
@@ -404,6 +407,11 @@ def main():
                        choices=['local', 'openai', 'anthropic', 'openrouter'])
     parser.add_argument('--dishonest_provider', type=str, default='local',
                        choices=['local', 'openai', 'anthropic', 'openrouter'])
+    parser.add_argument('--honest_gpu', type=int, default=None,
+                       help='GPU device ID for honest model (auto-detect if not specified)')
+    parser.add_argument('--dishonest_gpu', type=int, default=None,
+                       help='GPU device ID for dishonest model (auto-detect if not specified)')
+    
     
     # API keys
     parser.add_argument('--openai_api_key', type=str)
@@ -445,6 +453,53 @@ def main():
                        help='Resume from existing transcripts')
     
     args = parser.parse_args()
+
+
+    # GPU Detection and Configuration
+    print("\n" + "="*60)
+    print("GPU CONFIGURATION")
+    print("="*60)
+    
+    gpu_info = detect_gpu_configuration()
+    
+    if gpu_info.num_gpus == 0:
+        print("⚠️  No GPUs detected, will use CPU (not recommended for large models)")
+        honest_device_id = None
+        dishonest_device_id = None
+    else:
+        print(f"✓ Found {gpu_info.num_gpus} GPU(s):")
+        for i, (name, memory) in enumerate(zip(gpu_info.gpu_names, gpu_info.gpu_memory)):
+            print(f"  GPU {i}: {name} ({memory:.1f}GB)")
+        
+        # Check if models can fit
+        can_fit, assignment = can_fit_models(gpu_info, args.honest_model, args.dishonest_model)
+        
+        if not can_fit:
+            print(f"\n⚠️  Models may not fit in available GPU memory!")
+            print(f"  Honest model ({args.honest_model}) and Dishonest model ({args.dishonest_model})")
+            print(f"  Proceeding anyway, but may encounter OOM errors...")
+            
+        # Allow manual override or use automatic assignment
+        if args.honest_gpu is not None and args.dishonest_gpu is not None:
+            # Manual assignment
+            honest_device_id = args.honest_gpu
+            dishonest_device_id = args.dishonest_gpu
+            print(f"\n📌 Using manual GPU assignment:")
+        elif assignment:
+            # Automatic assignment
+            honest_device_id, dishonest_device_id = assignment
+            print(f"\n🔧 Using automatic GPU assignment:")
+        else:
+            # Fallback to GPU 0
+            honest_device_id = 0
+            dishonest_device_id = 0
+            print(f"\n⚠️  Using GPU 0 for both models (may cause OOM):")
+        
+        print(f"  Honest debater → GPU {honest_device_id}")
+        print(f"  Dishonest debater → GPU {dishonest_device_id}")
+    
+    print("="*60 + "\n")
+    
     
     # Set random seed
     random.seed(args.seed)
@@ -464,8 +519,8 @@ def main():
     save_dir.mkdir(parents=True, exist_ok=True)
     
     # Create model configs
-    honest_config = create_model_config(args.honest_model, args.honest_provider, args)
-    dishonest_config = create_model_config(args.dishonest_model, args.dishonest_provider, args)
+    honest_config = create_model_config(args.honest_model, args.honest_provider, args, device_id=honest_device_id)
+    dishonest_config = create_model_config(args.dishonest_model, args.dishonest_provider, args, device_id=dishonest_device_id)
     
     # Create probe configuration if provided
     probe_config = None

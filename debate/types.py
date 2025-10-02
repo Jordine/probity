@@ -35,6 +35,7 @@ class ModelConfig:
     base_url: Optional[str] = None
     generation_kwargs: Dict[str, Any] = field(default_factory=dict)
     supports_probes: bool = False
+    device_id: Optional[int] = None  
 
     def __post_init__(self):
         self.supports_probes = (self.provider == ProviderType.LOCAL)

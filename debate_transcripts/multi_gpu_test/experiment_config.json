@@ -1,0 +1,23 @@
+{
+  "experiment_mode": "baseline_judge",
+  "debate_type": "baseline",
+  "models": {
+    "honest": "meta-llama/Llama-3.2-1B-Instruct",
+    "dishonest": "meta-llama/Llama-3.2-1B-Instruct"
+  },
+  "providers": {
+    "honest": "local",
+    "dishonest": "local"
+  },
+  "dataset": "quality",
+  "n_problems": 5,
+  "max_rounds": 3,
+  "probe_config": {
+    "enabled": true,
+    "types": [
+      "logistic"
+    ],
+    "layer": 12
+  },
+  "timestamp": "20251002_171436"
+}

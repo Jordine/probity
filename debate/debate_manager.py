@@ -90,18 +90,20 @@ class DebateManager:
 
         if self.probe_access.judge_can_see_dishonest and not isinstance(self.dishonest_provider, LocalModelProvider):
             raise ValueError(_err("dishonest"))
-
+    
     def _init_probe_scorers(self) -> None:
-        """Create honest & dishonest ProbeDebateInference instances."""
-        if (self.config.probe_config is None or
-                not self._can_use_probes()):
+        """Create honest & dishonest ProbeDebateInference instances with multi-GPU support."""
+        if (self.config.probe_config is None or not self._can_use_probes()):
             print("[DEBUG] Not initializing probe scorers (no config or can't use probes)")
             return
-    
+        
         pc = self.config.probe_config
         
         # Check if we can reuse models from providers
         if isinstance(self.honest_provider, LocalModelProvider):
+            # Get device from the provider's model
+            device_str = str(self.honest_provider.device)
+            
             # Reuse the model from honest_provider
             self.honest_probe_scorer = ProbeDebateInference.from_existing_model(
                 model=self.honest_provider.model,
@@ -109,11 +111,14 @@ class DebateManager:
                 probe_dir=pc.honest_probe_dir,
                 probe_types=pc.probe_types,
                 layer=pc.layer,
-                device=pc.device,
+                device=device_str,  # Use the same device as the model
                 role="honest"
             )
         else:
             # Fall back to loading a new model if not local
+            # Update device in config based on honest debater's device
+            device_str = f"cuda:{self.config.honest_debater.device_id}" if self.config.honest_debater.device_id is not None else pc.device
+            
             inf_cfg = ProbeInferenceConfig(
                 honest_model_name=pc.honest_model_name,
                 dishonest_model_name=pc.dishonest_model_name,
@@ -121,22 +126,28 @@ class DebateManager:
                 dishonest_probe_dir=pc.dishonest_probe_dir,
                 probe_types=pc.probe_types,
                 layer=pc.layer,
-                device=pc.device,
+                device=device_str,
             )
             self.honest_probe_scorer = ProbeDebateInference(inf_cfg, role="honest")
         
         # Similar for dishonest
         if isinstance(self.dishonest_provider, LocalModelProvider):
+            # Get device from the provider's model
+            device_str = str(self.dishonest_provider.device)
+            
             self.dishonest_probe_scorer = ProbeDebateInference.from_existing_model(
                 model=self.dishonest_provider.model,
                 tokenizer=self.dishonest_provider.tokenizer,
                 probe_dir=pc.dishonest_probe_dir,
                 probe_types=pc.probe_types,
                 layer=pc.layer,
-                device=pc.device,
+                device=device_str,  # Use the same device as the model
                 role="dishonest"
             )
         else:
+            # Update device in config based on dishonest debater's device
+            device_str = f"cuda:{self.config.dishonest_debater.device_id}" if self.config.dishonest_debater.device_id is not None else pc.device
+            
             inf_cfg = ProbeInferenceConfig(
                 honest_model_name=pc.honest_model_name,
                 dishonest_model_name=pc.dishonest_model_name,
@@ -144,7 +155,7 @@ class DebateManager:
                 dishonest_probe_dir=pc.dishonest_probe_dir,
                 probe_types=pc.probe_types,
                 layer=pc.layer,
-                device=pc.device,
+                device=device_str,
             )
             self.dishonest_probe_scorer = ProbeDebateInference(inf_cfg, role="dishonest")
                     

@@ -44,11 +44,21 @@ class ProbeDebateInference:
 
         self.config = config
         self.role = role
+        
         self.device = torch.device(config.device)
 
-        # ------------------------------------------------------------------
+        # Parse device specification - support "cuda:0", "cuda:1", etc.
+        device_str = config.device
+        if device_str.startswith("cuda:"):
+            try:
+                device_id = int(device_str.split(":")[1])
+                self.device = torch.device(f"cuda:{device_id}")
+            except (ValueError, IndexError):
+                self.device = torch.device("cuda")
+        else:
+            self.device = torch.device(config.device)
+
         # Pick the correct model / probe directory for the given role
-        # ------------------------------------------------------------------
         if role == "honest":
             self.model_name: str = config.honest_model_name
             self.probe_dir: Path = Path(config.honest_probe_dir)
@@ -56,14 +66,18 @@ class ProbeDebateInference:
             self.model_name = config.dishonest_model_name
             self.probe_dir = Path(config.dishonest_probe_dir)
 
-        print(f"[ProbeDebateInference] Loading {role} model '{self.model_name}' ...")
+        print(f"[ProbeDebateInference] Loading {role} model '{self.model_name}' on {self.device}...")
+        
         self.model_dtype = get_model_dtype(self.model_name)
 
-        self.model = HookedTransformer.from_pretrained_no_processing(
-            self.model_name,
-            device=self.device,
-            dtype=self.model_dtype,
-        )
+        # Load model on specific device
+        with torch.cuda.device(self.device) if 'cuda' in str(self.device) else torch.no_grad():
+            self.model = HookedTransformer.from_pretrained_no_processing(
+                self.model_name,
+                device=self.device,
+                dtype=self.model_dtype,
+            )
+        
         self.model.eval()
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
@@ -133,20 +147,30 @@ class ProbeDebateInference:
         device: str,
         role: str
     ) -> "ProbeDebateInference":
-        """Create a ProbeDebateInference using an already-loaded model."""
+        """Create a ProbeDebateInference using an already-loaded model (multi-GPU aware)"""
         instance = cls.__new__(cls)
         
         instance.role = role
-        instance.device = torch.device(device)
+        
+        # Handle device specification properly
+        if isinstance(device, str) and device.startswith("cuda:"):
+            try:
+                device_id = int(device.split(":")[1])
+                instance.device = torch.device(f"cuda:{device_id}")
+            except:
+                instance.device = torch.device(device)
+        else:
+            instance.device = torch.device(device)
+        
         instance.probe_dir = Path(probe_dir)
         instance.config = ProbeInferenceConfig(
-            honest_model_name="",  # Not needed since model is provided
+            honest_model_name="",
             dishonest_model_name="",
             honest_probe_dir=probe_dir if role == "honest" else "",
             dishonest_probe_dir=probe_dir if role == "dishonest" else "",
             probe_types=probe_types,
             layer=layer,
-            device=device
+            device=str(instance.device)  # Store as string
         )
         
         # Use the provided model and tokenizer
@@ -154,11 +178,11 @@ class ProbeDebateInference:
         instance.tokenizer = tokenizer
         instance.model_name = model.cfg.model_name
         
-        # Load only the probes
+        # Load only the probes on the same device as the model
         instance.probes = instance._load_probes()
         instance.activation_cache = {}
         
-        print(f"[ProbeDebateInference] Reusing existing model for role='{role}'")
+        print(f"[ProbeDebateInference] Reusing existing model for role='{role}' on {instance.device}")
         print(f"[ProbeDebateInference] • {len(instance.probes)} probes loaded (layer {layer})")
         
         return instance
