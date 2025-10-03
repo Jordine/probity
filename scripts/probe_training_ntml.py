@@ -139,8 +139,12 @@ def parse_args():
                        help='Force recollection of activations even if cache exists')
     parser.add_argument('--list_datasets', action='store_true',
                        help='List available datasets and exit')
-    parser.add_argument('--train_on_diff_statements_only', action='store_true', required=True,
-                   help='Only train on lie positions as contrastive pairs (50/50 balanced)')
+    parser.add_argument('--dishonest_mode', type=str, choices=['all', 'diff'], 
+                       default='all', required=True,
+                       help='Which statements from dishonest sample: all or diff only')
+    parser.add_argument('--honest_mode', type=str, choices=['none', 'diff', 'all'], 
+                       default='none', required=True,
+                       help='Which statements from honest sample: none, diff only, or all')
     return parser.parse_args()
 
 
@@ -190,7 +194,8 @@ def main():
     dataset = load_contrastive_ntml_dataset(str(dataset_path), 
                                             args.model_name, 
                                             max_length=args.max_length, 
-                                            train_on_diff_statements_only=args.train_on_diff_statements_only)
+                                            dishonest_mode=args.dishonest_mode,
+                                            honest_mode=args.honest_mode)
     print(f"Dataset size: {len(dataset.examples)}")
     
     # Load model once

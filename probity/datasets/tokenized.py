@@ -403,7 +403,7 @@ class TokenizedProbingDataset(ProbingDataset):
         batch: Dict[str, Union[torch.Tensor, Dict[str, torch.Tensor]]] = {
             "input_ids": torch.tensor(input_ids),
             "positions": {
-                pt: torch.tensor(positions[pt]) for pt in self.position_types
+                pt: self._flatten_positions_to_tensor(positions[pt]) for pt in self.position_types
             },
         }
 
@@ -412,6 +412,24 @@ class TokenizedProbingDataset(ProbingDataset):
 
         return batch
 
+
+    def _flatten_positions_to_tensor(self, position_list: List[Union[int, List[int]]]) -> torch.Tensor:
+        """Flatten variable-length position lists into a single tensor.
+        
+        For positions that are lists of tokens (from character spans), we flatten them
+        so each token becomes its own training example.
+        """
+        flattened = []
+        for pos in position_list:
+            if isinstance(pos, list):
+                # Add each token position as separate entry
+                flattened.extend(pos)
+            else:
+                # Single position
+                flattened.append(pos)
+        
+        return torch.tensor(flattened, dtype=torch.long)
+    
     def save(self, path: str) -> None:
         """Override save to include tokenization info."""
         super().save(path)

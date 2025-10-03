@@ -177,36 +177,65 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
             raise TypeError("SupervisedProbeTrainer requires a SupervisedTrainerConfig")
         self.config: SupervisedTrainerConfig = config
 
-    def prepare_supervised_data(
-        self,
-        activation_store: ActivationStore,
-        position_key: str,
-    ) -> Tuple[DataLoader, DataLoader]:
+    def prepare_supervised_data(self, activation_store: ActivationStore, position_key: str) -> Tuple[DataLoader, DataLoader]:
         """Prepare train/val splits with DataLoader creation."""
         X_train_all, y_all, X_orig_all = self.prepare_data(activation_store, position_key)
-
+        
         n_total = len(X_orig_all)
-        n_train = int(n_total * self.config.train_ratio)
-
-        if n_train == n_total:
-            n_train = max(0, n_total - 1)
-            if n_train == 0 and n_total > 0:
-                n_train = 1
-            elif n_total > 0:
-                n_train = n_total
-
-        if n_train == 0 and n_total > 0:
-            n_train = n_total
-
-        indices = torch.randperm(n_total)
-        train_indices = indices[:n_train]
-        val_indices = indices[n_train:]
-
-        if len(train_indices) == 0 and n_total > 0:
-            train_indices = indices
-            val_indices = indices
-        elif len(val_indices) == 0 and n_total > 0:
-            val_indices = train_indices
+        
+        # Check if we have contrastive pairs that need to stay together
+        has_contrastive_pairs = any(
+            hasattr(ex, 'group_id') and ex.group_id and "contrastive" in str(ex.group_id)
+            for ex in activation_store.dataset.examples[:min(100, len(activation_store.dataset.examples))]
+        )
+        
+        if has_contrastive_pairs:
+            # Group-aware split for contrastive pairs
+            print("Using group-aware train/val split for contrastive pairs")
+            
+            # Build mapping of indices to group IDs
+            # Note: After converting to tokens, we may have multiple indices per original example
+            # We need to track which activation indices belong to which group
+            
+            group_to_indices = {}
+            for i, dataset_ex_idx in enumerate(activation_store.example_indices):
+                dataset_ex = activation_store.dataset.examples[dataset_ex_idx]
+                group_id = getattr(dataset_ex, 'group_id', f'default_{dataset_ex_idx}')
+                if group_id not in group_to_indices:
+                    group_to_indices[group_id] = []
+                group_to_indices[group_id].append(i)
+            
+            # Shuffle groups
+            import random
+            group_ids = list(group_to_indices.keys())
+            random.shuffle(group_ids)
+            
+            # Split groups
+            n_train_groups = int(len(group_ids) * self.config.train_ratio)
+            train_groups = group_ids[:n_train_groups]
+            
+            # Get indices based on groups
+            train_indices = []
+            val_indices = []
+            for group_id in group_ids:
+                indices = group_to_indices[group_id]
+                if group_id in train_groups:
+                    train_indices.extend(indices)
+                else:
+                    val_indices.extend(indices)
+            
+            train_indices = torch.tensor(train_indices)
+            val_indices = torch.tensor(val_indices)
+            
+        else:
+            # Standard random split
+            n_train = int(n_total * self.config.train_ratio)
+            if n_train == n_total:
+                n_train = max(0, n_total - 1)
+            
+            indices = torch.randperm(n_total)
+            train_indices = indices[:n_train]
+            val_indices = indices[n_train:]
 
         X_train_split, X_val_split = X_train_all[train_indices], X_train_all[val_indices]
         X_orig_train_split, X_orig_val_split = X_orig_all[train_indices], X_orig_all[val_indices]
