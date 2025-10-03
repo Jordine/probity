@@ -41,11 +41,31 @@ class ActivationStore:
             If multiple positions: (total_positions, hidden_size)
         """
         positions = []
-        print(f"Examining position key: {position_key}")
+
+    
+        print(f"DEBUG [Actual Training Tokens]:")
+        
+        # Check first 5 examples
+        for i, idx in enumerate(self.example_indices[:5]):
+            example = self.dataset.examples[idx]
+            if example.token_positions:
+                pos = example.token_positions[position_key]
+                if isinstance(pos, int):
+                    # Get the actual token at this position
+                    if hasattr(example, 'tokens') and pos < len(example.tokens):
+                        token = example.tokens[pos]
+                        print(f"  Example {i}: Training on token position {pos}: '{token}'")
+        
+        print(f"DEBUG [Activation Extraction] Getting positions for key: {position_key}")
+
         for idx in self.example_indices:
             example = self.dataset.examples[idx]
             if example.token_positions:
                 pos = example.token_positions[position_key]
+                print(f"  Example {idx}:")
+                print(f"    Position value: {pos}")
+                print(f"    Type: {type(pos)}")
+                    
                 if isinstance(pos, int):
                     positions.append(self.raw_activations[idx, pos])
                 else:  # List[int]
@@ -79,6 +99,19 @@ class ActivationStore:
               Labels are repeated for examples with multiple positions
         """
         activations = self.get_position_activations(position_key)
+        # Detailed debug
+        print(f"DEBUG [get_probe_data]:")
+        print(f"  Dataset has {len(self.dataset.examples)} examples")
+        print(f"  Returning {activations.shape[0]} activation vectors")
+        print(f"  Ratio: {activations.shape[0] / len(self.dataset.examples):.2f}x")
+        
+        # Check if we're getting multiple positions per example
+        if activations.shape[0] == len(self.dataset.examples):
+            print("  ⚠️ WARNING: Only one activation per example - likely still using first token only!")
+        else:
+            avg_tokens = activations.shape[0] / len(self.dataset.examples)
+            print(f"  ✓ Average {avg_tokens:.1f} tokens per statement")
+        
         
         # Handle label replication for multiple positions
         if len(activations) > len(self.labels):

@@ -129,6 +129,11 @@ class PositionFinder:
         #            else getattr(tokenizer, "padding_side", "right")
 
         # First get clean offsets without special tokens
+    
+        if position.end is not None:
+            print(f"DEBUG [PosConverter]: Converting span {position.start}-{position.end} ({position.end - position.start} chars)")
+            print(f"  Text: '{text[position.start:position.end][:50]}...'")
+            
         clean_encoding = tokenizer(
             text, return_offsets_mapping=True, add_special_tokens=False
         )
@@ -196,3 +201,70 @@ class PositionFinder:
             True if position is valid, False otherwise
         """
         return 0 <= token_position < len(tokens)
+
+    
+    
+    @staticmethod
+    def convert_char_span_to_token_positions(
+        position: Position,
+        text: str,
+        tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast],
+        add_special_tokens: bool = True,
+    ) -> List[int]:
+        """
+        Convert character span (start, end) to list of ALL token positions in that span.
+        
+        Args:
+            position: Character position with start and end
+            text: Input text
+            tokenizer: Tokenizer to use
+            add_special_tokens: Whether to add special tokens
+            
+        Returns:
+            List of token indices covering the character span
+        """
+        # Get token offsets without special tokens first
+        clean_encoding = tokenizer(
+            text, return_offsets_mapping=True, add_special_tokens=False
+        )
+        clean_offsets = clean_encoding["offset_mapping"]
+        
+        # Find ALL tokens that overlap with the character span
+        token_positions = []
+        assert isinstance(clean_offsets, list)
+        
+        for idx, (token_start, token_end) in enumerate(clean_offsets):
+            # Include token if it has ANY overlap with the character span
+            if token_end > position.start and token_start < position.end:
+                token_positions.append(idx)
+        
+        if not token_positions:
+            # Fallback: find the nearest token if no exact overlap
+            for idx, (token_start, token_end) in enumerate(clean_offsets):
+                if token_start <= position.start < token_end:
+                    token_positions.append(idx)
+                    break
+        
+        if not token_positions:
+            raise ValueError(
+                f"Character span {position.start}-{position.end} does not align with any tokens"
+            )
+        
+        # Adjust for special tokens if needed
+        if add_special_tokens:
+            tokens_with_special = tokenizer(text, add_special_tokens=True)["input_ids"]
+            
+            # Count prefix special tokens
+            prefix_tokens = 0
+            if (
+                hasattr(tokenizer, "bos_token_id")
+                and tokenizer.bos_token_id is not None
+                and tokens_with_special
+                and tokens_with_special[0] == tokenizer.bos_token_id
+            ):
+                prefix_tokens += 1
+            
+            # Adjust all positions by prefix offset
+            token_positions = [pos + prefix_tokens for pos in token_positions]
+        
+        return token_positions

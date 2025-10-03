@@ -173,20 +173,47 @@ class TokenizedProbingDataset(ProbingDataset):
                 for key, pos in example.character_positions.positions.items():
                     # Use the no-padding tokens for position conversion to get accurate positions
                     if isinstance(pos, Position):
-                        # Convert single position relative to unpadded tokens
-                        token_pos = PositionFinder.convert_to_token_position(
-                            pos,
-                            example.text,
-                            tokenizer,
-                            add_special_tokens=add_special_tokens,
-                            padding_side=padding_side,
-                        )
-
-                        # If using left padding, the positions in padded tokens will be offset
-                        if is_left_padding and pad_length > 0:
-                            positions[key] = token_pos + pad_length
+                        # Check if this is a span (has both start and end) or single position
+                        if pos.end is not None and pos.end > pos.start:
+                            # It's a span - convert to multiple token positions
+                            token_positions_list = PositionFinder.convert_char_span_to_token_positions(
+                                pos,
+                                example.text,
+                                tokenizer,
+                                add_special_tokens=add_special_tokens,
+                            )
+                            token_pos = token_positions_list  # Store as list
                         else:
-                            positions[key] = token_pos
+                            # Single position - use original method
+                            token_pos = PositionFinder.convert_to_token_position(
+                                pos,
+                                example.text,
+                                tokenizer,
+                                add_special_tokens=add_special_tokens,
+                                padding_side=padding_side,
+                            )
+
+                    
+                        if isinstance(token_pos, list):
+                            print(f"DEBUG [Token Span]: Converted {pos.start}-{pos.end} to {len(token_pos)} tokens")
+                            if token_pos and no_pad_tokens:
+                                sample_tokens = [tokenizer.convert_ids_to_tokens([no_pad_tokens[tp]])[0] 
+                                                for tp in token_pos[:5] if tp < len(no_pad_tokens)]
+                                print(f"  First few tokens: {sample_tokens}")
+                        else:
+                            print(f"DEBUG [Single Token]: Position {pos.start} -> token {token_pos}")
+
+
+                        
+                        # If using left padding, the positions need to be adjusted
+                        if is_left_padding and pad_length > 0:
+                            if isinstance(token_pos, list):
+                                # Adjust all positions in the list
+                                positions[key] = [tp + pad_length for tp in token_pos]
+                            else:
+                                positions[key] = token_pos + pad_length
+                        else:
+                            positions[key] = token_pos  # Can be int or list
 
                     else:  # List[Position]
                         # Convert list of positions

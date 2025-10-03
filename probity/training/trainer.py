@@ -125,6 +125,22 @@ class BaseProbeTrainer(ABC):
         X_expected, y_expected = activation_store.get_probe_data(position_key)
         X_train = X_expected
 
+        print(f"DEBUG [Training Data]:")
+        print(f"  X shape: {X_expected.shape}")
+        print(f"  y shape: {y_expected.shape}")
+        print(f"  Number of examples in dataset: {len(activation_store.dataset.examples)}")
+        print(f"  Ratio: {X_expected.shape[0] / len(activation_store.dataset.examples):.2f} activations per example")
+        
+        # Check a specific example
+        if len(activation_store.dataset.examples) > 0:
+            ex = activation_store.dataset.examples[0]
+            if hasattr(ex, 'token_positions') and ex.token_positions:
+                pos = ex.token_positions.positions.get(position_key)
+                print(f"  First example position type: {type(pos)}")
+                if isinstance(pos, list):
+                    print(f"  First example has {len(pos)} tokens in statement")
+            
+
         if self.config.standardize_activations:
             if self.feature_mean is None or self.feature_std is None:
                 self.feature_mean = X_expected.mean(dim=0, keepdim=True)
