@@ -12,15 +12,33 @@ def find_optimal_threshold_auroc(scores: np.ndarray, labels: np.ndarray) -> floa
 def find_threshold_for_fpr(scores: np.ndarray, labels: np.ndarray, 
                           target_fpr: float = 0.01) -> float:
     """Find threshold that achieves target false positive rate."""
+    
+    # Special case: all negative labels (common for calibration datasets)
+    if np.all(labels == 0):
+        # For all-negative data, FPR = fraction classified as positive
+        # So we want the threshold where (100-target_fpr*100)% of scores are below it
+        percentile = (1 - target_fpr) * 100
+        threshold = np.percentile(scores, percentile)
+        return float(threshold)
+    
     fpr, tpr, thresholds = roc_curve(labels, scores)
+    
+    # Remove inf values if present
+    valid_mask = np.isfinite(thresholds)
+    fpr = fpr[valid_mask]
+    tpr = tpr[valid_mask]
+    thresholds = thresholds[valid_mask]
+    
+    if len(thresholds) == 0:
+        # Fallback to percentile method
+        percentile = (1 - target_fpr) * 100
+        return float(np.percentile(scores, percentile))
     
     # Find threshold closest to target FPR
     valid_indices = np.where(fpr <= target_fpr)[0]
     if len(valid_indices) == 0:
-        # If we can't achieve target FPR, use the lowest available
         return float(thresholds[0])
     
-    # Get the threshold that gives highest TPR while maintaining FPR <= target
     optimal_idx = valid_indices[-1]
     return float(thresholds[optimal_idx])
 
