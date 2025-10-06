@@ -415,6 +415,44 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
             history["learning_rate"].append(scheduler.get_last_lr()[0])
             scheduler.step()
 
+
+
+        # Calculate optimal threshold on training data
+        if hasattr(model, 'config') and hasattr(model.config, 'optimal_thresholds'):
+            print("Calculating optimal thresholds...")
+
+            # Collect predictions on full training set
+            model.eval()
+            all_scores = []
+            all_labels = []
+            
+            with torch.no_grad():
+                for batch_x, batch_y, _ in train_loader:
+                    batch_x = batch_x.to(self.config.device)
+                    batch_y = batch_y.to(self.config.device)
+                    
+                    outputs = model(batch_x)
+                    
+                    # Apply sigmoid for logistic probes
+                    if model.__class__.__name__ == 'LogisticProbe':
+                        outputs = torch.sigmoid(outputs)
+                    
+                    all_scores.extend(outputs.cpu().squeeze().tolist())
+                    all_labels.extend(batch_y.cpu().squeeze().tolist())
+            
+            # Calculate optimal threshold
+            from probity.utils.threshold_optimization import find_optimal_threshold_auroc
+            import numpy as np
+            
+            optimal_threshold = find_optimal_threshold_auroc(
+                np.array(all_scores), 
+                np.array(all_labels)
+            )
+            
+            model.config.optimal_thresholds['train_auroc'] = optimal_threshold
+            print(f"Optimal threshold (train AUROC): {optimal_threshold:.4f}")
+
+
         if self.config.standardize_activations and self.feature_std is not None:
             with torch.no_grad():
                 learned_direction = model._get_raw_direction_representation()
@@ -542,6 +580,53 @@ class DirectionalProbeTrainer(BaseProbeTrainer):
                 final_direction = initial_direction / std_dev.unsqueeze(0)
 
         model._set_raw_direction_representation(final_direction)
+        model.has_fit = True  
+
+        # Calculate optimal threshold on training data
+        if hasattr(model, 'config') and hasattr(model.config, 'optimal_thresholds'):
+            print("Calculating optimal threshold for directional probe...")
+            
+            model.eval()
+            all_scores = []
+            all_labels = []
+            
+            with torch.no_grad():
+                # Get predictions on the full training set
+                outputs = model(x_orig_tensor)
+                
+                # No sigmoid needed for directional probes
+                all_scores = outputs.cpu().squeeze().tolist()
+                all_labels = y_train_tensor.cpu().squeeze().tolist()
+            
+            # Normalize scores to [0, 1] range for threshold calculation
+            import numpy as np
+            scores_array = np.array(all_scores)
+            min_score = scores_array.min()
+            max_score = scores_array.max()
+            
+            if max_score > min_score:
+                normalized_scores = (scores_array - min_score) / (max_score - min_score)
+                
+                from probity.utils.threshold_optimization import find_optimal_threshold_auroc
+                optimal_threshold_normalized = find_optimal_threshold_auroc(
+                    normalized_scores, 
+                    np.array(all_labels)
+                )
+                
+                # Convert back to original scale
+                optimal_threshold = min_score + optimal_threshold_normalized * (max_score - min_score)
+                
+                model.config.optimal_thresholds['train_auroc'] = optimal_threshold
+                model.config.optimal_thresholds['score_min'] = min_score
+                model.config.optimal_thresholds['score_max'] = max_score
+                model.config.optimal_thresholds['normalized_threshold'] = optimal_threshold_normalized
+                
+                print(f"Optimal threshold (train AUROC): {optimal_threshold:.4f}")
+                print(f"  Score range: [{min_score:.4f}, {max_score:.4f}]")
+                print(f"  Normalized threshold: {optimal_threshold_normalized:.4f}")
+            else:
+                print("Warning: All scores are identical, cannot calculate optimal threshold")
+                model.config.optimal_thresholds['train_auroc'] = 0.0
 
         history: Dict[str, List[float]] = {
             "train_loss": [],

@@ -1,0 +1,91 @@
+{
+  "primary_metrics": {
+    "threshold_value": Infinity,
+    "accuracy": 0.3283582089552239,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "auroc": 0.3838383838383838,
+    "confusion_matrix": {
+      "tp": 0,
+      "fp": 0,
+      "tn": 22,
+      "fn": 45
+    },
+    "fpr": 0.0,
+    "tpr": 0.0
+  },
+  "best_threshold_name": "fpr_1pct",
+  "all_thresholds": {
+    "default_0.5": {
+      "threshold_value": 0.5,
+      "accuracy": 0.3582089552238806,
+      "precision": 0.6,
+      "recall": 0.13333333333333333,
+      "f1": 0.21818181818181817,
+      "auroc": 0.3838383838383838,
+      "confusion_matrix": {
+        "tp": 6,
+        "fp": 4,
+        "tn": 18,
+        "fn": 39
+      },
+      "fpr": 0.18181818181818182,
+      "tpr": 0.13333333333333333
+    },
+    "train_auroc": {
+      "threshold_value": 0.45703125,
+      "accuracy": 0.40298507462686567,
+      "precision": 0.631578947368421,
+      "recall": 0.26666666666666666,
+      "f1": 0.375,
+      "auroc": 0.3838383838383838,
+      "confusion_matrix": {
+        "tp": 12,
+        "fp": 7,
+        "tn": 15,
+        "fn": 33
+      },
+      "fpr": 0.3181818181818182,
+      "tpr": 0.26666666666666666
+    },
+    "fpr_1pct": {
+      "threshold_value": Infinity,
+      "accuracy": 0.3283582089552239,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "auroc": 0.3838383838383838,
+      "confusion_matrix": {
+        "tp": 0,
+        "fp": 0,
+        "tn": 22,
+        "fn": 45
+      },
+      "fpr": 0.0,
+      "tpr": 0.0
+    },
+    "fpr_5pct": {
+      "threshold_value": 0.61328125,
+      "accuracy": 0.3283582089552239,
+      "precision": 0.5,
+      "recall": 0.022222222222222223,
+      "f1": 0.0425531914893617,
+      "auroc": 0.3838383838383838,
+      "confusion_matrix": {
+        "tp": 1,
+        "fp": 1,
+        "tn": 21,
+        "fn": 44
+      },
+      "fpr": 0.045454545454545456,
+      "tpr": 0.022222222222222223
+    }
+  },
+  "thresholds_evaluated": {
+    "default_0.5": 0.5,
+    "train_auroc": 0.45703125,
+    "fpr_1pct": Infinity,
+    "fpr_5pct": 0.61328125
+  }
+}

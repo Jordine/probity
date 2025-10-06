@@ -1,0 +1,57 @@
+{
+  "primary_metrics": {
+    "threshold_value": -0.10693359375,
+    "accuracy": 0.5671641791044776,
+    "precision": 0.6379310344827587,
+    "recall": 0.8222222222222222,
+    "f1": 0.7184466019417476,
+    "auroc": 0.39797979797979793,
+    "confusion_matrix": {
+      "tp": 37,
+      "fp": 21,
+      "tn": 1,
+      "fn": 8
+    },
+    "fpr": 0.9545454545454546,
+    "tpr": 0.8222222222222222
+  },
+  "best_threshold_name": "train_auroc",
+  "all_thresholds": {
+    "default_0.5": {
+      "threshold_value": 0.5,
+      "accuracy": 0.373134328358209,
+      "precision": 0.8,
+      "recall": 0.08888888888888889,
+      "f1": 0.16,
+      "auroc": 0.39797979797979793,
+      "confusion_matrix": {
+        "tp": 4,
+        "fp": 1,
+        "tn": 21,
+        "fn": 41
+      },
+      "fpr": 0.045454545454545456,
+      "tpr": 0.08888888888888889
+    },
+    "train_auroc": {
+      "threshold_value": -0.10693359375,
+      "accuracy": 0.5671641791044776,
+      "precision": 0.6379310344827587,
+      "recall": 0.8222222222222222,
+      "f1": 0.7184466019417476,
+      "auroc": 0.39797979797979793,
+      "confusion_matrix": {
+        "tp": 37,
+        "fp": 21,
+        "tn": 1,
+        "fn": 8
+      },
+      "fpr": 0.9545454545454546,
+      "tpr": 0.8222222222222222
+    }
+  },
+  "thresholds_evaluated": {
+    "default_0.5": 0.5,
+    "train_auroc": -0.10693359375
+  }
+}

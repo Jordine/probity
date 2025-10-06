@@ -138,9 +138,21 @@ def load_probe_from_checkpoint(probe_path: Path, device: str) -> Optional[object
         if probe_cls is None:
             print(f"[WARN] Unknown probe class '{cls_name}' in {probe_path}")
             return None
+
+        # Store the optimal thresholds before reconstruction
+        config = checkpoint["config"]
+        saved_thresholds = getattr(config, 'optimal_thresholds', {})
+            
         
         # Reconstruct probe
         probe = probe_cls(checkpoint["config"])
+
+
+        # Restore the optimal thresholds after reconstruction
+        if saved_thresholds and hasattr(probe, 'config'):
+            probe.config.optimal_thresholds = saved_thresholds
+            print(f"  Loaded probe with thresholds: {list(saved_thresholds.keys())}")
+        
         probe.load_state_dict(checkpoint["state_dict"])
 
         if isinstance(probe, DirectionalProbe):
@@ -270,22 +282,98 @@ def evaluate_on_assistant_tokens(evaluator: OptimizedBatchProbeEvaluator,
                 'max_score': float(np.max(token_scores)) if token_scores else 0.5
             })
         
-        # Calculate metrics
-        predictions = (np.array(all_scores) > 0.5).astype(int)
-        
-        metrics = {
-            'accuracy': float(accuracy_score(all_labels, predictions)),
-            'precision': float(precision_score(all_labels, predictions)),
-            'recall': float(recall_score(all_labels, predictions)),
-            'f1': float(f1_score(all_labels, predictions)),
-            'auroc': float(roc_auc_score(all_labels, all_scores)) if len(set(all_labels)) > 1 else 0.5
+        # Determine all thresholds to evaluate
+        thresholds_to_evaluate = {
+            'default_0.5': 0.5
         }
         
+        # Check for probe-specific thresholds
+        if hasattr(probe, 'config') and hasattr(probe.config, 'optimal_thresholds'):
+            opt_thresholds = probe.config.optimal_thresholds
+            
+            # Handle directional probes
+            if 'score_min' in opt_thresholds and 'score_max' in opt_thresholds:
+                # Directional probe - normalize if needed
+                score_min = opt_thresholds['score_min']
+                score_max = opt_thresholds['score_max']
+                
+                if 'train_auroc' in opt_thresholds and score_max > score_min:
+                    # Normalize the threshold
+                    raw_threshold = opt_thresholds['train_auroc']
+                    normalized_threshold = (raw_threshold - score_min) / (score_max - score_min)
+                    thresholds_to_evaluate['train_auroc'] = normalized_threshold
+                    
+                    # Also normalize scores for directional probes
+                    all_scores = [(s - score_min) / (score_max - score_min) if score_max > score_min else 0.5 
+                                  for s in all_scores]
+            else:
+                # Probabilistic probes
+                if 'train_auroc' in opt_thresholds:
+                    thresholds_to_evaluate['train_auroc'] = opt_thresholds['train_auroc']
+                
+                if 'fpr_1pct' in opt_thresholds:
+                    threshold_data = opt_thresholds['fpr_1pct']
+                    if isinstance(threshold_data, dict):
+                        thresholds_to_evaluate['fpr_1pct'] = threshold_data.get('threshold', 0.5)
+                    else:
+                        thresholds_to_evaluate['fpr_1pct'] = threshold_data
+                
+                if 'fpr_5pct' in opt_thresholds:
+                    threshold_data = opt_thresholds['fpr_5pct']
+                    if isinstance(threshold_data, dict):
+                        thresholds_to_evaluate['fpr_5pct'] = threshold_data.get('threshold', 0.5)
+                    else:
+                        thresholds_to_evaluate['fpr_5pct'] = threshold_data
+        
+        # Calculate metrics for each threshold
+        metrics_by_threshold = {}
+        for threshold_name, threshold_value in thresholds_to_evaluate.items():
+            predictions = (np.array(all_scores) > threshold_value).astype(int)
+            
+            metrics = {
+                'threshold_value': float(threshold_value),
+                'accuracy': float(accuracy_score(all_labels, predictions)),
+                'precision': float(precision_score(all_labels, predictions, zero_division=0)),
+                'recall': float(recall_score(all_labels, predictions, zero_division=0)),
+                'f1': float(f1_score(all_labels, predictions, zero_division=0)),
+                'auroc': float(roc_auc_score(all_labels, all_scores)) if len(set(all_labels)) > 1 else 0.5
+            }
+            
+            # Calculate confusion matrix elements
+            tp = np.sum((predictions == 1) & (np.array(all_labels) == 1))
+            fp = np.sum((predictions == 1) & (np.array(all_labels) == 0))
+            tn = np.sum((predictions == 0) & (np.array(all_labels) == 0))
+            fn = np.sum((predictions == 0) & (np.array(all_labels) == 1))
+            
+            metrics['confusion_matrix'] = {
+                'tp': int(tp),
+                'fp': int(fp),
+                'tn': int(tn),
+                'fn': int(fn)
+            }
+            
+            metrics['fpr'] = float(fp / (fp + tn)) if (fp + tn) > 0 else 0.0
+            metrics['tpr'] = float(tp / (tp + fn)) if (tp + fn) > 0 else 0.0
+            
+            metrics_by_threshold[threshold_name] = metrics
+        
+        # Determine best threshold
+        best_threshold_name = 'fpr_1pct' if 'fpr_1pct' in thresholds_to_evaluate else \
+                             'train_auroc' if 'train_auroc' in thresholds_to_evaluate else \
+                             'default_0.5'
+        
+        # Print which threshold is being used
+        if best_threshold_name != 'default_0.5':
+            print(f"  {probe_type} L{layer}: Using {best_threshold_name} threshold = {thresholds_to_evaluate[best_threshold_name]:.4f}")
+        
         results[(layer, probe_type)] = {
-            'metrics': metrics,
+            'metrics': metrics_by_threshold[best_threshold_name],  # Primary metrics
+            'metrics_all_thresholds': metrics_by_threshold,
+            'best_threshold_name': best_threshold_name,
+            'thresholds_evaluated': thresholds_to_evaluate,
             'token_details': token_details,
             'mean_scores': all_scores,
-            'predictions': predictions.tolist(),
+            'predictions': (np.array(all_scores) > thresholds_to_evaluate[best_threshold_name]).astype(int).tolist(),
             'labels': all_labels
         }
     
@@ -667,7 +755,7 @@ Examples:
     # Create evaluator
     evaluator = OptimizedBatchProbeEvaluator(args.model_name, args.device)
     
-    # Evaluate on all samples
+# Evaluate on all samples
     print("\nEvaluating probes on assistant tokens...")
     from transformers import AutoTokenizer
     tokenizer = AutoTokenizer.from_pretrained(args.model_name, use_fast=True)
@@ -676,11 +764,14 @@ Examples:
     
     results = evaluate_on_assistant_tokens(evaluator, probe_configs, all_samples, args.model_name)
     
-    # Group results by dataset
+    # Group results by dataset for per-dataset metrics
     results_by_dataset = {}
     for (layer, probe_type), result in results.items():
-        # Group token details by source dataset
-        for i, detail in enumerate(result['token_details']):
+        # Get the best threshold being used
+        best_threshold_name = result.get('best_threshold_name', 'default_0.5')
+        
+        # Group by source dataset
+        for i in range(len(result['labels'])):
             source = all_samples[i]['source_dataset']
             key = (layer, probe_type, source)
             
@@ -688,62 +779,122 @@ Examples:
                 results_by_dataset[key] = {
                     'labels': [],
                     'mean_scores': [],
-                    'predictions': [],
                     'token_details': []
                 }
             
             results_by_dataset[key]['labels'].append(result['labels'][i])
             results_by_dataset[key]['mean_scores'].append(result['mean_scores'][i])
-            results_by_dataset[key]['predictions'].append(result['predictions'][i])
-            results_by_dataset[key]['token_details'].append(detail)
+            if i < len(result['token_details']):
+                results_by_dataset[key]['token_details'].append(result['token_details'][i])
     
-    # Calculate per-dataset metrics
+    # Calculate and save per-dataset metrics for all thresholds
     print("\n" + "="*60)
     print("PER-DATASET RESULTS")
     print("="*60)
     
     for (layer, probe_type, dataset_name), data in results_by_dataset.items():
-        if data['labels']:
-            acc = accuracy_score(data['labels'], data['predictions'])
-            auroc = roc_auc_score(data['labels'], data['mean_scores']) if len(set(data['labels'])) > 1 else 0.5
-            print(f"{probe_type} L{layer} @ {dataset_name}: Acc={acc:.3f}, AUROC={auroc:.3f}")
+        if not data['labels']:
+            continue
             
-            # Save per-dataset results
-            dataset_dir = results_dir / dataset_name / probe_type / f"layer_{layer}"
-            dataset_dir.mkdir(parents=True, exist_ok=True)
+        # Get threshold values from the original result
+        original_result = results[(layer, probe_type)]
+        thresholds_evaluated = original_result.get('thresholds_evaluated', {'default_0.5': 0.5})
+        
+        # Calculate metrics for each threshold
+        per_dataset_metrics = {}
+        for thresh_name, thresh_value in thresholds_evaluated.items():
+            predictions = (np.array(data['mean_scores']) > thresh_value).astype(int)
             
-            metrics = {
-                'accuracy': float(acc),
-                'auroc': float(auroc),
+            per_dataset_metrics[thresh_name] = {
+                'threshold_value': float(thresh_value),
+                'accuracy': float(accuracy_score(data['labels'], predictions)),
+                'auroc': float(roc_auc_score(data['labels'], data['mean_scores'])) 
+                        if len(set(data['labels'])) > 1 else 0.5,
                 'n_samples': len(data['labels'])
             }
-            with open(dataset_dir / 'metrics.json', 'w') as f:
-                json.dump(metrics, f, indent=2)
+        
+        # Print best threshold results
+        best_thresh = original_result.get('best_threshold_name', 'default_0.5')
+        best_metrics = per_dataset_metrics.get(best_thresh, per_dataset_metrics.get('default_0.5'))
+        print(f"{probe_type} L{layer} @ {dataset_name}: "
+              f"Acc={best_metrics['accuracy']:.3f}, AUROC={best_metrics['auroc']:.3f} "
+              f"(using {best_thresh})")
+        
+        # Save per-dataset results
+        dataset_dir = results_dir / dataset_name / probe_type / f"layer_{layer}"
+        dataset_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Save all threshold metrics
+        with open(dataset_dir / 'metrics_all_thresholds.json', 'w') as f:
+            json.dump({
+                'best_threshold_name': best_thresh,
+                'all_thresholds': per_dataset_metrics
+            }, f, indent=2)
+        
+        # Save backward-compatible single metrics file
+        with open(dataset_dir / 'metrics.json', 'w') as f:
+            json.dump(best_metrics, f, indent=2)
     
-    # Calculate aggregated metrics
+    # Save aggregated results (across all datasets)
     print("\n" + "="*60)
     print("AGGREGATED RESULTS (ALL DATASETS)")
     print("="*60)
     
     for (layer, probe_type), result in results.items():
+        # Primary metrics (using best threshold)
         metrics = result['metrics']
-        print(f"{probe_type} Layer {layer}: Acc={metrics['accuracy']:.3f}, AUROC={metrics['auroc']:.3f}, "
-              f"F1={metrics['f1']:.3f}, N={len(result['labels'])}")
+        best_threshold_name = result.get('best_threshold_name', 'default_0.5')
+        
+        print(f"\n{probe_type} Layer {layer}:")
+        print(f"  Best threshold: {best_threshold_name}")
+        print(f"  Performance: Acc={metrics['accuracy']:.3f}, AUROC={metrics['auroc']:.3f}, "
+              f"F1={metrics['f1']:.3f}, FPR={metrics.get('fpr', 0):.3f}, N={len(result['labels'])}")
         
         # Save aggregated results
         agg_dir = results_dir / 'aggregated' / probe_type / f"layer_{layer}"
         agg_dir.mkdir(parents=True, exist_ok=True)
         
+        # Save all threshold metrics
+        all_thresholds_path = agg_dir / 'metrics_all_thresholds.json'
+        with open(all_thresholds_path, 'w') as f:
+            json.dump({
+                'primary_metrics': metrics,
+                'best_threshold_name': best_threshold_name,
+                'all_thresholds': result.get('metrics_all_thresholds', {}),
+                'thresholds_evaluated': result.get('thresholds_evaluated', {})
+            }, f, indent=2)
+        
+        # Save backward-compatible single metrics file
         with open(agg_dir / 'metrics.json', 'w') as f:
             json.dump(metrics, f, indent=2)
         
-        # Generate visualization with all samples
-        generate_enhanced_visualization(result['token_details'][:30],  # Limit to 30 for performance
-                                       agg_dir / 'token_visualization.html')
+        # Generate visualization
+        generate_enhanced_visualization(
+            result['token_details'],
+            agg_dir / 'token_visualization.html'
+        )
+        
+        # Print threshold comparison if available
+        if result.get('metrics_all_thresholds'):
+            print("\n  Threshold Comparison:")
+            for thresh_name, thresh_metrics in result['metrics_all_thresholds'].items():
+                marker = ">>> " if thresh_name == best_threshold_name else "    "
+                print(f"  {marker}{thresh_name}: "
+                      f"Acc={thresh_metrics['accuracy']:.3f}, "
+                      f"FPR={thresh_metrics.get('fpr', 0):.3f}, "
+                      f"F1={thresh_metrics['f1']:.3f}, "
+                      f"Threshold={thresh_metrics['threshold_value']:.4f}")
     
-    print(f"\n✅ Results saved to {results_dir}")
-    print(f"  • Per-dataset results in: {results_dir}/<dataset_name>/")
-    print(f"  • Aggregated results in: {results_dir}/aggregated/")
-
+    # Final summary
+    print("\n" + "="*60)
+    print("✅ EVALUATION COMPLETE")
+    print("="*60)
+    print(f"Results saved to: {results_dir}")
+    print(f"  • Per-dataset results: {results_dir}/<dataset_name>/<probe_type>/")
+    print(f"  • Aggregated results: {results_dir}/aggregated/<probe_type>/")
+    print(f"  • For each result:")
+    print(f"    - metrics.json: Best threshold metrics (backward compatible)")
+    print(f"    - metrics_all_thresholds.json: Results for all thresholds")
+    print(f"    - token_visualization.html: Token-level score visualization")
 if __name__ == "__main__":
     main()

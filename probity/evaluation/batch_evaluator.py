@@ -365,28 +365,26 @@ class OptimizedBatchProbeEvaluator:
         
         return results
 
-    
-    
+        
+        
     def _evaluate_single_probe_batch(self, probe: BaseProbe, 
-                                   layer_activations: torch.Tensor,
-                                   mean_activations: torch.Tensor,
-                                   texts: List[str], labels: List[int],
-                                   tokens_by_text: List[List[str]]) -> Dict:
+                                     layer_activations: torch.Tensor,
+                                     mean_activations: torch.Tensor,
+                                     texts: List[str], labels: List[int],
+                                     tokens_by_text: List[List[str]]) -> Dict:
         """Evaluate a single probe on batch data"""
         
         # Move probe to device and ensure it matches model dtype
         probe = probe.to(self.device)
         
-        # Get probe's expected dtype - check parameters first, then buffers
-        probe_dtype = self.model_dtype  # Default to model dtype
+        # Get probe's expected dtype
+        probe_dtype = self.model_dtype
         try:
             probe_dtype = next(probe.parameters()).dtype
         except StopIteration:
-            # No parameters, check buffers
             try:
                 probe_dtype = next(probe.buffers()).dtype
             except StopIteration:
-                # No buffers either, use model dtype
                 probe_dtype = self.model_dtype
         
         print(f"Probe dtype: {probe_dtype}, Activations dtype: {layer_activations.dtype}")
@@ -428,7 +426,6 @@ class OptimizedBatchProbeEvaluator:
                 # Ensure we have the right number of scores
                 if len(token_scores_list) != actual_length:
                     print(f"Warning: Score length mismatch for text {i}: {len(token_scores_list)} vs {actual_length}")
-                    # Pad or truncate as needed
                     if len(token_scores_list) < actual_length:
                         token_scores_list.extend([0.0] * (actual_length - len(token_scores_list)))
                     else:
@@ -476,27 +473,106 @@ class OptimizedBatchProbeEvaluator:
                 "tokens": sample["tokens"],
                 "token_scores": sample["token_scores"],
                 "mean_score": float(mean_score),
-                "predicted_label": int(1 if mean_score > 0.5 else 0),
-                "is_correct": bool((mean_score > 0.5) == (sample["true_label"] == 1)),
             }
             final_samples.append(sample_info)
         
-        # Calculate metrics
+        # Prepare mean scores array
         mean_scores = np.array(all_mean_scores)
-        predictions = (mean_scores > 0.5).astype(int)
         
-        metrics = {
-            'accuracy': float(accuracy_score(labels, predictions)),
-            'precision': float(precision_score(labels, predictions)),
-            'recall': float(recall_score(labels, predictions)),
-            'f1': float(f1_score(labels, predictions)),
-            'auroc': float(roc_auc_score(labels, mean_scores))
+        # Determine all thresholds to evaluate
+        thresholds_to_evaluate = {
+            'default_0.5': 0.5
         }
         
-        # Prepare token_details for visualization
+        # Add probe-specific thresholds if available
+        if hasattr(probe, 'config') and hasattr(probe.config, 'optimal_thresholds'):
+            opt_thresholds = probe.config.optimal_thresholds
+            
+            # Handle directional probes (need to normalize threshold)
+            if 'score_min' in opt_thresholds and 'score_max' in opt_thresholds:
+                score_min = opt_thresholds['score_min']
+                score_max = opt_thresholds['score_max']
+                
+                if 'train_auroc' in opt_thresholds:
+                    # For directional probes, use the raw threshold
+                    raw_threshold = opt_thresholds['train_auroc']
+                    # Normalize it to [0,1] like we did with scores
+                    if score_max > score_min:
+                        normalized_threshold = (raw_threshold - score_min) / (score_max - score_min)
+                        thresholds_to_evaluate['train_auroc'] = normalized_threshold
+                    else:
+                        thresholds_to_evaluate['train_auroc'] = 0.5
+                        print("WARNING: TRAIN AUROC THRESHOLD IS SET TO 0.5")
+            else:
+                # Probabilistic probes
+                if 'train_auroc' in opt_thresholds:
+                    thresholds_to_evaluate['train_auroc'] = opt_thresholds['train_auroc']
+                
+                if 'fpr_1pct' in opt_thresholds:
+                    threshold_data = opt_thresholds['fpr_1pct']
+                    if isinstance(threshold_data, dict):
+                        thresholds_to_evaluate['fpr_1pct'] = threshold_data.get('threshold', 0.5)
+                        if thresholds_to_evaluate['fpr_1pct'] == 0.5:
+                            print("WARNING: TRAIN AUROC THRESHOLD IS SET TO 0.5")
+                    else:
+                        thresholds_to_evaluate['fpr_1pct'] = threshold_data
+                
+                if 'fpr_5pct' in opt_thresholds:
+                    threshold_data = opt_thresholds['fpr_5pct']
+                    if isinstance(threshold_data, dict):
+                        thresholds_to_evaluate['fpr_5pct'] = threshold_data.get('threshold', 0.5)
+                        if thresholds_to_evaluate['fpr_1pct'] == 0.5:
+                            print("WARNING: TRAIN AUROC THRESHOLD IS SET TO 0.5")
+                    else:
+                        thresholds_to_evaluate['fpr_5pct'] = threshold_data
+        
+        # Calculate metrics for each threshold
+        metrics_by_threshold = {}
+        for threshold_name, threshold_value in thresholds_to_evaluate.items():
+            predictions = (mean_scores > threshold_value).astype(int)
+            
+            metrics = {
+                'threshold_value': float(threshold_value),
+                'accuracy': float(accuracy_score(labels, predictions)),
+                'precision': float(precision_score(labels, predictions, zero_division=0)),
+                'recall': float(recall_score(labels, predictions, zero_division=0)),
+                'f1': float(f1_score(labels, predictions, zero_division=0)),
+                'auroc': float(roc_auc_score(labels, mean_scores))  # AUROC same for all thresholds
+            }
+            
+            # Calculate confusion matrix elements
+            tp = np.sum((predictions == 1) & (np.array(labels) == 1))
+            fp = np.sum((predictions == 1) & (np.array(labels) == 0))
+            tn = np.sum((predictions == 0) & (np.array(labels) == 0))
+            fn = np.sum((predictions == 0) & (np.array(labels) == 1))
+            
+            metrics['confusion_matrix'] = {
+                'tp': int(tp),
+                'fp': int(fp),
+                'tn': int(tn),
+                'fn': int(fn)
+            }
+            
+            # Calculate FPR and TPR
+            metrics['fpr'] = float(fp / (fp + tn)) if (fp + tn) > 0 else 0.0
+            metrics['tpr'] = float(tp / (tp + fn)) if (tp + fn) > 0 else 0.0
+            
+            metrics_by_threshold[threshold_name] = metrics
+        
+        # Prepare token_details for visualization (using best threshold)
+        best_threshold_name = 'fpr_1pct' if 'fpr_1pct' in thresholds_to_evaluate else \
+                             'train_auroc' if 'train_auroc' in thresholds_to_evaluate else \
+                             'default_0.5'
+        
+        best_threshold = thresholds_to_evaluate[best_threshold_name]
+        
+        # Add predictions to samples for best threshold
+        for i, sample in enumerate(final_samples):
+            sample['predicted_label'] = int(1 if sample['mean_score'] > best_threshold else 0)
+            sample['is_correct'] = bool((sample['mean_score'] > best_threshold) == (sample['true_label'] == 1))
+        
         token_details = []
         for sample in final_samples:
-            # Clean tokens for visualization
             clean_tokens = [token.replace('Ġ', ' ').replace('Ċ', '\n') for token in sample["tokens"]]
             
             token_detail = {
@@ -510,19 +586,30 @@ class OptimizedBatchProbeEvaluator:
             }
             token_details.append(token_detail)
         
+        # Print summary of thresholds evaluated
+        print(f"Evaluated {len(thresholds_to_evaluate)} thresholds: {list(thresholds_to_evaluate.keys())}")
+        for name, metrics in metrics_by_threshold.items():
+            print(f"  {name}: threshold={metrics['threshold_value']:.4f}, "
+                  f"acc={metrics['accuracy']:.3f}, fpr={metrics['fpr']:.3f}")
+        
         return {
-            'metrics': metrics,
+            'metrics': metrics_by_threshold[best_threshold_name],  # Primary metrics for backward compatibility
+            'metrics_all_thresholds': metrics_by_threshold,  # NEW: All threshold results
+            'best_threshold_name': best_threshold_name,
+            'thresholds_evaluated': thresholds_to_evaluate,
             'metrics_interpretation': {
                 "accuracy": "Fraction of correctly classified truth/lie statements",
                 "precision": "Of statements classified as lies, fraction that were actually lies",
                 "recall": "Of actual lies, fraction that were detected",
                 "f1": "Harmonic mean of precision and recall for lie detection",
-                "auroc": "Area under ROC curve (1.0 = perfect separation of truths and lies)"
+                "auroc": "Area under ROC curve (1.0 = perfect separation of truths and lies)",
+                "fpr": "False positive rate (fraction of truths incorrectly classified as lies)",
+                "tpr": "True positive rate (fraction of lies correctly detected)"
             },
             'all_samples': final_samples,
             'token_details': token_details,
             'mean_scores': mean_scores.tolist(),
-            'predictions': predictions.tolist()
+            'predictions': [s['predicted_label'] for s in final_samples]  # Using best threshold
         }
     
     def _normalize_to_01(self, scores: List[float]) -> List[float]:

@@ -1,0 +1,29 @@
+{
+  "best_threshold_name": "fpr_1pct",
+  "all_thresholds": {
+    "default_0.5": {
+      "threshold_value": 0.5,
+      "accuracy": 0.43283582089552236,
+      "auroc": 0.4292929292929293,
+      "n_samples": 67
+    },
+    "train_auroc": {
+      "threshold_value": 0.49609375,
+      "accuracy": 0.417910447761194,
+      "auroc": 0.4292929292929293,
+      "n_samples": 67
+    },
+    "fpr_1pct": {
+      "threshold_value": 0.6796875,
+      "accuracy": 0.3582089552238806,
+      "auroc": 0.4292929292929293,
+      "n_samples": 67
+    },
+    "fpr_5pct": {
+      "threshold_value": 0.6796875,
+      "accuracy": 0.3582089552238806,
+      "auroc": 0.4292929292929293,
+      "n_samples": 67
+    }
+  }
+}

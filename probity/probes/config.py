@@ -9,6 +9,8 @@ class ProbeConfig:
 
     # Core configuration
     input_size: int
+    optimal_thresholds: Dict[str, Any] = field(default_factory=dict)
+
     device: str = field(
         default_factory=lambda: "cuda" if torch.cuda.is_available() else "cpu"
     )
