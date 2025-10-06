@@ -1,0 +1,10 @@
+{
+  "train_auroc": -0.1103515625,
+  "fpr_1pct": {
+    "threshold": 0.4769140625000002,
+    "target_fpr": 0.01,
+    "actual_fpr": 0.01,
+    "n_samples": 100,
+    "reference_dataset": "data/deception_detection/alpaca.jsonl"
+  }
+}

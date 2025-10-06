@@ -43,28 +43,28 @@ class ActivationStore:
         positions = []
 
     
-        print(f"DEBUG [Actual Training Tokens]:")
+        # print(f"DEBUG [Actual Training Tokens]:")
         
         # Check first 5 examples
-        for i, idx in enumerate(self.example_indices[:5]):
-            example = self.dataset.examples[idx]
-            if example.token_positions:
-                pos = example.token_positions[position_key]
-                if isinstance(pos, int):
-                    # Get the actual token at this position
-                    if hasattr(example, 'tokens') and pos < len(example.tokens):
-                        token = example.tokens[pos]
-                        print(f"  Example {i}: Training on token position {pos}: '{token}'")
+        # for i, idx in enumerate(self.example_indices[:5]):
+        #     example = self.dataset.examples[idx]
+        #     if example.token_positions:
+        #         pos = example.token_positions[position_key]
+        #         if isinstance(pos, int):
+        #             # Get the actual token at this position
+        #             if hasattr(example, 'tokens') and pos < len(example.tokens):
+        #                 token = example.tokens[pos]
+        #                 print(f"  Example {i}: Training on token position {pos}: '{token}'")
         
-        print(f"DEBUG [Activation Extraction] Getting positions for key: {position_key}")
+        # print(f"DEBUG [Activation Extraction] Getting positions for key: {position_key}")
 
         for idx in self.example_indices:
             example = self.dataset.examples[idx]
             if example.token_positions:
                 pos = example.token_positions[position_key]
-                print(f"  Example {idx}:")
-                print(f"    Position value: {pos}")
-                print(f"    Type: {type(pos)}")
+                # print(f"  Example {idx}:")
+                # print(f"    Position value: {pos}")
+                # print(f"    Type: {type(pos)}")
                     
                 if isinstance(pos, int):
                     positions.append(self.raw_activations[idx, pos])

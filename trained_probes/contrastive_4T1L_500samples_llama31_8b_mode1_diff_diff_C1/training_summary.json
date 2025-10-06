@@ -1,0 +1,155 @@
+{
+  "10": {
+    "logistic": {
+      "final_train_loss": 0.21591796875,
+      "final_val_loss": 0.6540178571428571,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/logistic/layer_10_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.55859375,
+      "final_val_loss": 0.55859375,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/meandiff/layer_10_probe.pt"
+    },
+    "attention": {
+      "final_train_loss": 0.52390625,
+      "final_val_loss": 0.5658482142857143,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/attention/layer_10_probe.pt"
+    }
+  },
+  "12": {
+    "logistic": {
+      "final_train_loss": 0.16271484375,
+      "final_val_loss": 0.5770089285714286,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/logistic/layer_12_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.474609375,
+      "final_val_loss": 0.474609375,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/meandiff/layer_12_probe.pt"
+    },
+    "attention": {
+      "final_train_loss": 0.4484375,
+      "final_val_loss": 0.4877232142857143,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/attention/layer_12_probe.pt"
+    }
+  },
+  "14": {
+    "logistic": {
+      "final_train_loss": 0.12283203125,
+      "final_val_loss": 0.57421875,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/logistic/layer_14_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.416015625,
+      "final_val_loss": 0.416015625,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/meandiff/layer_14_probe.pt"
+    },
+    "attention": {
+      "final_train_loss": 0.3571875,
+      "final_val_loss": 0.4232700892857143,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/attention/layer_14_probe.pt"
+    }
+  },
+  "16": {
+    "logistic": {
+      "final_train_loss": 0.11291015625,
+      "final_val_loss": 0.5276227678571429,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/logistic/layer_16_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.39453125,
+      "final_val_loss": 0.39453125,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/meandiff/layer_16_probe.pt"
+    },
+    "attention": {
+      "final_train_loss": 0.34484375,
+      "final_val_loss": 0.4185267857142857,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/attention/layer_16_probe.pt"
+    }
+  },
+  "18": {
+    "logistic": {
+      "final_train_loss": 0.122333984375,
+      "final_val_loss": 0.50390625,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/logistic/layer_18_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.369140625,
+      "final_val_loss": 0.369140625,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/meandiff/layer_18_probe.pt"
+    },
+    "attention": {
+      "final_train_loss": 0.3224609375,
+      "final_val_loss": 0.37611607142857145,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/attention/layer_18_probe.pt"
+    }
+  },
+  "20": {
+    "logistic": {
+      "final_train_loss": 0.12517578125,
+      "final_val_loss": 0.4693080357142857,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/logistic/layer_20_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.3671875,
+      "final_val_loss": 0.3671875,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/meandiff/layer_20_probe.pt"
+    },
+    "attention": {
+      "final_train_loss": 0.34078125,
+      "final_val_loss": 0.421875,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/attention/layer_20_probe.pt"
+    }
+  },
+  "22": {
+    "logistic": {
+      "final_train_loss": 0.14396484375,
+      "final_val_loss": 0.4453125,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/logistic/layer_22_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.357421875,
+      "final_val_loss": 0.357421875,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/meandiff/layer_22_probe.pt"
+    },
+    "attention": {
+      "final_train_loss": 0.2941015625,
+      "final_val_loss": 0.3716517857142857,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/attention/layer_22_probe.pt"
+    }
+  },
+  "24": {
+    "logistic": {
+      "final_train_loss": 0.1426953125,
+      "final_val_loss": 0.44029017857142855,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/logistic/layer_24_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.33203125,
+      "final_val_loss": 0.33203125,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/meandiff/layer_24_probe.pt"
+    },
+    "attention": {
+      "final_train_loss": 0.2851171875,
+      "final_val_loss": 0.40541294642857145,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/attention/layer_24_probe.pt"
+    }
+  },
+  "26": {
+    "logistic": {
+      "final_train_loss": 0.1392578125,
+      "final_val_loss": 0.46372767857142855,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/logistic/layer_26_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.3359375,
+      "final_val_loss": 0.3359375,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/meandiff/layer_26_probe.pt"
+    },
+    "attention": {
+      "final_train_loss": 0.258984375,
+      "final_val_loss": 0.36439732142857145,
+      "save_path": "trained_probes/contrastive_4T1L_500samples_llama31_8b_mode1_diff_diff_C1/attention/layer_26_probe.pt"
+    }
+  }
+}
