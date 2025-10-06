@@ -365,6 +365,23 @@ def evaluate_on_assistant_tokens(evaluator: OptimizedBatchProbeEvaluator,
         # Print which threshold is being used
         if best_threshold_name != 'default_0.5':
             print(f"  {probe_type} L{layer}: Using {best_threshold_name} threshold = {thresholds_to_evaluate[best_threshold_name]:.4f}")
+
+
+
+        # Collect all token scores with labels for visualization
+        raw_scores_data = {
+            'token_scores': [],  # All individual token scores
+            'token_labels': [],  # Label for each token
+            'sample_scores': all_scores,  # Mean scores per sample
+            'sample_labels': all_labels
+        }
+        
+        # Aggregate all token scores
+        for detail in token_details:
+            token_count = len(detail['token_scores'])
+            raw_scores_data['token_scores'].extend(detail['token_scores'])
+            raw_scores_data['token_labels'].extend([detail['label']] * token_count)
+            
         
         results[(layer, probe_type)] = {
             'metrics': metrics_by_threshold[best_threshold_name],  # Primary metrics
@@ -374,7 +391,8 @@ def evaluate_on_assistant_tokens(evaluator: OptimizedBatchProbeEvaluator,
             'token_details': token_details,
             'mean_scores': all_scores,
             'predictions': (np.array(all_scores) > thresholds_to_evaluate[best_threshold_name]).astype(int).tolist(),
-            'labels': all_labels
+            'labels': all_labels,
+            'raw_scores': raw_scores_data
         }
     
     return results
@@ -864,15 +882,38 @@ Examples:
                 'thresholds_evaluated': result.get('thresholds_evaluated', {})
             }, f, indent=2)
         
+        # Helper to clean NaN/Infinity values
+        def clean_json_floats(obj):
+            if isinstance(obj, float):
+                if np.isnan(obj) or np.isinf(obj):
+                    return None
+                return obj
+            elif isinstance(obj, dict):
+                return {k: clean_json_floats(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [clean_json_floats(v) for v in obj]
+            return obj
+        
         # Save backward-compatible single metrics file
         with open(agg_dir / 'metrics.json', 'w') as f:
-            json.dump(metrics, f, indent=2)
+            json.dump(clean_json_floats(metrics), f, indent=2)\
+            
+        # Save raw scores for visualization 
+        if 'raw_scores' in result:
+            raw_scores_path = agg_dir / 'raw_scores.json'
+            with open(raw_scores_path, 'w') as f:
+                json.dump(result['raw_scores'], f)
+            print(f"  Saved raw scores to {raw_scores_path}")
+            
         
         # Generate visualization
         generate_enhanced_visualization(
             result['token_details'],
             agg_dir / 'token_visualization.html'
         )
+        
+
+        
         
         # Print threshold comparison if available
         if result.get('metrics_all_thresholds'):

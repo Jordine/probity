@@ -1,15 +1,15 @@
 {
-  "threshold_value": Infinity,
-  "accuracy": 0.3283582089552239,
+  "threshold_value": null,
+  "accuracy": 0.32,
   "precision": 0.0,
   "recall": 0.0,
   "f1": 0.0,
-  "auroc": 0.37575757575757573,
+  "auroc": 0.3428308823529412,
   "confusion_matrix": {
     "tp": 0,
     "fp": 0,
-    "tn": 22,
-    "fn": 45
+    "tn": 16,
+    "fn": 34
   },
   "fpr": 0.0,
   "tpr": 0.0

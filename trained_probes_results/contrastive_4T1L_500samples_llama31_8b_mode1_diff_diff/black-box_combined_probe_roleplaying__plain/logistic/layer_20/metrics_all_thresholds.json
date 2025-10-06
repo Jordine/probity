@@ -3,27 +3,27 @@
   "all_thresholds": {
     "default_0.5": {
       "threshold_value": 0.5,
-      "accuracy": 0.3582089552238806,
-      "auroc": 0.3838383838383838,
-      "n_samples": 67
+      "accuracy": 0.34,
+      "auroc": 0.35569852941176466,
+      "n_samples": 50
     },
     "train_auroc": {
       "threshold_value": 0.45703125,
-      "accuracy": 0.40298507462686567,
-      "auroc": 0.3838383838383838,
-      "n_samples": 67
+      "accuracy": 0.38,
+      "auroc": 0.35569852941176466,
+      "n_samples": 50
     },
     "fpr_1pct": {
       "threshold_value": Infinity,
-      "accuracy": 0.3283582089552239,
-      "auroc": 0.3838383838383838,
-      "n_samples": 67
+      "accuracy": 0.32,
+      "auroc": 0.35569852941176466,
+      "n_samples": 50
     },
     "fpr_5pct": {
       "threshold_value": 0.61328125,
-      "accuracy": 0.3283582089552239,
-      "auroc": 0.3838383838383838,
-      "n_samples": 67
+      "accuracy": 0.34,
+      "auroc": 0.35569852941176466,
+      "n_samples": 50
     }
   }
 }
