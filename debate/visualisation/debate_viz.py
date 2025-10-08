@@ -289,6 +289,13 @@ def create_debate_chat_visualization(transcript: Dict, output_path: Path):
                     <input type="range" class="slider" id="threshold-slider" 
                            min="0" max="1" step="0.001" value="0.5">
                 </div>
+
+
+                <button class="export-btn" id="flip-btn" onclick="flipProbeClasses()" 
+                        style="margin-top: 10px; background: #e74c3c;">
+                    🔄 Flip Probe Classes
+                </button>
+                
                 
                 <div class="metrics">
                     <h4>📊 Live Metrics</h4>
@@ -338,6 +345,27 @@ def create_debate_chat_visualization(transcript: Dict, output_path: Path):
         let statementLabels = {};  // Maps statement ID to label (0=honest, 1=deceptive)
         let currentThreshold = 0.5;
         let tokenDistChart, statementDistChart, rocChart;
+        let isFlipped = false; 
+
+
+        // Helper function to get effective score based on flip state
+        function getEffectiveScore(score) {
+            return isFlipped ? (1 - score) : score;
+        }
+        
+        // Flip probe class interpretation
+        function flipProbeClasses() {
+            isFlipped = !isFlipped;
+            const btn = document.getElementById('flip-btn');
+            btn.textContent = isFlipped ? '🔄 Un-flip Probe Classes' : '🔄 Flip Probe Classes';
+            btn.style.background = isFlipped ? '#2ecc71' : '#e74c3c';
+            
+            // Update everything
+            updateColors();
+            updateMetrics();
+            updatePlots();
+        }
+        
         
         // Initialize labels from original roles
         document.querySelectorAll('.statement').forEach(stmt => {
@@ -375,10 +403,12 @@ def create_debate_chat_visualization(transcript: Dict, output_path: Path):
                 element.classList.add('selected-honest');
             }
         }
-        
+
+
         function updateColors() {
             document.querySelectorAll('.token').forEach(token => {
-                const score = parseFloat(token.dataset.score);
+                const rawScore = parseFloat(token.dataset.score);
+                const score = getEffectiveScore(rawScore);  // MODIFIED: Use effective score
                 const distance = Math.abs(score - currentThreshold);
                 const maxOpacity = 0.7;
                 const minOpacity = 0.1;
@@ -452,6 +482,7 @@ def create_debate_chat_visualization(transcript: Dict, output_path: Path):
             return points;
         }
         
+        
         function updateMetrics() {
             const labels = [];
             const scores = [];
@@ -459,7 +490,8 @@ def create_debate_chat_visualization(transcript: Dict, output_path: Path):
             document.querySelectorAll('.statement').forEach(stmt => {
                 const key = `${stmt.dataset.turn}-${stmt.dataset.statement}`;
                 labels.push(statementLabels[key]);
-                scores.push(parseFloat(stmt.dataset.score));
+                const rawScore = parseFloat(stmt.dataset.score);
+                scores.push(getEffectiveScore(rawScore));  // MODIFIED: Use effective score
             });
             
             const auroc = calculateAUROC(labels, scores);
@@ -475,7 +507,7 @@ def create_debate_chat_visualization(transcript: Dict, output_path: Path):
             document.getElementById('accuracy-value').textContent = accuracy.toFixed(3);
             document.getElementById('above-count').textContent = `${aboveCount}/${scores.length}`;
         }
-        
+
         function updatePlots() {
             // Collect all data
             const statementLabels = [];
@@ -486,7 +518,8 @@ def create_debate_chat_visualization(transcript: Dict, output_path: Path):
             document.querySelectorAll('.statement').forEach(stmt => {
                 const key = `${stmt.dataset.turn}-${stmt.dataset.statement}`;
                 const label = statementLabels[key];
-                const score = parseFloat(stmt.dataset.score);
+                const rawScore = parseFloat(stmt.dataset.score);
+                const score = getEffectiveScore(rawScore);  // MODIFIED: Use effective score
                 
                 statementLabels.push(label);
                 statementScores.push(score);
@@ -494,7 +527,8 @@ def create_debate_chat_visualization(transcript: Dict, output_path: Path):
                 // Collect token scores
                 stmt.querySelectorAll('.token').forEach(token => {
                     tokenLabels.push(label);
-                    tokenScores.push(parseFloat(token.dataset.score));
+                    const rawTokenScore = parseFloat(token.dataset.score);
+                    tokenScores.push(getEffectiveScore(rawTokenScore));  // MODIFIED
                 });
             });
             
@@ -510,6 +544,8 @@ def create_debate_chat_visualization(transcript: Dict, output_path: Path):
             // Update statistics
             updateStatistics(statementLabels, statementScores, tokenLabels, tokenScores);
         }
+
+        
         
         function updateDistributionChart(chart, labels, scores, type) {
             const honest = scores.filter((s, i) => labels[i] === 0);

@@ -96,42 +96,58 @@ class ProbeDebateInference:
     def _load_probes(self) -> Dict[str, BaseProbe]:
         """Load the probe objects that correspond to `self.role`."""
         probes: Dict[str, BaseProbe] = {}
-
+    
         for probe_type in self.config.probe_types:
             probe_path = self.probe_dir / probe_type / f"layer_{self.config.layer}_probe.pt"
             if not probe_path.exists():
                 print(f"[WARN] Expected probe file not found: {probe_path}")
                 continue
-
+    
             try:
                 checkpoint = torch.load(
                     probe_path,
                     map_location=self.device,
                     weights_only=False,
                 )
+                
+                # CRITICAL FIX: Update config device to match target device
+                config = checkpoint.get("config")
+                if hasattr(config, 'device'):
+                    config.device = str(self.device)  # Update to target device
+                
                 # Dynamically pick the concrete class
-                from probity.probes import LogisticProbe, PCAProbe, MeanDifferenceProbe
-
+                from probity.probes import LogisticProbe, PCAProbe, MeanDifferenceProbe, MLPProbe, AttentionProbe
+    
                 probe_cls_map = {
                     "LogisticProbe": LogisticProbe,
                     "PCAProbe": PCAProbe,
                     "MeanDifferenceProbe": MeanDifferenceProbe,
+                    "MLPProbe": MLPProbe,
+                    "AttentionProbe": AttentionProbe
                 }
                 cls_name = checkpoint.get("probe_type")
                 probe_cls = probe_cls_map.get(cls_name)
-
+    
                 if probe_cls is None:
                     print(f"[WARN] Unknown probe class '{cls_name}' in {probe_path}")
                     continue
-
-                probe: BaseProbe = probe_cls(checkpoint["config"])
+    
+                probe: BaseProbe = probe_cls(config)  # Now uses corrected config
                 probe.load_state_dict(checkpoint["state_dict"])
                 probe = probe.to(self.device)
+                
+                # CRITICAL FIX: Mark DirectionalProbe subclasses as fit after loading
+                if hasattr(probe, 'has_fit') and hasattr(probe, 'direction_vector'):
+                    if probe.direction_vector is not None and torch.any(probe.direction_vector != 0):
+                        probe.has_fit = True
+                
                 probes[probe_type] = probe
-
-            except Exception as exc:  # pylint: disable=broad-except
+    
+            except Exception as exc:
                 print(f"[ERROR] Could not load probe '{probe_type}': {exc}")
-
+                import traceback
+                traceback.print_exc()
+    
         return probes
 
     
@@ -253,7 +269,9 @@ class ProbeDebateInference:
         with torch.no_grad():
             for p_type, probe in self.probes.items():
                 try:
-                    act = assist_act.to(dtype=probe.dtype, copy=False)
+                    act = assist_act.to(device=self.device, dtype=probe.dtype, copy=False)
+                    print(self.device)
+                    print("act = assist device=self.device sucessfully run")
                     
                     raw = probe(act)
                     raw_logits = raw.cpu().squeeze().tolist()  # Store raw logits

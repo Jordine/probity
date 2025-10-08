@@ -1,0 +1,23 @@
+PROBE PERFORMANCE METRICS
+================================================================================
+
+Experiment Mode: debater_full
+--------------------------------------------------------------------------------
+AUROC: 0.4711
+AUPRC: 0.5276
+F1 Score: 0.3810
+Precision: 0.6667
+Recall: 0.2667
+Optimal Threshold: 0.0500
+
+Confusion Matrix:
+  True Positives: 4
+  True Negatives: 13
+  False Positives: 2
+  False Negatives: 11
+
+Score Statistics:
+  Honest Mean ± Std: -0.0096 ± 0.1235
+  Dishonest Mean ± Std: -0.0122 ± 0.1388
+  Total Samples: 30
+

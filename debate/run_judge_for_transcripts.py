@@ -489,8 +489,17 @@ class BatchJudgeEvaluator:
         print(f"📊 Total evaluations to run: {total_evaluations}")
         print(f"{'='*60}\n")
         
-        # Create progress bar for overall progress
-        with tqdm(total=total_evaluations, desc="Overall Progress", unit="eval") as pbar:
+        # FIXED: Add file=sys.stdout and disable=False to ensure tqdm works
+        import sys
+        with tqdm(
+            total=total_evaluations, 
+            desc="Overall Progress", 
+            unit="eval",
+            file=sys.stdout,
+            disable=False,
+            ncols=100,  # Fixed width for better display
+            bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]'
+        ) as pbar:
             
             # Process each transcript
             for transcript_idx, transcript_file in enumerate(transcript_files, 1):
@@ -506,7 +515,8 @@ class BatchJudgeEvaluator:
                 
                 # Evaluate with each judge and probe configuration
                 for judge_name, judge_config in judge_configs:
-                    evaluator = TranscriptJudgeEvaluator(judge_config, verbose=False)  # Disable verbose for cleaner output
+                    # FIXED: Pass verbose flag correctly
+                    evaluator = TranscriptJudgeEvaluator(judge_config, verbose=verbose)
                     
                     for mode_name, include_probes, display_mode in probe_modes:
                         
@@ -517,10 +527,11 @@ class BatchJudgeEvaluator:
                             continue
                         
                         # Update progress bar description
-                        pbar.set_description(f"Judge: {judge_name[:15]}, Mode: {mode_name[:15]}")
+                        short_judge = judge_name.replace('anthropic/', '').replace('meta-llama/', '')[:20]
+                        pbar.set_description(f"Judge: {short_judge} | Mode: {mode_name[:15]}")
                         
                         try:
-                            # Show what we're evaluating
+                            # Show what we're evaluating if verbose
                             if verbose:
                                 tqdm.write(f"  ⚖️ Judge: {judge_name}, Mode: {mode_name}")
                             
@@ -551,7 +562,7 @@ class BatchJudgeEvaluator:
                             
                             results.append(result)
                             
-                            # Show result
+                            # Show result if verbose
                             if verbose:
                                 winner_symbol = "✓" if result.get('correct') else "✗" if result.get('correct') is False else "?"
                                 tqdm.write(f"    {winner_symbol} Winner: {result.get('winner_label', 'N/A')} "
@@ -570,6 +581,8 @@ class BatchJudgeEvaluator:
                         
                         # Update progress
                         pbar.update(1)
+                        # Force flush
+                        sys.stdout.flush()
                 
                 # Save updated transcript with all judge results
                 with open(transcript_file, 'w') as f:
