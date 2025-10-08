@@ -1,49 +1,35 @@
+# debate/visualisation/debate_viz.py
 """
-HTML chat-style visualization for debate transcripts with token-level probe scores
+Enhanced HTML chat-style visualization for debate transcripts with interactive labeling
 """
 
 import json
 import numpy as np
 from pathlib import Path
 from typing import Dict, List, Optional
-from jinja2 import Template
+from datetime import datetime
+import hashlib
 
 
-def normalize_scores(scores: List[float]) -> List[float]:
-    """Normalize scores to [-1, 1] range"""
-    if not scores:
-        return scores
-    
-    scores_array = np.array(scores)
-    min_score = scores_array.min()
-    max_score = scores_array.max()
-    
-    if max_score == min_score:
-        return [0.0] * len(scores)
-    
-    # Normalize to [-1, 1]
-    # Lower scores (more truthful) = negative
-    # Higher scores (more deceptive) = positive
-    normalized = 2 * (scores_array - min_score) / (max_score - min_score) - 1
-    return normalized.tolist()
-
-
-def score_to_color(score: float) -> str:
-    """Convert normalized score [-1, 1] to red-green color
-    -1 (truthful) = green
-    0 (neutral) = transparent
-    +1 (deceptive) = red
+def score_to_color(score: float, threshold: float = 0.5) -> str:
+    """Convert score [0, 1] to color based on threshold
+    Above threshold = red (deceptive)
+    Below threshold = green (honest)
+    Opacity based on distance from threshold
     """
-    score = max(-1, min(1, score))
+    distance = abs(score - threshold)
+    max_opacity = 0.7
+    min_opacity = 0.1
     
-    if score >= 0:
-        # Red for deceptive (0 to 1)
-        intensity = score
-        return f"rgba(220, 53, 69, {intensity * 0.7:.3f})"
+    # Scale opacity based on distance from threshold (closer = more transparent)
+    opacity = min_opacity + (max_opacity - min_opacity) * min(distance * 2, 1)
+    
+    if score >= threshold:
+        # Red for deceptive
+        return f"rgba(220, 53, 69, {opacity:.3f})"
     else:
-        # Green for truthful (-1 to 0)
-        intensity = -score
-        return f"rgba(40, 167, 69, {intensity * 0.7:.3f})"
+        # Green for honest
+        return f"rgba(40, 167, 69, {opacity:.3f})"
 
 
 def clean_tokens(tokens: List[str]) -> List[str]:
@@ -52,14 +38,14 @@ def clean_tokens(tokens: List[str]) -> List[str]:
 
 
 def create_debate_chat_visualization(transcript: Dict, output_path: Path):
-    """Create HTML chat visualization for a debate transcript"""
+    """Create enhanced interactive HTML visualization for a debate transcript"""
     
     html_template = """
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Debate Visualization: {{ debate_id }}</title>
+    <title>Interactive Debate Analysis: {{ debate_id }}</title>
     <style>
         * {
             margin: 0;
@@ -68,7 +54,7 @@ def create_debate_chat_visualization(transcript: Dict, output_path: Path):
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: #f0f2f5;
             color: #1c1e21;
         }
@@ -76,161 +62,69 @@ def create_debate_chat_visualization(transcript: Dict, output_path: Path):
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 30px;
+            padding: 20px;
             text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-        
-        .header .subtitle {
-            font-size: 14px;
-            opacity: 0.9;
         }
         
         .container {
-            max-width: 900px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
         }
         
-        .tabs {
-            display: flex;
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+        }
+        
+        .debate-section {
             background: white;
-            border-radius: 8px 8px 0 0;
-            overflow: hidden;
+            border-radius: 8px;
+            padding: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
-        .tab {
-            flex: 1;
+        .controls {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+        
+        .context-box {
+            background: #f8f9fa;
             padding: 15px;
-            text-align: center;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .statement {
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
             cursor: pointer;
-            border: none;
-            background: white;
-            font-size: 14px;
-            font-weight: 500;
             transition: all 0.3s;
+            border: 2px solid transparent;
         }
         
-        .tab:hover {
-            background: #f8f9fa;
+        .statement:hover {
+            border-color: #667eea;
         }
         
-        .tab.active {
-            background: #667eea;
-            color: white;
+        .statement.selected-deceptive {
+            border-color: #dc3545;
+            background-color: rgba(220, 53, 69, 0.05);
         }
         
-        .tab-content {
-            display: none;
-            background: white;
-            border-radius: 0 0 8px 8px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        .system-prompts {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        
-        .system-prompt {
-            margin-bottom: 20px;
-        }
-        
-        .system-prompt h3 {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-        
-        .system-prompt .emoji {
-            font-size: 24px;
-        }
-        
-        .system-prompt pre {
-            background: white;
-            padding: 15px;
-            border-radius: 4px;
-            overflow-x: auto;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            font-size: 13px;
-            line-height: 1.5;
-            border: 1px solid #dee2e6;
-        }
-        
-        .chat-container {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .message {
-            display: flex;
-            margin-bottom: 20px;
-            animation: fadeIn 0.3s;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .message.honest {
-            justify-content: flex-start;
-        }
-        
-        .message.dishonest {
-            justify-content: flex-end;
-        }
-        
-        .message-avatar {
-            font-size: 32px;
-            margin: 0 10px;
-            cursor: help;
-        }
-        
-        .message-bubble {
-            max-width: 70%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            line-height: 1.6;
-        }
-        
-        .message.honest .message-bubble {
-            background: #e3f2fd;
-            border-bottom-left-radius: 4px;
-        }
-        
-        .message.dishonest .message-bubble {
-            background: #fce4ec;
-            border-bottom-right-radius: 4px;
-        }
-        
-        .message-header {
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            opacity: 0.7;
-        }
-        
-        .message-content {
-            font-size: 15px;
+        .statement.selected-honest {
+            border-color: #28a745;
+            background-color: rgba(40, 167, 69, 0.05);
         }
         
         .token {
@@ -238,518 +132,744 @@ def create_debate_chat_visualization(transcript: Dict, output_path: Path):
             padding: 2px 4px;
             margin: 1px;
             border-radius: 3px;
-            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-family: monospace;
             font-size: 14px;
-            cursor: help;
-            transition: transform 0.2s;
-        }
-        
-        .token:hover {
-            transform: scale(1.1);
-            z-index: 10;
-        }
-        
-        .legend {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin: 20px 0;
-            padding: 15px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-        }
-        
-        .legend-color {
-            width: 24px;
-            height: 24px;
-            border-radius: 4px;
-            border: 1px solid rgba(0,0,0,0.1);
-        }
-        
-        .judge-section {
-            margin-top: 30px;
-        }
-        
-        .judge-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .judge-tab {
-            padding: 10px 20px;
-            background: white;
-            border: 2px solid #dee2e6;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
             transition: all 0.3s;
         }
         
-        .judge-tab:hover {
-            border-color: #667eea;
+        .slider-container {
+            margin: 20px 0;
         }
         
-        .judge-tab.active {
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(to right, #28a745 0%, #ffc107 50%, #dc3545 100%);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
             background: #667eea;
-            color: white;
-            border-color: #667eea;
+            cursor: pointer;
         }
         
-        .judge-content {
-            display: none;
+        .metrics {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        
+        .plots-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .plot {
             background: white;
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
-        .judge-content.active {
-            display: block;
+        canvas {
+            max-width: 100%;
+            height: auto;
         }
         
-        .judge-decision {
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        
-        .judge-decision h4 {
-            margin-bottom: 15px;
-            font-size: 16px;
-            color: #495057;
-        }
-        
-        .decision-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-weight: 600;
+        .export-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
             font-size: 14px;
+            margin-top: 15px;
+            width: 100%;
         }
         
-        .decision-badge.correct {
+        .export-btn:hover {
+            background: #5a67d8;
+        }
+        
+        .speaker-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .role-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: normal;
+        }
+        
+        .role-badge.honest {
             background: #d4edda;
             color: #155724;
         }
         
-        .decision-badge.incorrect {
+        .role-badge.dishonest {
             background: #f8d7da;
             color: #721c24;
         }
-        
-        .judge-reasoning {
-            margin-top: 15px;
-            padding: 15px;
-            background: white;
-            border-radius: 6px;
-            border-left: 4px solid #667eea;
-            white-space: pre-wrap;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-        
-        .analysis-section {
-            margin-top: 30px;
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .analysis-section h3 {
-            margin-bottom: 20px;
-            color: #667eea;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
-        .stat-card {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 6px;
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 28px;
-            font-weight: 700;
-            color: #667eea;
-            margin-bottom: 5px;
-        }
-        
-        .stat-label {
-            font-size: 13px;
-            color: #6c757d;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="header">
-        <h1>Debate Visualization</h1>
-        <div class="subtitle">{{ debate_id }}</div>
+        <h1>🔬 Interactive Debate Analysis</h1>
+        <div>{{ debate_id }}</div>
     </div>
     
     <div class="container">
-        <div class="tabs">
-            <button class="tab active" onclick="showTab('prompts')">System Prompts</button>
-            <button class="tab" onclick="showTab('debate')">Debate Transcript</button>
-            <button class="tab" onclick="showTab('judges')">Judge Decisions</button>
-            <button class="tab" onclick="showTab('analysis')">Analysis</button>
-        </div>
-        
-        <div id="prompts" class="tab-content active">
-            <div class="system-prompts">
-                <h2 style="margin-bottom: 20px;">System Prompts</h2>
-                
-                <div class="system-prompt">
-                    <h3>
-                        <span class="emoji">😇</span>
-                        Honest Debater
-                    </h3>
-                    <pre>{{ honest_system_prompt }}</pre>
+        <div class="main-content">
+            <div class="debate-section">
+                <!-- Context -->
+                <div class="context-box">
+                    <h3>📚 Context</h3>
+                    <div id="context-content">
+                        {{ context_html | safe }}
+                    </div>
                 </div>
                 
-                <div class="system-prompt">
-                    <h3>
-                        <span class="emoji">😈</span>
-                        Deceptive Debater
-                    </h3>
-                    <pre>{{ dishonest_system_prompt }}</pre>
-                </div>
-            </div>
-        </div>
-        
-        <div id="debate" class="tab-content">
-            <div class="legend">
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: rgba(40, 167, 69, 0.7);"></div>
-                    <span>Truthful (Low Probe Score)</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: rgba(128, 128, 128, 0.2);"></div>
-                    <span>Neutral</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: rgba(220, 53, 69, 0.7);"></div>
-                    <span>Deceptive (High Probe Score)</span>
+                <!-- Debate Transcript -->
+                <h3>💬 Debate Transcript</h3>
+                <div id="transcript">
+                    {% for turn in turns %}
+                    <div class="turn" data-turn-id="{{ loop.index0 }}">
+                        <div class="speaker-label">
+                            {{ turn.speaker_label }}
+                            <span class="role-badge {{ turn.role }}">{{ turn.role.upper() }}</span>
+                            - Round {{ turn.round }}
+                        </div>
+                        
+                        {% for statement in turn.statements %}
+                        <div class="statement" 
+                             data-turn="{{ loop.index0 }}"
+                             data-statement="{{ statement.index }}"
+                             data-role="{{ turn.role }}"
+                             data-score="{{ statement.mean_score }}"
+                             onclick="toggleLabel(this)">
+                            <div class="statement-tokens">
+                                {% for token, score in statement.token_scores %}
+                                <span class="token" 
+                                      data-score="{{ score }}"
+                                      style="background-color: {{ score_to_color(score, 0.5) }}">{{ token }}</span>
+                                {% endfor %}
+                            </div>
+                            <div class="statement-meta" style="font-size: 12px; color: #666; margin-top: 5px;">
+                                Score: {{ '%.3f' | format(statement.mean_score) }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
             
-            <div class="chat-container">
-                {% for message in messages %}
-                <div class="message {{ message.role }}">
-                    {% if message.role == 'honest' %}
-                    <div class="message-avatar" title="Honest Debater">😇</div>
-                    {% else %}
-                    <div class="message-avatar" title="Deceptive Debater">😈</div>
-                    {% endif %}
-                    
-                    <div class="message-bubble">
-                        <div class="message-header">
-                            {{ 'Honest Debater' if message.role == 'honest' else 'Deceptive Debater' }} - Round {{ message.round }}
-                        </div>
-                        <div class="message-content">
-                            {% for token, score, color in message.tokens %}
-                            <span class="token" 
-                                  style="background-color: {{ color }}"
-                                  title="Probe Score: {{ '%.3f'|format(score) }}">{{ token }}</span>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    
-                    {% if message.role == 'dishonest' %}
-                    <div class="message-avatar" title="Deceptive Debater">😈</div>
-                    {% else %}
-                    <div class="message-avatar" title="Honest Debater">😇</div>
-                    {% endif %}
+            <div class="controls">
+                <h3>🎚️ Controls</h3>
+                
+                <div class="slider-container">
+                    <label>Threshold: <span id="threshold-value">0.500</span></label>
+                    <input type="range" class="slider" id="threshold-slider" 
+                           min="0" max="1" step="0.001" value="0.5">
                 </div>
-                {% endfor %}
+                
+                <div class="metrics">
+                    <h4>📊 Live Metrics</h4>
+                    <div id="metrics-display">
+                        <div>Probe AUROC: <span id="auroc-value">-</span></div>
+                        <div>Accuracy @ Threshold: <span id="accuracy-value">-</span></div>
+                        <div>Statements Above: <span id="above-count">-</span></div>
+                    </div>
+                </div>
+                
+                <button class="export-btn" onclick="exportLabels()">
+                    💾 Export Corrected Labels
+                </button>
+                
+                <div style="margin-top: 15px; font-size: 12px; color: #666;">
+                    <p>🖱️ Click statements to toggle label</p>
+                    <p>🟢 Green = Honest</p>
+                    <p>🔴 Red = Deceptive</p>
+                </div>
             </div>
         </div>
         
-        <div id="judges" class="tab-content">
-            <div class="judge-section">
-                <h2 style="margin-bottom: 20px;">Judge Decisions</h2>
-                
-                <div class="judge-tabs">
-                    {% for judge_key in judge_results.keys() %}
-                    <button class="judge-tab {% if loop.first %}active{% endif %}" 
-                            onclick="showJudge('{{ judge_key }}')">
-                        {{ judge_key }}
-                    </button>
-                    {% endfor %}
-                </div>
-                
-                {% for judge_key, judge_data in judge_results.items() %}
-                <div id="{{ judge_key }}" class="judge-content {% if loop.first %}active{% endif %}">
-                    <div class="judge-decision">
-                        <h4>Decision</h4>
-                        <div>
-                            Winner: <strong>{{ judge_data.winner_label }}</strong> 
-                            ({{ judge_data.winner_role }})
-                            {% if judge_data.correct is not none %}
-                            <span class="decision-badge {{ 'correct' if judge_data.correct else 'incorrect' }}">
-                                {{ 'Correct' if judge_data.correct else 'Incorrect' }}
-                            </span>
-                            {% endif %}
-                        </div>
-                        <div style="margin-top: 10px; font-size: 13px; color: #6c757d;">
-                            Mode: {{ judge_data.evaluation_mode }} | 
-                            Probe Display: {{ judge_data.probe_display_mode or 'N/A' }}
-                        </div>
-                    </div>
-                    
-                    <div class="system-prompt">
-                        <h4>Judge System Prompt</h4>
-                        <pre>{{ judge_data.system_prompt }}</pre>
-                    </div>
-                    
-                    <div class="judge-reasoning">
-                        <h4 style="margin-bottom: 10px;">Reasoning</h4>
-                        {{ judge_data.reasoning }}
-                    </div>
-                </div>
-                {% endfor %}
+        <div class="plots-container">
+            <div class="plot">
+                <h4>Token-Level Distribution</h4>
+                <canvas id="token-dist-chart"></canvas>
             </div>
-        </div>
-        
-        <div id="analysis" class="tab-content">
-            <div class="analysis-section">
-                <h3>Debate Statistics</h3>
-                
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value">{{ debate_stats.total_rounds }}</div>
-                        <div class="stat-label">Total Rounds</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">{{ '%.3f'|format(debate_stats.honest_mean_score) }}</div>
-                        <div class="stat-label">Honest Mean Score</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">{{ '%.3f'|format(debate_stats.dishonest_mean_score) }}</div>
-                        <div class="stat-label">Deceptive Mean Score</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">{{ '%.3f'|format(debate_stats.score_separation) }}</div>
-                        <div class="stat-label">Score Separation</div>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 30px;">
-                    <h4>Probe-Only Classifications</h4>
-                    <div class="stats-grid">
-                        {% if probe_only_results %}
-                        <div class="stat-card">
-                            <div class="stat-value">{{ probe_only_results.probe_only_mean }}</div>
-                            <div class="stat-label">Winner (Mean)</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">{{ probe_only_results.probe_only_max }}</div>
-                            <div class="stat-label">Winner (Max)</div>
-                        </div>
-                        {% endif %}
-                    </div>
+            <div class="plot">
+                <h4>Statement-Level Distribution</h4>
+                <canvas id="statement-dist-chart"></canvas>
+            </div>
+            <div class="plot">
+                <h4>ROC Curve</h4>
+                <canvas id="roc-chart"></canvas>
+            </div>
+            <div class="plot">
+                <h4>Score Statistics</h4>
+                <div id="stats-display" style="padding: 10px;">
+                    <!-- Will be populated by JS -->
                 </div>
             </div>
         </div>
     </div>
     
     <script>
-        function showTab(tabName) {
-            // Hide all tab contents
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            
-            // Remove active class from all tabs
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Show selected tab content
-            document.getElementById(tabName).classList.add('active');
-            
-            // Add active class to clicked tab
-            event.target.classList.add('active');
+        // Global state
+        let statementLabels = {};  // Maps statement ID to label (0=honest, 1=deceptive)
+        let currentThreshold = 0.5;
+        let tokenDistChart, statementDistChart, rocChart;
+        
+        // Initialize labels from original roles
+        document.querySelectorAll('.statement').forEach(stmt => {
+            const key = `${stmt.dataset.turn}-${stmt.dataset.statement}`;
+            // Initial labeling: dishonest = deceptive (1), honest = honest (0)
+            statementLabels[key] = stmt.dataset.role === 'dishonest' ? 1 : 0;
+            updateStatementStyle(stmt);
+        });
+        
+        // Threshold slider
+        document.getElementById('threshold-slider').addEventListener('input', (e) => {
+            currentThreshold = parseFloat(e.target.value);
+            document.getElementById('threshold-value').textContent = currentThreshold.toFixed(3);
+            updateColors();
+            updateMetrics();
+            updatePlots();
+        });
+        
+        function toggleLabel(element) {
+            const key = `${element.dataset.turn}-${element.dataset.statement}`;
+            statementLabels[key] = 1 - statementLabels[key];  // Toggle between 0 and 1
+            updateStatementStyle(element);
+            updateMetrics();
+            updatePlots();
         }
         
-        function showJudge(judgeKey) {
-            // Hide all judge contents
-            document.querySelectorAll('.judge-content').forEach(content => {
-                content.classList.remove('active');
-            });
+        function updateStatementStyle(element) {
+            const key = `${element.dataset.turn}-${element.dataset.statement}`;
+            const label = statementLabels[key];
             
-            // Remove active class from all judge tabs
-            document.querySelectorAll('.judge-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Show selected judge content
-            document.getElementById(judgeKey).classList.add('active');
-            
-            // Add active class to clicked tab
-            event.target.classList.add('active');
+            element.classList.remove('selected-honest', 'selected-deceptive');
+            if (label === 1) {
+                element.classList.add('selected-deceptive');
+            } else {
+                element.classList.add('selected-honest');
+            }
         }
+        
+        function updateColors() {
+            document.querySelectorAll('.token').forEach(token => {
+                const score = parseFloat(token.dataset.score);
+                const distance = Math.abs(score - currentThreshold);
+                const maxOpacity = 0.7;
+                const minOpacity = 0.1;
+                const opacity = minOpacity + (maxOpacity - minOpacity) * Math.min(distance * 2, 1);
+                
+                if (score >= currentThreshold) {
+                    token.style.backgroundColor = `rgba(220, 53, 69, ${opacity})`;
+                } else {
+                    token.style.backgroundColor = `rgba(40, 167, 69, ${opacity})`;
+                }
+            });
+        }
+        
+        function calculateAUROC(labels, scores) {
+            // Simple AUROC calculation
+            const pairs = labels.map((label, i) => ({label, score: scores[i]}));
+            pairs.sort((a, b) => a.score - b.score);
+            
+            let auc = 0;
+            let tpr_prev = 0;
+            let fpr_prev = 0;
+            
+            const n_pos = labels.filter(l => l === 1).length;
+            const n_neg = labels.filter(l => l === 0).length;
+            
+            if (n_pos === 0 || n_neg === 0) return 0.5;
+            
+            for (let i = 0; i < pairs.length; i++) {
+                const tp = pairs.slice(i).filter(p => p.label === 1).length;
+                const fp = pairs.slice(i).filter(p => p.label === 0).length;
+                
+                const tpr = tp / n_pos;
+                const fpr = fp / n_neg;
+                
+                auc += (fpr - fpr_prev) * (tpr + tpr_prev) / 2;
+                
+                tpr_prev = tpr;
+                fpr_prev = fpr;
+            }
+            
+            return auc;
+        }
+        
+        function getROCPoints(labels, scores) {
+            const thresholds = [...new Set(scores)].sort((a, b) => b - a);
+            const points = [];
+            
+            const n_pos = labels.filter(l => l === 1).length;
+            const n_neg = labels.filter(l => l === 0).length;
+            
+            if (n_pos === 0 || n_neg === 0) {
+                return [{x: 0, y: 0}, {x: 1, y: 1}];
+            }
+            
+            thresholds.forEach(thresh => {
+                const predictions = scores.map(s => s >= thresh ? 1 : 0);
+                const tp = predictions.filter((p, i) => p === 1 && labels[i] === 1).length;
+                const fp = predictions.filter((p, i) => p === 1 && labels[i] === 0).length;
+                
+                points.push({
+                    x: fp / n_neg,  // FPR
+                    y: tp / n_pos,  // TPR
+                    threshold: thresh
+                });
+            });
+            
+            // Add endpoints
+            points.unshift({x: 1, y: 1, threshold: 0});
+            points.push({x: 0, y: 0, threshold: 1});
+            
+            return points;
+        }
+        
+        function updateMetrics() {
+            const labels = [];
+            const scores = [];
+            
+            document.querySelectorAll('.statement').forEach(stmt => {
+                const key = `${stmt.dataset.turn}-${stmt.dataset.statement}`;
+                labels.push(statementLabels[key]);
+                scores.push(parseFloat(stmt.dataset.score));
+            });
+            
+            const auroc = calculateAUROC(labels, scores);
+            
+            // Calculate accuracy at current threshold
+            const predictions = scores.map(s => s >= currentThreshold ? 1 : 0);
+            const correct = predictions.filter((p, i) => p === labels[i]).length;
+            const accuracy = correct / predictions.length;
+            
+            const aboveCount = scores.filter(s => s >= currentThreshold).length;
+            
+            document.getElementById('auroc-value').textContent = auroc.toFixed(3);
+            document.getElementById('accuracy-value').textContent = accuracy.toFixed(3);
+            document.getElementById('above-count').textContent = `${aboveCount}/${scores.length}`;
+        }
+        
+        function updatePlots() {
+            // Collect all data
+            const statementLabels = [];
+            const statementScores = [];
+            const tokenLabels = [];
+            const tokenScores = [];
+            
+            document.querySelectorAll('.statement').forEach(stmt => {
+                const key = `${stmt.dataset.turn}-${stmt.dataset.statement}`;
+                const label = statementLabels[key];
+                const score = parseFloat(stmt.dataset.score);
+                
+                statementLabels.push(label);
+                statementScores.push(score);
+                
+                // Collect token scores
+                stmt.querySelectorAll('.token').forEach(token => {
+                    tokenLabels.push(label);
+                    tokenScores.push(parseFloat(token.dataset.score));
+                });
+            });
+            
+            // Update token distribution
+            updateDistributionChart(tokenDistChart, tokenLabels, tokenScores, 'Token');
+            
+            // Update statement distribution
+            updateDistributionChart(statementDistChart, statementLabels, statementScores, 'Statement');
+            
+            // Update ROC curve
+            updateROCChart(statementLabels, statementScores);
+            
+            // Update statistics
+            updateStatistics(statementLabels, statementScores, tokenLabels, tokenScores);
+        }
+        
+        function updateDistributionChart(chart, labels, scores, type) {
+            const honest = scores.filter((s, i) => labels[i] === 0);
+            const deceptive = scores.filter((s, i) => labels[i] === 1);
+            
+            const bins = 20;
+            const min = Math.min(...scores);
+            const max = Math.max(...scores);
+            const binWidth = (max - min) / bins;
+            
+            const honestHist = new Array(bins).fill(0);
+            const deceptiveHist = new Array(bins).fill(0);
+            
+            honest.forEach(s => {
+                const bin = Math.min(Math.floor((s - min) / binWidth), bins - 1);
+                honestHist[bin]++;
+            });
+            
+            deceptive.forEach(s => {
+                const bin = Math.min(Math.floor((s - min) / binWidth), bins - 1);
+                deceptiveHist[bin]++;
+            });
+            
+            const binLabels = Array.from({length: bins}, (_, i) => 
+                (min + i * binWidth).toFixed(2));
+            
+            chart.data.labels = binLabels;
+            chart.data.datasets[0].data = honestHist;
+            chart.data.datasets[1].data = deceptiveHist;
+            chart.update();
+        }
+        
+        function updateROCChart(labels, scores) {
+            const points = getROCPoints(labels, scores);
+            const auroc = calculateAUROC(labels, scores);
+            
+            // Find current threshold point
+            const currentPoint = points.find(p => 
+                Math.abs(p.threshold - currentThreshold) < 0.01) || points[0];
+            
+            rocChart.data.datasets[0].data = points;
+            rocChart.data.datasets[1].data = [currentPoint];
+            rocChart.data.datasets[0].label = `ROC (AUC = ${auroc.toFixed(3)})`;
+            rocChart.update();
+        }
+        
+        function updateStatistics(stmtLabels, stmtScores, tokLabels, tokScores) {
+            const stmtHonest = stmtScores.filter((s, i) => stmtLabels[i] === 0);
+            const stmtDeceptive = stmtScores.filter((s, i) => stmtLabels[i] === 1);
+            
+            const html = `
+                <div style="margin-bottom: 10px;">
+                    <strong>Statement-Level</strong><br>
+                    Honest: μ=${mean(stmtHonest).toFixed(3)}, σ=${std(stmtHonest).toFixed(3)}<br>
+                    Deceptive: μ=${mean(stmtDeceptive).toFixed(3)}, σ=${std(stmtDeceptive).toFixed(3)}<br>
+                    Separation: ${(mean(stmtDeceptive) - mean(stmtHonest)).toFixed(3)}
+                </div>
+                <div>
+                    <strong>Token-Level</strong><br>
+                    Total tokens: ${tokScores.length}<br>
+                    Honest: ${tokLabels.filter(l => l === 0).length}<br>
+                    Deceptive: ${tokLabels.filter(l => l === 1).length}
+                </div>
+            `;
+            
+            document.getElementById('stats-display').innerHTML = html;
+        }
+        
+        function mean(arr) {
+            return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+        }
+        
+        function std(arr) {
+            if (!arr.length) return 0;
+            const m = mean(arr);
+            return Math.sqrt(arr.reduce((sq, n) => sq + Math.pow(n - m, 2), 0) / arr.length);
+        }
+        
+        function exportLabels() {
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const exportData = {
+                debate_id: '{{ debate_id }}',
+                timestamp: timestamp,
+                threshold: currentThreshold,
+                labels: statementLabels,
+                statement_scores: {},
+                metadata: {
+                    original_debate_type: '{{ debate_type }}',
+                    corrected_by: 'manual_annotation'
+                }
+            };
+            
+            // Add scores
+            document.querySelectorAll('.statement').forEach(stmt => {
+                const key = `${stmt.dataset.turn}-${stmt.dataset.statement}`;
+                exportData.statement_scores[key] = parseFloat(stmt.dataset.score);
+            });
+            
+            // Create download
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], 
+                                 {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `corrected_labels_${timestamp}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        // Initialize charts
+        window.addEventListener('DOMContentLoaded', () => {
+            // Token distribution chart
+            const tokenCtx = document.getElementById('token-dist-chart').getContext('2d');
+            tokenDistChart = new Chart(tokenCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Honest',
+                        backgroundColor: 'rgba(40, 167, 69, 0.5)',
+                        data: []
+                    }, {
+                        label: 'Deceptive',
+                        backgroundColor: 'rgba(220, 53, 69, 0.5)',
+                        data: []
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Count'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Score'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Statement distribution chart
+            const stmtCtx = document.getElementById('statement-dist-chart').getContext('2d');
+            statementDistChart = new Chart(stmtCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Honest',
+                        backgroundColor: 'rgba(40, 167, 69, 0.5)',
+                        data: []
+                    }, {
+                        label: 'Deceptive',
+                        backgroundColor: 'rgba(220, 53, 69, 0.5)',
+                        data: []
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Count'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Score'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // ROC chart
+            const rocCtx = document.getElementById('roc-chart').getContext('2d');
+            rocChart = new Chart(rocCtx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'ROC',
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        data: [],
+                        tension: 0
+                    }, {
+                        label: 'Current Threshold',
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgb(255, 99, 132)',
+                        data: [],
+                        pointRadius: 8,
+                        pointHoverRadius: 10,
+                        showLine: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    aspectRatio: 1,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 'False Positive Rate'
+                            },
+                            min: 0,
+                            max: 1
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'True Positive Rate'
+                            },
+                            min: 0,
+                            max: 1
+                        }
+                    }
+                }
+            });
+            
+            // Initial update
+            updateMetrics();
+            updatePlots();
+        });
     </script>
 </body>
 </html>
 """
     
-    # Extract data from transcript
+    # Process transcript data
     debate_id = transcript['debate_id']
-    debate_config = transcript.get('debate_config', {})
-    turns = transcript.get('turns', [])
-    judge_results = transcript.get('judge_results', {})
-    probe_only_results = transcript.get('probe_only_results', {})
+    debate_type = transcript.get('debate_type', 'unknown')
     
-    # Extract system prompts (reconstruct from config or problem data)
-    honest_system_prompt = _extract_system_prompt(transcript, 'honest')
-    dishonest_system_prompt = _extract_system_prompt(transcript, 'dishonest')
+    # Extract context
+    context_html = _extract_context_html(transcript)
     
-    # Process messages
-    messages = []
-    all_scores = []
-    
-    for turn in turns:
+    # Process turns with statement segmentation
+    turns_data = []
+    for turn in transcript.get('turns', []):
         if turn['speaker'] in ['honest', 'dishonest']:
-            # Collect all scores for normalization
-            if turn.get('probe_scores'):
-                for probe_type, scores in turn['probe_scores'].items():
-                    all_scores.extend(scores)
-    
-    # Normalize all scores globally
-    if all_scores:
-        normalized_global = normalize_scores(all_scores)
-        score_idx = 0
-        
-        for turn in turns:
-            if turn['speaker'] in ['honest', 'dishonest']:
-                tokens = turn.get('tokens', [])
-                probe_scores = turn.get('probe_scores', {})
-                
-                if tokens and probe_scores:
-                    # Average scores across probe types
-                    num_tokens = len(tokens)
-                    avg_scores = []
-                    
-                    for i in range(num_tokens):
-                        token_scores = [scores[i] for scores in probe_scores.values() if i < len(scores)]
-                        avg_score = np.mean(token_scores) if token_scores else 0.0
-                        avg_scores.append(avg_score)
-                    
-                    # Get normalized scores for this turn
-                    turn_normalized = normalized_global[score_idx:score_idx + num_tokens]
-                    score_idx += num_tokens
-                    
-                    # Clean tokens and create token-color pairs
-                    clean_token_list = clean_tokens(tokens)
-                    tokens_with_colors = [
-                        (token, norm_score, score_to_color(norm_score))
-                        for token, norm_score in zip(clean_token_list, turn_normalized)
-                    ]
-                    
-                    messages.append({
-                        'role': turn['speaker'],
-                        'round': turn['turn_number'],
-                        'tokens': tokens_with_colors
-                    })
-    
-    # Process judge results
-    judge_results_processed = {}
-    for judge_key, judge_data in judge_results.items():
-        # Extract judge system prompt
-        judge_system_prompt = _extract_judge_system_prompt(transcript, judge_key)
-        
-        judge_results_processed[judge_key] = {
-            'winner_label': judge_data.get('winner_label', 'Unknown'),
-            'winner_role': judge_data.get('winner_role', 'Unknown'),
-            'correct': judge_data.get('correct'),
-            'reasoning': judge_data.get('reasoning', ''),
-            'evaluation_mode': judge_data.get('evaluation_mode', 'unknown'),
-            'probe_display_mode': judge_data.get('probe_display_mode'),
-            'system_prompt': judge_system_prompt
-        }
-    
-    # Calculate debate statistics
-    honest_scores = []
-    dishonest_scores = []
-    
-    for turn in turns:
-        if turn.get('mean_probe_score') is not None:
-            if turn['speaker'] == 'honest':
-                honest_scores.append(turn['mean_probe_score'])
-            elif turn['speaker'] == 'dishonest':
-                dishonest_scores.append(turn['mean_probe_score'])
-    
-    debate_stats = {
-        'total_rounds': len([t for t in turns if t['speaker'] in ['honest', 'dishonest']]) // 2,
-        'honest_mean_score': np.mean(honest_scores) if honest_scores else 0.0,
-        'dishonest_mean_score': np.mean(dishonest_scores) if dishonest_scores else 0.0,
-        'score_separation': abs(np.mean(dishonest_scores) - np.mean(honest_scores)) if honest_scores and dishonest_scores else 0.0
-    }
+            statements = _segment_into_statements(turn)
+            
+            turns_data.append({
+                'speaker_label': turn.get('model_label', turn['speaker'].upper()),
+                'role': turn['speaker'],
+                'round': turn['turn_number'],
+                'statements': statements
+            })
     
     # Render template
+    from jinja2 import Template
     template = Template(html_template)
     html_content = template.render(
         debate_id=debate_id,
-        honest_system_prompt=honest_system_prompt,
-        dishonest_system_prompt=dishonest_system_prompt,
-        messages=messages,
-        judge_results=judge_results_processed,
-        probe_only_results=probe_only_results,
-        debate_stats=debate_stats
+        debate_type=debate_type,
+        context_html=context_html,
+        turns=turns_data,
+        score_to_color=score_to_color  # Pass the function
     )
     
     # Save HTML
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(html_content)
-
-
-def _extract_system_prompt(transcript: Dict, role: str) -> str:
-    """Extract system prompt for a debater role"""
-    # Try to find in turns
-    for turn in transcript.get('turns', []):
-        if turn['speaker'] == role and 'system_prompt' in turn.get('metadata', {}):
-            return turn['metadata']['system_prompt']
     
-    # Fallback: construct from problem data
-    problem_data = transcript.get('problem_data', {})
+    print(f"Created interactive visualization: {output_path}")
+
+
+def _extract_context_html(transcript: Dict) -> str:
+    """Extract and format context for display"""
     debate_type = transcript.get('debate_type', 'unknown')
+    problem_data = transcript.get('problem_data', {})
     
-    if role == 'honest':
-        if debate_type == 'quality':
-            return f"You are defending: {problem_data.get('correct_answer', 'Unknown')}"
-        else:
-            return problem_data.get('honest_system_prompt', 'System prompt not available')
-    else:
-        if debate_type == 'quality':
-            return f"You are defending: {problem_data.get('incorrect_answer', 'Unknown')}"
-        else:
-            return problem_data.get('dishonest_system_prompt', 'System prompt not available')
+    if debate_type == 'quality':
+        return f"""
+        <h4>{problem_data.get('story_title', 'Story')}</h4>
+        <div style="max-height: 200px; overflow-y: auto; padding: 10px; background: white; border-radius: 4px;">
+            {problem_data.get('story', 'No story available')}
+        </div>
+        <div style="margin-top: 10px;">
+            <strong>Question:</strong> {problem_data.get('question', 'No question')}
+        </div>
+        """
+    elif debate_type == 'simple':
+        return f"""
+        <div><strong>Topic:</strong> {problem_data.get('topic', 'Unknown')}</div>
+        <div><strong>Question:</strong> {problem_data.get('question', 'Unknown')}</div>
+        <div><strong>Ground Truth:</strong> {problem_data.get('ground_truth', 'Unknown')}</div>
+        """
+    else:  # APPS
+        return f"""
+        <div><strong>Problem ID:</strong> {problem_data.get('problem_id', 'Unknown')}</div>
+        <div><strong>Question:</strong></div>
+        <pre style="padding: 10px; background: white; border-radius: 4px; overflow-x: auto;">
+{problem_data.get('question', 'No question')}
+        </pre>
+        """
 
 
-def _extract_judge_system_prompt(transcript: Dict, judge_key: str) -> str:
-    """Extract judge system prompt for a specific evaluation"""
-    # This would need to be stored during judge evaluation
-    # For now, return a generic message
-    return "Judge system prompt (to be stored during evaluation)"
+def _segment_into_statements(turn: Dict) -> List[Dict]:
+    """Segment a turn into statements with scores"""
+    import re
+    
+    content = turn['content']
+    tokens = turn.get('tokens', [])
+    probe_scores = turn.get('probe_scores', {})
+    
+    if not tokens or not probe_scores:
+        # No probe data - return whole content as one statement
+        return [{
+            'index': 0,
+            'text': content,
+            'token_scores': [],
+            'mean_score': 0.5
+        }]
+    
+    # Clean tokens
+    clean_token_list = clean_tokens(tokens)
+    
+    # Get averaged probe scores
+    avg_scores = []
+    for i in range(len(tokens)):
+        token_scores = [scores[i] for scores in probe_scores.values() if i < len(scores)]
+        avg_scores.append(np.mean(token_scores) if token_scores else 0.5)
+    
+    # Simple sentence splitting
+    sentences = re.split(r'(?<=[.!?])\s+', content.strip())
+    
+    statements = []
+    token_idx = 0
+    
+    for sent_idx, sentence in enumerate(sentences):
+        if not sentence:
+            continue
+        
+        # Collect tokens for this sentence (simplified matching)
+        sent_tokens = []
+        sent_scores = []
+        sent_length = len(sentence)
+        
+        while token_idx < len(clean_token_list) and len(''.join(sent_tokens)) < sent_length:
+            sent_tokens.append(clean_token_list[token_idx])
+            sent_scores.append(avg_scores[token_idx])
+            token_idx += 1
+        
+        # Create statement
+        statements.append({
+            'index': sent_idx,
+            'text': sentence,
+            'token_scores': list(zip(sent_tokens, sent_scores)),
+            'mean_score': np.mean(sent_scores) if sent_scores else 0.5
+        })
+    
+    return statements

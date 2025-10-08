@@ -1,0 +1,13 @@
+{
+  "train_auroc": -0.1953125,
+  "score_min": -2.234375,
+  "score_max": 1.609375,
+  "normalized_threshold": 0.5304878048780488,
+  "fpr_5pct": {
+    "threshold": 0.06151123046874998,
+    "target_fpr": 0.05,
+    "actual_fpr": 0.05,
+    "n_samples": 100,
+    "reference_dataset": "data/deception_detection/alpaca.jsonl"
+  }
+}

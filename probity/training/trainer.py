@@ -437,8 +437,8 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
                     if model.__class__.__name__ == 'LogisticProbe':
                         outputs = torch.sigmoid(outputs)
                     
-                    all_scores.extend(outputs.cpu().squeeze().tolist())
-                    all_labels.extend(batch_y.cpu().squeeze().tolist())
+                    all_scores.extend(outputs.cpu().view(-1).tolist())
+                    all_labels.extend(batch_y.cpu().view(-1).tolist())
             
             # Calculate optimal threshold
             from probity.utils.threshold_optimization import find_optimal_threshold_auroc

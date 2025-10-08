@@ -426,11 +426,16 @@ def load_contrastive_ntml_dataset(json_path: str,
             if i < len(lie_statement_positions):
                 position = lie_statement_positions[i]
                 is_lie_statement = i in lie_positions
-                
-                # For contrastive mode, use special group_id
+
+                # Determine group_id based on mode and whether this position is paired
                 if dishonest_mode == 'diff' and honest_mode == 'diff':
+                    # Mode 1: All are contrastive pairs
+                    group_id = f"{conv_id}_contrastive_stmt{i}"
+                elif honest_mode != 'none' and i in lie_positions:
+                    # Modes 2 & 4: Diff positions are contrastive pairs
                     group_id = f"{conv_id}_contrastive_stmt{i}"
                 else:
+                    # Mode 3 or non-diff positions in modes 2/4
                     group_id = f"{conv_id}_dishonest_stmt{i}"
                 
                 example = ProbingExample(
@@ -484,19 +489,17 @@ def load_contrastive_ntml_dataset(json_path: str,
             )
             
             # Determine which statements to include
-            if honest_mode == 'all':
-                honest_indices = range(len(truth_statement_positions))
-            else:  # honest_mode == 'diff'
-                honest_indices = lie_positions  # Only the positions that differ
+            honest_indices = range(len(truth_statement_positions)) if honest_mode == 'all' else lie_positions
             
             for i in honest_indices:
                 if i < len(truth_statement_positions):
                     position = truth_statement_positions[i]
                     
-                    # For contrastive mode, use matching group_id
-                    if dishonest_mode == 'diff' and honest_mode == 'diff':
+                    # Honest statements at diff positions are always paired when included
+                    if i in lie_positions:
                         group_id = f"{conv_id}_contrastive_stmt{i}"
                     else:
+                        # Mode 2 only: honest statements at non-diff positions
                         group_id = f"{conv_id}_honest_stmt{i}"
                     
                     example = ProbingExample(

@@ -269,17 +269,22 @@ class ProbeDebateInference:
                     if isinstance(scores, float):
                         scores = [scores]
                     
-                    # Normalize to [-1, 1]
-                    normalized_scores = self._normalize_scores(scores)
-                    scores_by_probe[p_type] = normalized_scores
+                    # Normalize to [-1, 1 [commented out]
+                    # normalized_scores = self._normalize_scores(scores)
+                    # scores_by_probe[p_type] = normalized_scores
+                    
+                    scores_by_probe[p_type] = scores
+
                     
                     probe_scores.append(
                         ProbeScore(
                             probe_type=p_type,
                             layer=self.config.layer,
                             tokens=clean_tokens,
-                            token_scores=normalized_scores,
-                            mean_score=float(np.mean(normalized_scores)),
+                            # token_scores=normalized_scores,
+                            # mean_score=float(np.mean(normalized_scores)),
+                            token_scores=scores,
+                            mean_score=float(np.mean(scores)),                            
                             metadata={
                                 "timestamp": time.time(),
                                 "speaker": speaker,
@@ -330,25 +335,28 @@ class ProbeDebateInference:
         
         mean_score = np.mean(all_scores) if all_scores else 0.5
         max_score = np.max(all_scores) if all_scores else 0.5
+
+        if not all_scores:
+            print("PROBLEM!!! ALL_SCORES IS NONE")
         
-        # Find highly suspicious tokens/words (score > 0.7)
-        suspicious_segments = []
-        for word, word_score in word_scores.items():
-            if word_score > 0.7:
-                suspicious_segments.append({
-                    "text": word,
-                    "score": round(word_score, 3)
-                })
+        # # Find highly suspicious tokens/words (score > 0.7)
+        # suspicious_segments = []
+        # for word, word_score in word_scores.items():
+        #     if word_score > 0.7:
+        #         suspicious_segments.append({
+        #             "text": word,
+        #             "score": round(word_score, 3)
+        #         })
         
         formatted = {
             "speaker": speaker,
             "deception_analysis": {
                 "mean_score": round(mean_score, 2),
                 "max_score": round(max_score, 2),
-                "interpretation": self._get_score_interpretation(mean_score),
-                "suspicious_segments": suspicious_segments[:5],  # Top 5 most suspicious
+                # "interpretation": self._get_score_interpretation(mean_score),
+                # "suspicious_segments": suspicious_segments[:5],  # Top 5 most suspicious
                 "token_scores": word_scores,  # Full word-level scores
-                "summary": f"Deception likelihood: {self._get_likelihood_label(mean_score)} (mean: {mean_score:.1%})"
+                # "summary": f"Deception likelihood: {self._get_likelihood_label(mean_score)} (mean: {mean_score:.1%})"
             }
         }
         
@@ -391,27 +399,27 @@ class ProbeDebateInference:
         
         return words
     
-    def _get_score_interpretation(self, score: float) -> str:
-        """Get human-readable interpretation of score."""
-        if score < -0.4:
-            return "Strongly truthful"
-        elif score < 0:
-            return "Likely truthful"
-        elif score < 0.4:
-            return "Likely deceptive"
-        else:
-            return "Strongly deceptive"
+    # def _get_score_interpretation(self, score: float) -> str:
+    #     """Get human-readable interpretation of score."""
+    #     if score < -0.4:
+    #         return "Strongly truthful"
+    #     elif score < 0:
+    #         return "Likely truthful"
+    #     elif score < 0.4:
+    #         return "Likely deceptive"
+    #     else:
+    #         return "Strongly deceptive"
     
-    def _get_likelihood_label(self, score: float) -> str:
-        """Get simple likelihood label."""
-        if score < 0.3:
-            return "LOW"
-        elif score < 0.5:
-            return "MODERATE"
-        elif score < 0.7:
-            return "ELEVATED"
-        else:
-            return "HIGH"
+    # def _get_likelihood_label(self, score: float) -> str:
+    #     """Get simple likelihood label."""
+    #     if score < 0.3:
+    #         return "LOW"
+    #     elif score < 0.5:
+    #         return "MODERATE"
+    #     elif score < 0.7:
+    #         return "ELEVATED"
+    #     else:
+    #         return "HIGH"
     
     def _find_last_assistant_start(self, token_ids: torch.Tensor) -> Optional[int]:
         """Find where the last assistant response starts."""
@@ -442,12 +450,15 @@ class ProbeDebateInference:
         
         return last_assistant_idx
     
-    def _normalize_scores(self, scores: List[float]) -> List[float]:
-        """Normalize scores to [-1, 1] range (negative=truthful, positive=deceptive)."""
-        scores_array = np.array(scores)
-        min_score, max_score = scores_array.min(), scores_array.max()
-        if max_score == min_score:
-            return [0.0] * len(scores)
-        # First normalize to [0, 1], then shift to [-1, 1]
-        normalized = (scores_array - min_score) / (max_score - min_score)
-        return (normalized * 2 - 1).tolist()
+    # def _normalize_scores(self, scores: List[float]) -> List[float]:
+    #     """Normalize scores to [-1, 1] range (negative=truthful, positive=deceptive)."""
+    #     scores_array = np.array(scores)
+    #     min_score, max_score = scores_array.min(), scores_array.max()
+    #     if max_score == min_score:
+    #         return [0.0] * len(scores)
+    #     # First normalize to [0, 1], then shift to [-1, 1]
+    #     normalized = (scores_array - min_score) / (max_score - min_score)
+    #     return (normalized * 2 - 1).tolist()
+    # commented out since -1 to 1 is arbitrary given the thresholds thing
+
+    # have also commented out a bunch of other functions that are arbitrarily set
