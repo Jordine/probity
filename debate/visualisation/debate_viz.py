@@ -509,40 +509,40 @@ def create_debate_chat_visualization(transcript: Dict, output_path: Path):
         }
 
         function updatePlots() {
-            // Collect all data
-            const statementLabels = [];
-            const statementScores = [];
-            const tokenLabels = [];
-            const tokenScores = [];
+            // Collect all data - FIXED: Use different variable names to avoid shadowing
+            const collectedStatementLabels = [];
+            const collectedStatementScores = [];
+            const collectedTokenLabels = [];
+            const collectedTokenScores = [];
             
             document.querySelectorAll('.statement').forEach(stmt => {
                 const key = `${stmt.dataset.turn}-${stmt.dataset.statement}`;
-                const label = statementLabels[key];
+                const label = statementLabels[key];  // NOW uses global statementLabels correctly
                 const rawScore = parseFloat(stmt.dataset.score);
-                const score = getEffectiveScore(rawScore);  // MODIFIED: Use effective score
+                const score = getEffectiveScore(rawScore);
                 
-                statementLabels.push(label);
-                statementScores.push(score);
+                collectedStatementLabels.push(label);
+                collectedStatementScores.push(score);
                 
                 // Collect token scores
                 stmt.querySelectorAll('.token').forEach(token => {
-                    tokenLabels.push(label);
+                    collectedTokenLabels.push(label);
                     const rawTokenScore = parseFloat(token.dataset.score);
-                    tokenScores.push(getEffectiveScore(rawTokenScore));  // MODIFIED
+                    collectedTokenScores.push(getEffectiveScore(rawTokenScore));
                 });
             });
             
             // Update token distribution
-            updateDistributionChart(tokenDistChart, tokenLabels, tokenScores, 'Token');
+            updateDistributionChart(tokenDistChart, collectedTokenLabels, collectedTokenScores, 'Token');
             
             // Update statement distribution
-            updateDistributionChart(statementDistChart, statementLabels, statementScores, 'Statement');
+            updateDistributionChart(statementDistChart, collectedStatementLabels, collectedStatementScores, 'Statement');
             
             // Update ROC curve
-            updateROCChart(statementLabels, statementScores);
+            updateROCChart(collectedStatementLabels, collectedStatementScores);
             
             // Update statistics
-            updateStatistics(statementLabels, statementScores, tokenLabels, tokenScores);
+            updateStatistics(collectedStatementLabels, collectedStatementScores, collectedTokenLabels, collectedTokenScores);
         }
 
         
@@ -591,8 +591,9 @@ def create_debate_chat_visualization(transcript: Dict, output_path: Path):
             rocChart.data.datasets[0].label = `ROC (AUC = ${auroc.toFixed(3)})`;
             rocChart.update();
         }
-        
+                
         function updateStatistics(stmtLabels, stmtScores, tokLabels, tokScores) {
+            // FIXED: Use correct parameter names
             const stmtHonest = stmtScores.filter((s, i) => stmtLabels[i] === 0);
             const stmtDeceptive = stmtScores.filter((s, i) => stmtLabels[i] === 1);
             

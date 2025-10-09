@@ -15,8 +15,8 @@ from .base import BaseModelProvider
 from ..types import ModelConfig
 
 
-MAX_CONTEXT = 8192          # Hard budget
-SAFETY_MARGIN = 128         # Reserve space
+MAX_CONTEXT = 32768          # Hard budget
+SAFETY_MARGIN = 512         # Reserve space
 
 
 class LocalModelProvider(BaseModelProvider):
