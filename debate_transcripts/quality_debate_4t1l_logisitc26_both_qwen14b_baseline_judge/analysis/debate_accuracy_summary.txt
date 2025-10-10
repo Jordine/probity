@@ -1,0 +1,55 @@
+DEBATE ACCURACY METRICS - ALL JUDGES AND MODES
+================================================================================
+
+Experiment Mode: baseline_judge
+--------------------------------------------------------------------------------
+
+
+  Evaluation Mode: baseline
+  ------------------------------------------------------------
+    Judge: Claude claude sonnet 4.5
+      Accuracy: 70.0% (7/10)
+      95% CI: [41.6%, 98.4%]
+      Error Rate: 30.0%
+
+
+  Evaluation Mode: judge_only
+  ------------------------------------------------------------
+    Judge: Claude claude sonnet 4.5
+      Accuracy: 50.0% (5/10)
+      95% CI: [19.0%, 81.0%]
+      Error Rate: 50.0%
+
+
+  Evaluation Mode: probe_only_max
+  ------------------------------------------------------------
+    Judge: probe classifier
+      Accuracy: 20.0% (2/10)
+      95% CI: [0.0%, 44.8%]
+      Error Rate: 80.0%
+
+
+  Evaluation Mode: probe_only_mean
+  ------------------------------------------------------------
+    Judge: probe classifier
+      Accuracy: 40.0% (4/10)
+      95% CI: [9.6%, 70.4%]
+      Error Rate: 60.0%
+
+
+
+COMPARATIVE ANALYSIS
+================================================================================
+
+Experiment Mode: baseline_judge
+--------------------------------------------------------------------------------
+
+  anthropic claude sonnet 4.5:
+    Baseline: 70.0%
+    With Probes: 50.0%
+    Improvement: -20.0%
+
+  Probe-Only Classification:
+    Mean Method: 40.0%
+    Max Method: 20.0%
+

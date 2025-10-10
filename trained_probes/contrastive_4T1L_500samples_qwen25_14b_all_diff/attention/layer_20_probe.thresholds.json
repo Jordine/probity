@@ -1,0 +1,10 @@
+{
+  "train_auroc": -0.171875,
+  "fpr_5pct": {
+    "threshold": 4.96875,
+    "target_fpr": 0.05,
+    "actual_fpr": 1.0,
+    "n_samples": 100,
+    "reference_dataset": "data/deception_detection/wildchat.jsonl"
+  }
+}

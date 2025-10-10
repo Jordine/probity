@@ -58,36 +58,37 @@ class AttentionProbe(BaseProbe[AttentionProbeConfig]):
           • [B, S, d]  – standard sequence
           • [B, d]     – a single position per example
           • [S, d]     – treat as batch = 1, seq = S
-        Returns: [B, output_size]  (or scalar if B==1 & output_size==1)
+        Returns: [B, output_size] (never squeeze to scalar for loss compatibility)
         """
         x = x.to(dtype=self.dtype)
-
+    
         if x.dim() == 2:
             if x.shape[0] == self.config.input_size:      # unlikely – safeguard
                 x = x.unsqueeze(0)                        # [1, S, d]
             else:
                 x = x.unsqueeze(1)                        # [B, 1, d]
-
+    
         if x.dim() != 3:
             raise ValueError(f"Expected 2- or 3-D input, got shape {x.shape}")
-
+    
         B, S, _ = x.shape
-
+    
         attn_logits = self.query_proj(x) / self.temperature        # [B, S, H]
-
+    
         if self.config.use_position_weights and S > 1:
             pos = torch.arange(S, device=x.device, dtype=self.dtype)
             attn_logits = attn_logits + pos.view(1, S, 1) * self.position_weights
-
+    
         attn_w = torch.softmax(attn_logits, dim=1)                 # [B, S, H]
-
+    
         v = self.value_proj(x).view(
             B, S, self.config.n_heads, self.config.output_size
         )                                                           # [B, S, H, O]
-
+    
         out = (attn_w.unsqueeze(-1) * v).sum(dim=[1, 2])            # [B, O]
-
-        return out.squeeze() if out.numel() == 1 else out
+    
+        # IMPORTANT: Keep shape [B, O] for loss compatibility, never squeeze to scalar
+        return out  # Always return [B, output_size] shape
 
     # ======================================================================
     # Helpers required by BaseProbe
