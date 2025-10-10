@@ -193,6 +193,11 @@ def evaluate_on_assistant_tokens(evaluator: OptimizedBatchProbeEvaluator,
             tokenize=False,
             add_generation_prompt=False
         )
+
+        tokens = tokenizer(formatted, add_special_tokens=False, truncation=True, 
+                          max_length=1024)['input_ids']
+        formatted = tokenizer.decode(tokens, skip_special_tokens=False)
+        
         
         # Extract final assistant message position
         start, end = extract_final_assistant_tokens(formatted, model_type)
@@ -208,7 +213,7 @@ def evaluate_on_assistant_tokens(evaluator: OptimizedBatchProbeEvaluator,
     # Get activations for all texts
     print("Getting activations...")
     layers = list(set(layer for layer, _ in probe_configs.keys()))
-    activation_data = evaluator.get_batch_activations(formatted_texts, layers, batch_size=4, disk_cache_dir="./cache/val_acts")
+    activation_data = evaluator.get_batch_activations(formatted_texts, layers, batch_size=1, disk_cache_dir="./cache/val_acts")
     activations = activation_data['activations']
     tokens_by_text = activation_data['tokens_by_text']
     
@@ -689,6 +694,7 @@ Examples:
     parser.add_argument('--results_dir', type=str, required=True, help='Output directory')
     parser.add_argument('--n_samples', type=int, help='Default sample count for datasets without explicit count')
     parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu')
+    parser.add_argument('--batch_size', type=int, default=4)
     
     args = parser.parse_args()
     

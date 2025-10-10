@@ -83,6 +83,10 @@ def calibrate_all_probes(probe_dir: str, reference_dataset: str,
     print(f"Loading {n_samples} reference samples...")
     if 'alpaca' in reference_dataset.lower():
         samples = load_alpaca_samples(reference_dataset, n_samples)
+
+    elif 'wildchat' in reference_dataset.lower():
+        samples = load_alpaca_samples(reference_dataset, n_samples)
+        print('using wildchat')
     else:
         raise ValueError(f"Unknown reference dataset: {reference_dataset}")
     
