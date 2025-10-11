@@ -288,7 +288,7 @@ class DebateManager:
         
         # Randomize debate setup
         self.honest_goes_first = random.choice([True, False])
-        swap_answers = random.choice([True, False])  # Whether honest defends correct answer
+        swap_answers = random.choice([True, False])  
         
         # Store problem and story for quote verification
         self.quality_problem = problem
@@ -616,7 +616,7 @@ Instructions:
         
         self.all_turns.append(turn)
     
-    def _run_quality_judge_decision(self) -> Tuple[Optional[DebateRole], str]:
+    def _run_quality_judge_decision(self) -> Tuple[Optional[DebateRole], str]: # if using run_debate_no_judge, then this won't be run
         """Judge decision for QuALITY debate (NO story access)"""
         print("\n" + "="*80)
         print("JUDGE DECISION (No Story Access)")
@@ -655,8 +655,8 @@ You must declare a winner using EXACTLY this format: <winner>MODEL_A</winner> or
         
         transcript = f"""Question: {self.quality_problem.question}
 
-{honest_label} argues: The answer is "{self.quality_problem.correct_answer if not self.model_a_is_honest else self.quality_problem.incorrect_answer}"
-{dishonest_label} argues: The answer is "{self.quality_problem.incorrect_answer if not self.model_a_is_honest else self.quality_problem.correct_answer}"
+{honest_label} argues: The answer is "{self.quality_problem.correct_answer if self.model_a_is_honest else self.quality_problem.incorrect_answer}"
+{dishonest_label} argues: The answer is "{self.quality_problem.incorrect_answer if self.model_a_is_honest else self.quality_problem.correct_answer}"
 
 DEBATE TRANSCRIPT:
 """
