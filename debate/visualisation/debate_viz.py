@@ -929,20 +929,52 @@ def create_debate_chat_visualization(transcript: Dict, output_path: Path):
         
         function exportLabels() {
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            
+            // Collect token-level data for each statement
+            const tokenLevelData = [];
+            document.querySelectorAll('.statement').forEach(stmt => {
+                const key = `${stmt.dataset.turn}-${stmt.dataset.statement}`;
+                const tokens = [];
+                stmt.querySelectorAll('.token').forEach(token => {
+                    tokens.push({
+                        text: token.textContent,
+                        score: parseFloat(token.dataset.score),
+                        index: parseInt(token.dataset.tokenIndex)
+                    });
+                });
+                
+                tokenLevelData.push({
+                    key: key,
+                    turn: parseInt(stmt.dataset.turn),
+                    statement_index: parseInt(stmt.dataset.statement),
+                    label: statementLabels[key],
+                    tokens: tokens
+                });
+            });
+            
             const exportData = {
                 debate_id: '{{ debate_id }}',
                 timestamp: timestamp,
                 threshold: currentThreshold,
                 isFlipped: isFlipped,
+                
+                // Statement-level labels (for probe_analysis.py compatibility)
                 statementLabels: statementLabels,
+                
+                // Token-level data
+                tokenLevelData: tokenLevelData,
+                
+                // Statement scores for reference
                 statementScores: Object.fromEntries(
                     statementData.keys.map((key, i) => [key, statementData.scores[i]])
                 ),
+                
                 metadata: {
                     original_debate_type: '{{ debate_type }}',
                     corrected_by: 'manual_annotation',
                     token_count: tokenData.scores.length,
-                    statement_count: statementData.scores.length
+                    statement_count: statementData.scores.length,
+                    export_timestamp: new Date().toISOString()
                 }
             };
             
@@ -951,7 +983,7 @@ def create_debate_chat_visualization(transcript: Dict, output_path: Path):
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `corrected_labels_${timestamp}.json`;
+            a.download = `manual_labels_${timestamp}.json`;
             a.click();
             URL.revokeObjectURL(url);
         }

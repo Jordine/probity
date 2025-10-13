@@ -20,6 +20,7 @@ import seaborn as sns
 from matplotlib.patches import Rectangle
 
 from debate.visualisation.debate_viz import create_debate_chat_visualization
+from debate.utils.probe_analysis import ProbeAnalyzer
 
 
 class DebateResultsAnalyzer:
@@ -430,129 +431,302 @@ class DebateResultsAnalyzer:
         return metrics_results
     
     def calculate_probe_metrics(self):
-        """Calculate AUROC, AUPRC, F1 and other metrics for probe performance"""
+        """Calculate comprehensive probe performance metrics with all variants"""
         
-        metrics_results = {}
+        all_results = {}
         
-        for experiment_mode, eval_modes in self.results_by_mode.items():
-            mode_metrics = {}
-            
-            # Collect probe scores and ground truth
-            all_honest_scores = []
-            all_dishonest_scores = []
-            y_true = []
-            y_scores = []
+        for experiment_mode in self.results_by_mode.keys():
+            mode_results = {}
             
             for transcript in self.transcripts:
                 if transcript.get('experiment_mode') != experiment_mode:
                     continue
                 
-                # Extract probe scores from turns
-                for turn in transcript.get('turns', []):
-                    if turn.get('mean_probe_score') is not None:
-                        score = turn['mean_probe_score']
-                        speaker = turn['speaker']
-                        
-                        if speaker == 'honest':
-                            all_honest_scores.append(score)
-                            y_true.append(0)  # 0 = honest (not deceptive)
-                            y_scores.append(score)
-                        elif speaker == 'dishonest':
-                            all_dishonest_scores.append(score)
-                            y_true.append(1)  # 1 = dishonest (deceptive)
-                            y_scores.append(score)
-            
-            if y_true and y_scores:
-                # Convert to arrays
-                y_true = np.array(y_true)
-                y_scores = np.array(y_scores)
+                debate_id = transcript['debate_id']
                 
-                # Calculate metrics
-                try:
-                    auroc = roc_auc_score(y_true, y_scores)
-                    auprc = average_precision_score(y_true, y_scores)
-                    
-                    # Find optimal threshold using Youden's J
-                    fpr, tpr, thresholds = roc_curve(y_true, y_scores)
-                    j_scores = tpr - fpr
-                    optimal_idx = np.argmax(j_scores)
-                    optimal_threshold = thresholds[optimal_idx]
-                    
-                    # Calculate metrics at optimal threshold
-                    y_pred = (y_scores >= optimal_threshold).astype(int)
-                    f1 = f1_score(y_true, y_pred)
-                    precision = precision_score(y_true, y_pred)
-                    recall = recall_score(y_true, y_pred)
-                    
-                    # Confusion matrix
-                    tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
-                    
-                    mode_metrics = {
-                        'auroc': float(auroc),
-                        'auprc': float(auprc),
-                        'f1_score': float(f1),
-                        'precision': float(precision),
-                        'recall': float(recall),
-                        'optimal_threshold': float(optimal_threshold),
-                        'confusion_matrix': {
-                            'true_negatives': int(tn),
-                            'false_positives': int(fp),
-                            'false_negatives': int(fn),
-                            'true_positives': int(tp)
-                        },
-                        'n_samples': len(y_true),
-                        'n_honest': int(np.sum(y_true == 0)),
-                        'n_dishonest': int(np.sum(y_true == 1)),
-                        'honest_score_mean': float(np.mean(all_honest_scores)) if all_honest_scores else None,
-                        'honest_score_std': float(np.std(all_honest_scores)) if all_honest_scores else None,
-                        'dishonest_score_mean': float(np.mean(all_dishonest_scores)) if all_dishonest_scores else None,
-                        'dishonest_score_std': float(np.std(all_dishonest_scores)) if all_dishonest_scores else None
-                    }
-                    
-                    # Create ROC and PR curves
-                    self._create_roc_pr_curves(y_true, y_scores, experiment_mode)
-                    
-                except Exception as e:
-                    print(f"Error calculating metrics for {experiment_mode}: {e}")
+                # Check if we have manual or LLM labels for this debate
+                manual_labels = self._load_manual_labels(debate_id)
+                llm_labels = self._load_llm_labels(debate_id)
+                
+                # Run comprehensive analysis
+                metrics = ProbeAnalyzer.analyze_transcript(
+                    transcript, 
+                    manual_labels=manual_labels,
+                    llm_labels=llm_labels
+                )
+                
+                # Convert to dict
+                mode_results[debate_id] = {
+                    k: v.to_dict() for k, v in metrics.items()
+                }
             
-            metrics_results[experiment_mode] = mode_metrics
+            all_results[experiment_mode] = mode_results
         
-        # Save metrics
-        metrics_path = self.output_dir / 'probe_performance_metrics.json'
+        # Save per-debate comprehensive metrics
+        metrics_path = self.output_dir / 'probe_metrics_comprehensive.json'
         with open(metrics_path, 'w') as f:
-            json.dump(metrics_results, f, indent=2)
+            json.dump(all_results, f, indent=2)
         
-        # Create readable summary
-        summary_path = self.output_dir / 'probe_performance_summary.txt'
+        # Create aggregated summary across debates
+        self._create_probe_summary(all_results)
+        
+        # Create comparison plots
+        self._create_probe_comparison_plots(all_results)
+        
+        print(f"Saved comprehensive probe metrics: {metrics_path}")
+        return all_results
+
+    def _load_manual_labels(self, debate_id: str) -> Optional[Dict]:
+        """Load manual labels from debate_viz export if available"""
+        # Check for manual labels in a 'manual_labels' subdirectory
+        manual_dir = self.output_dir.parent / 'manual_labels'
+        if not manual_dir.exists():
+            return None
+        
+        # Try to find matching file
+        for label_file in manual_dir.glob(f"*{debate_id}*.json"):
+            try:
+                with open(label_file, 'r') as f:
+                    return json.load(f)
+            except:
+                continue
+        
+        return None
+
+    def _load_llm_labels(self, debate_id: str) -> Optional[Dict]:
+        """Load LLM-generated labels if available"""
+        # Check for LLM labels in a 'llm_labels' subdirectory
+        llm_dir = self.output_dir.parent / 'llm_labels'
+        if not llm_dir.exists():
+            return None
+        
+        # Try to find matching file
+        for label_file in llm_dir.glob(f"*{debate_id}*labeled*.json"):
+            try:
+                with open(label_file, 'r') as f:
+                    return json.load(f)
+            except:
+                continue
+        
+        return None
+
+    def _create_probe_summary(self, all_results: Dict):
+        """Aggregate probe metrics across debates with comprehensive statistics"""
+        
+        summary = {}
+        
+        for mode, debates in all_results.items():
+            variant_data = {}
+            
+            # Collect metrics by variant
+            for debate_id, metrics in debates.items():
+                for variant_name, variant_metrics in metrics.items():
+                    if variant_name not in variant_data:
+                        variant_data[variant_name] = {
+                            'aurocs': [], 'auprcs': [], 'f1s': [], 'accuracies': [],
+                            'precisions': [], 'recalls': [], 'specificities': [],
+                            'fprs': [], 'tprs': [],
+                            'separations': [], 'n_samples': []
+                        }
+                    
+                    variant_data[variant_name]['aurocs'].append(variant_metrics['auroc'])
+                    variant_data[variant_name]['auprcs'].append(variant_metrics['auprc'])
+                    variant_data[variant_name]['f1s'].append(variant_metrics['f1'])
+                    variant_data[variant_name]['accuracies'].append(variant_metrics['accuracy'])
+                    variant_data[variant_name]['precisions'].append(variant_metrics['precision'])
+                    variant_data[variant_name]['recalls'].append(variant_metrics['recall'])
+                    variant_data[variant_name]['specificities'].append(variant_metrics['specificity'])
+                    variant_data[variant_name]['fprs'].append(variant_metrics['fpr'])
+                    variant_data[variant_name]['tprs'].append(variant_metrics['tpr'])
+                    variant_data[variant_name]['separations'].append(variant_metrics['score_separation'])
+                    variant_data[variant_name]['n_samples'].append(variant_metrics['n_samples'])
+            
+            # Aggregate statistics
+            summary[mode] = {}
+            for variant_name, data in variant_data.items():
+                summary[mode][variant_name] = {
+                    # AUROC
+                    'mean_auroc': float(np.mean(data['aurocs'])),
+                    'std_auroc': float(np.std(data['aurocs'])),
+                    'median_auroc': float(np.median(data['aurocs'])),
+                    'min_auroc': float(np.min(data['aurocs'])),
+                    'max_auroc': float(np.max(data['aurocs'])),
+                    
+                    # AUPRC
+                    'mean_auprc': float(np.mean(data['auprcs'])),
+                    'std_auprc': float(np.std(data['auprcs'])),
+                    'median_auprc': float(np.median(data['auprcs'])),
+                    
+                    # F1
+                    'mean_f1': float(np.mean(data['f1s'])),
+                    'std_f1': float(np.std(data['f1s'])),
+                    'median_f1': float(np.median(data['f1s'])),
+                    
+                    # Accuracy
+                    'mean_accuracy': float(np.mean(data['accuracies'])),
+                    'std_accuracy': float(np.std(data['accuracies'])),
+                    'median_accuracy': float(np.median(data['accuracies'])),
+                    
+                    # Precision
+                    'mean_precision': float(np.mean(data['precisions'])),
+                    'std_precision': float(np.std(data['precisions'])),
+                    
+                    # Recall
+                    'mean_recall': float(np.mean(data['recalls'])),
+                    'std_recall': float(np.std(data['recalls'])),
+                    
+                    # Specificity
+                    'mean_specificity': float(np.mean(data['specificities'])),
+                    'std_specificity': float(np.std(data['specificities'])),
+                    
+                    # FPR/TPR
+                    'mean_fpr': float(np.mean(data['fprs'])),
+                    'mean_tpr': float(np.mean(data['tprs'])),
+                    
+                    # Separation
+                    'mean_separation': float(np.mean(data['separations'])),
+                    'std_separation': float(np.std(data['separations'])),
+                    
+                    # Counts
+                    'total_samples': int(np.sum(data['n_samples'])),
+                    'n_debates': len(data['aurocs'])
+                }
+        
+        # Save comprehensive JSON
+        summary_path = self.output_dir / 'probe_metrics_summary.json'
         with open(summary_path, 'w') as f:
-            f.write("PROBE PERFORMANCE METRICS\n")
+            json.dump(summary, f, indent=2)
+        
+        # Create detailed text summary
+        text_path = self.output_dir / 'probe_metrics_summary.txt'
+        with open(text_path, 'w') as f:
+            f.write("COMPREHENSIVE PROBE PERFORMANCE SUMMARY\n")
             f.write("="*80 + "\n\n")
             
-            for mode, metrics in metrics_results.items():
-                if metrics:
-                    f.write(f"Experiment Mode: {mode}\n")
-                    f.write("-"*80 + "\n")
-                    f.write(f"AUROC: {metrics['auroc']:.4f}\n")
-                    f.write(f"AUPRC: {metrics['auprc']:.4f}\n")
-                    f.write(f"F1 Score: {metrics['f1_score']:.4f}\n")
-                    f.write(f"Precision: {metrics['precision']:.4f}\n")
-                    f.write(f"Recall: {metrics['recall']:.4f}\n")
-                    f.write(f"Optimal Threshold: {metrics['optimal_threshold']:.4f}\n")
-                    f.write(f"\nConfusion Matrix:\n")
-                    f.write(f"  True Positives: {metrics['confusion_matrix']['true_positives']}\n")
-                    f.write(f"  True Negatives: {metrics['confusion_matrix']['true_negatives']}\n")
-                    f.write(f"  False Positives: {metrics['confusion_matrix']['false_positives']}\n")
-                    f.write(f"  False Negatives: {metrics['confusion_matrix']['false_negatives']}\n")
-                    f.write(f"\nScore Statistics:\n")
-                    f.write(f"  Honest Mean ± Std: {metrics['honest_score_mean']:.4f} ± {metrics['honest_score_std']:.4f}\n")
-                    f.write(f"  Dishonest Mean ± Std: {metrics['dishonest_score_mean']:.4f} ± {metrics['dishonest_score_std']:.4f}\n")
-                    f.write(f"  Total Samples: {metrics['n_samples']}\n")
-                    f.write("\n")
+            for mode, variants in summary.items():
+                f.write(f"Experiment Mode: {mode}\n")
+                f.write("-"*80 + "\n\n")
+                
+                for var_name, metrics in sorted(variants.items()):
+                    f.write(f"{var_name}:\n")
+                    f.write(f"  N: {metrics['n_debates']} debates, {metrics['total_samples']} samples\n\n")
+                    
+                    f.write(f"  AUROC: {metrics['mean_auroc']:.3f} ± {metrics['std_auroc']:.3f}\n")
+                    f.write(f"    Range: [{metrics['min_auroc']:.3f}, {metrics['max_auroc']:.3f}]\n")
+                    f.write(f"    Median: {metrics['median_auroc']:.3f}\n\n")
+                    
+                    f.write(f"  AUPRC: {metrics['mean_auprc']:.3f} ± {metrics['std_auprc']:.3f}\n")
+                    f.write(f"    Median: {metrics['median_auprc']:.3f}\n\n")
+                    
+                    f.write(f"  Accuracy: {metrics['mean_accuracy']:.3f} ± {metrics['std_accuracy']:.3f}\n")
+                    f.write(f"  F1 Score: {metrics['mean_f1']:.3f} ± {metrics['std_f1']:.3f}\n")
+                    f.write(f"  Precision: {metrics['mean_precision']:.3f} ± {metrics['std_precision']:.3f}\n")
+                    f.write(f"  Recall (TPR): {metrics['mean_recall']:.3f} ± {metrics['std_recall']:.3f}\n")
+                    f.write(f"  Specificity (TNR): {metrics['mean_specificity']:.3f} ± {metrics['std_specificity']:.3f}\n")
+                    f.write(f"  FPR: {metrics['mean_fpr']:.3f}\n\n")
+                    
+                    f.write(f"  Score Separation: {metrics['mean_separation']:.3f} ± {metrics['std_separation']:.3f}\n")
+                    f.write("\n" + "-"*40 + "\n\n")
+                
+                f.write("\n")
         
-        print(f"Saved probe performance metrics: {metrics_path}")
-        print(f"Saved probe performance summary: {summary_path}")
+        print(f"Saved probe summary: {summary_path}")
+        print(f"Saved text summary: {text_path}")
+
+    def _create_probe_comparison_plots(self, all_results: Dict):
+        """Create comprehensive comparison plots for probe performance"""
         
-        return metrics_results
+        # Load summary for plotting
+        summary_path = self.output_dir / 'probe_metrics_summary.json'
+        with open(summary_path, 'r') as f:
+            summary = json.load(f)
+        
+        # Create comprehensive figure
+        fig, axes = plt.subplots(3, 2, figsize=(16, 18))
+        fig.suptitle('Comprehensive Probe Performance Comparison', 
+                     fontsize=16, fontweight='bold', y=0.995)
+        
+        for mode_idx, (mode, variants) in enumerate(summary.items()):
+            # Sort variants for consistent ordering
+            sorted_variants = sorted(variants.items())
+            names = [v[0].replace('_', '\n') for v in sorted_variants]
+            
+            # Prepare data arrays
+            aurocs = [v[1]['mean_auroc'] for v in sorted_variants]
+            auroc_stds = [v[1]['std_auroc'] for v in sorted_variants]
+            auprcs = [v[1]['mean_auprc'] for v in sorted_variants]
+            auprc_stds = [v[1]['std_auprc'] for v in sorted_variants]
+            f1s = [v[1]['mean_f1'] for v in sorted_variants]
+            f1_stds = [v[1]['std_f1'] for v in sorted_variants]
+            accs = [v[1]['mean_accuracy'] for v in sorted_variants]
+            acc_stds = [v[1]['std_accuracy'] for v in sorted_variants]
+            fprs = [v[1]['mean_fpr'] for v in sorted_variants]
+            tprs = [v[1]['mean_tpr'] for v in sorted_variants]
+            
+            x = np.arange(len(names))
+            width = 0.35 if len(summary) > 1 else 0.6
+            offset = width * mode_idx if len(summary) > 1 else 0
+            
+            # AUROC
+            axes[0, 0].bar(x + offset, aurocs, width, yerr=auroc_stds, 
+                           capsize=5, label=mode, alpha=0.7)
+            axes[0, 0].set_ylabel('AUROC', fontweight='bold')
+            axes[0, 0].set_title('Area Under ROC Curve')
+            axes[0, 0].set_ylim(0, 1.05)
+            axes[0, 0].axhline(y=0.5, color='red', linestyle='--', alpha=0.3, label='Random')
+            axes[0, 0].grid(alpha=0.3, axis='y')
+            
+            # AUPRC
+            axes[0, 1].bar(x + offset, auprcs, width, yerr=auprc_stds,
+                           capsize=5, label=mode, alpha=0.7)
+            axes[0, 1].set_ylabel('AUPRC', fontweight='bold')
+            axes[0, 1].set_title('Area Under Precision-Recall Curve')
+            axes[0, 1].set_ylim(0, 1.05)
+            axes[0, 1].grid(alpha=0.3, axis='y')
+            
+            # F1 Score
+            axes[1, 0].bar(x + offset, f1s, width, yerr=f1_stds,
+                           capsize=5, label=mode, alpha=0.7)
+            axes[1, 0].set_ylabel('F1 Score', fontweight='bold')
+            axes[1, 0].set_title('F1 Score at Optimal Threshold')
+            axes[1, 0].set_ylim(0, 1.05)
+            axes[1, 0].grid(alpha=0.3, axis='y')
+            
+            # Accuracy
+            axes[1, 1].bar(x + offset, accs, width, yerr=acc_stds,
+                           capsize=5, label=mode, alpha=0.7)
+            axes[1, 1].set_ylabel('Accuracy', fontweight='bold')
+            axes[1, 1].set_title('Accuracy at Optimal Threshold')
+            axes[1, 1].set_ylim(0, 1.05)
+            axes[1, 1].axhline(y=0.5, color='red', linestyle='--', alpha=0.3, label='Random')
+            axes[1, 1].grid(alpha=0.3, axis='y')
+            
+            # TPR
+            axes[2, 0].bar(x + offset, tprs, width, label=mode, alpha=0.7)
+            axes[2, 0].set_ylabel('True Positive Rate', fontweight='bold')
+            axes[2, 0].set_title('TPR (Recall) at Optimal Threshold')
+            axes[2, 0].set_ylim(0, 1.05)
+            axes[2, 0].grid(alpha=0.3, axis='y')
+            
+            # FPR
+            axes[2, 1].bar(x + offset, fprs, width, label=mode, alpha=0.7)
+            axes[2, 1].set_ylabel('False Positive Rate', fontweight='bold')
+            axes[2, 1].set_title('FPR at Optimal Threshold')
+            axes[2, 1].set_ylim(0, 1.05)
+            axes[2, 1].grid(alpha=0.3, axis='y')
+        
+        # Set x-axis labels for all plots
+        for ax in axes.flat:
+            ax.set_xticks(x + width/2 if len(summary) > 1 else x)
+            ax.set_xticklabels(names, fontsize=8, rotation=15, ha='right')
+            ax.legend(loc='best', fontsize=9)
+        
+        plt.tight_layout()
+        save_path = self.output_dir / 'probe_comparison_comprehensive.png'
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        plt.close()
+        
+        print(f"Saved comprehensive probe comparison plot: {save_path}")
     
     def _create_roc_pr_curves(self, y_true, y_scores, experiment_mode):
         """Create ROC and PR curves for probe performance"""
@@ -839,10 +1013,10 @@ class DebateResultsAnalyzer:
         print("\n1. Creating combined win rate plot...")
         self.create_combined_win_rate_bar_plot()
         
-        print("\n2. Calculating debate accuracy metrics for all judges/modes...")
+        print("\n2. Calculating debate accuracy metrics...")
         self.calculate_debate_accuracy_metrics()
         
-        print("\n3. Calculating probe performance metrics...")
+        print("\n3. Calculating comprehensive probe metrics...")
         self.calculate_probe_metrics()
         
         print("\n4. Calculating statistical significance...")

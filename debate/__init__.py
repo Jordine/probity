@@ -28,6 +28,8 @@ from .providers import (
 from .debate_manager import DebateManager
 from .dataset_loader import APPSDatasetLoader, SolutionGenerator, FlexibleDatasetLoader
 
+from .labeling import DebateStatementLabeler, label_debate_transcripts
+
 # Create aliases for a cleaner public API to match the original intent
 BaseProvider = BaseModelProvider
 LocalProvider = LocalModelProvider
@@ -63,5 +65,10 @@ __all__ = [
     "FlexibleDatasetLoader",
     
     # Analysis
-    "DebateAnalyzer"
+    "DebateAnalyzer",
+    
+    # Labeling
+    "DebateStatementLabeler",
+    "label_debate_transcripts",
 ]
+

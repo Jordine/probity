@@ -5,19 +5,19 @@ Experiment Mode: baseline_judge
 --------------------------------------------------------------------------------
 
 Do probes improve judge performance?
-  judge_only: 0.636 (n=11)
-  baseline: 0.700 (n=10)
-  Difference: -0.064
+  judge_only: 0.950 (n=20)
+  baseline: 0.900 (n=20)
+  Difference: +0.050
   Test: Two-proportion z-test
-  p-value: 0.7574 ns
+  p-value: 0.5483 ns
   Significant: NO
 
 Judge vs Probe classifier (mean)
-  judge_only: 0.636 (n=11)
-  probe_only_mean: 0.200 (n=10)
-  Difference: +0.436
+  judge_only: 0.950 (n=20)
+  probe_only_mean: 0.500 (n=20)
+  Difference: +0.450
   Test: Two-proportion z-test
-  p-value: 0.0436 *
+  p-value: 0.0014 **
   Significant: YES
 
 

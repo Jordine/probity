@@ -10,7 +10,7 @@
     "dishonest": "local"
   },
   "dataset": "quality",
-  "n_problems": 10,
+  "n_problems": 20,
   "max_rounds": 3,
   "probe_config": {
     "enabled": true,
@@ -19,5 +19,5 @@
     ],
     "layer": 26
   },
-  "timestamp": "20251013_090501"
+  "timestamp": "20251013_112949"
 }
