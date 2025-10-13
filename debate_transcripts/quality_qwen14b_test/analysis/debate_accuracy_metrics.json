@@ -1,0 +1,69 @@
+{
+  "baseline_judge": {
+    "baseline_anthropic_claude_sonnet_4.5": {
+      "judge_name": "anthropic_claude_sonnet_4.5",
+      "eval_mode": "baseline",
+      "accuracy": 0.7,
+      "correct": 7,
+      "total": 10,
+      "error_rate": 0.30000000000000004,
+      "confidence_interval": {
+        "lower": 0.415969015774687,
+        "upper": 0.984030984225313
+      },
+      "standard_error": 0.14491376746189438
+    },
+    "judge_only_qwen_qwen_2.5_7b_instruct": {
+      "judge_name": "qwen_qwen_2.5_7b_instruct",
+      "eval_mode": "judge_only",
+      "accuracy": 0.0,
+      "correct": 0,
+      "total": 1,
+      "error_rate": 1.0,
+      "confidence_interval": {
+        "lower": 0.0,
+        "upper": 0.0
+      },
+      "standard_error": 0.0
+    },
+    "judge_only_anthropic_claude_sonnet_4.5": {
+      "judge_name": "anthropic_claude_sonnet_4.5",
+      "eval_mode": "judge_only",
+      "accuracy": 0.7,
+      "correct": 7,
+      "total": 10,
+      "error_rate": 0.30000000000000004,
+      "confidence_interval": {
+        "lower": 0.415969015774687,
+        "upper": 0.984030984225313
+      },
+      "standard_error": 0.14491376746189438
+    },
+    "probe_only_mean_probe_classifier": {
+      "judge_name": "probe_classifier",
+      "eval_mode": "probe_only_mean",
+      "accuracy": 0.2,
+      "correct": 2,
+      "total": 10,
+      "error_rate": 0.8,
+      "confidence_interval": {
+        "lower": 0.0,
+        "upper": 0.447922568557201
+      },
+      "standard_error": 0.1264911064067352
+    },
+    "probe_only_max_probe_classifier": {
+      "judge_name": "probe_classifier",
+      "eval_mode": "probe_only_max",
+      "accuracy": 0.3,
+      "correct": 3,
+      "total": 10,
+      "error_rate": 0.7,
+      "confidence_interval": {
+        "lower": 0.015969015774687012,
+        "upper": 0.584030984225313
+      },
+      "standard_error": 0.14491376746189438
+    }
+  }
+}

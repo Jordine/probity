@@ -38,6 +38,11 @@ def clean_tokens(tokens: List[str]) -> List[str]:
     return [token.replace('Ġ', ' ').replace('Ċ', '\n') for token in tokens]
 
 
+
+
+
+
+
 def create_debate_chat_visualization(transcript: Dict, output_path: Path):
     """Create enhanced interactive HTML visualization for a debate transcript"""
     
@@ -261,7 +266,8 @@ def create_debate_chat_visualization(transcript: Dict, output_path: Path):
                 <h3>💬 Debate Transcript</h3>
                 <div id="transcript">
                     {% for turn in turns %}
-                    <div class="turn" data-turn-id="{{ loop.index0 }}">
+                    {% set turn_index = loop.index0 %}
+                    <div class="turn" data-turn-id="{{ turn_index }}">
                         <div class="speaker-label">
                             {{ turn.speaker_label }}
                             <span class="role-badge {{ turn.role }}">{{ turn.role.upper() }}</span>
@@ -270,7 +276,7 @@ def create_debate_chat_visualization(transcript: Dict, output_path: Path):
                         
                         {% for statement in turn.statements %}
                         <div class="statement" 
-                             data-turn="{{ loop.parent.loop.index0 }}"
+                             data-turn="{{ turn_index }}"
                              data-statement="{{ statement.index }}"
                              data-role="{{ turn.role }}"
                              data-score="{{ statement.mean_score }}"
