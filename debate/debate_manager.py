@@ -379,6 +379,12 @@ class DebateManager:
         dishonest_answer = problem.incorrect_answer
         opponent_honest = problem.incorrect_answer  
         opponent_dishonest = problem.correct_answer
+    
+        print(f"[DEBUG SETUP] swap_answers: {swap_answers}")
+        print(f"[DEBUG SETUP] Honest defending: {honest_answer}")
+        print(f"[DEBUG SETUP] Dishonest defending: {dishonest_answer}")
+        print(f"[DEBUG SETUP] model_a_is_honest: {self.model_a_is_honest}")
+        
         
         # Honest debater system prompt (WITH story)
         honest_system = f"""You are a debater arguing about a reading comprehension question.
@@ -457,9 +463,6 @@ Instructions:
         print("\n" + "="*80)
         print(f"HONEST DEBATER - Round {round_num}")
         print("="*80)
-
-        print(f"[DEBUG] HONEST turn - provider device: {self.honest_provider.device}")
-        print(f"[DEBUG] HONEST turn - conversation system prompt snippet: {self.honest_conversation[0]['content'][:200]}")
         
         # Check if responding to opponent
         has_opponent_spoken = len([t for t in self.all_turns if t.speaker == DebateRole.DISHONEST]) > 0
@@ -1633,10 +1636,6 @@ You MUST include the winner tag at the end of your response."""
         
         # Setup conversations with story access
         self._setup_quality_conversations(problem, swap_answers)
-        print(f"[DEBUG] Honest conversation defends: {honest_answer}")
-        print(f"[DEBUG] Dishonest conversation defends: {dishonest_answer}")
-        print(f"[DEBUG] model_a_is_honest: {self.model_a_is_honest}")
-                
     
     def run_apps_debate_setup(self, problem: APPSProblem, 
                               honest_solution: str, 

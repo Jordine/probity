@@ -195,13 +195,13 @@ class TokenizedProbingDataset(ProbingDataset):
 
                     
                         if isinstance(token_pos, list):
-                            print(f"DEBUG [Token Span]: Converted {pos.start}-{pos.end} to {len(token_pos)} tokens")
+                            # print(f"DEBUG [Token Span]: Converted {pos.start}-{pos.end} to {len(token_pos)} tokens")
                             if token_pos and no_pad_tokens:
                                 sample_tokens = [tokenizer.convert_ids_to_tokens([no_pad_tokens[tp]])[0] 
                                                 for tp in token_pos[:5] if tp < len(no_pad_tokens)]
-                                print(f"  First few tokens: {sample_tokens}")
-                        else:
-                            print(f"DEBUG [Single Token]: Position {pos.start} -> token {token_pos}")
+                                # print(f"  First few tokens: {sample_tokens}")
+                        # else:
+                            # print(f"DEBUG [Single Token]: Position {pos.start} -> token {token_pos}")
 
 
                         

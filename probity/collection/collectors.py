@@ -25,9 +25,15 @@ class TransformerLensCollector:
 
         self._ensure_qwen3_support()
         
-        self.model = HookedTransformer.from_pretrained_no_processing(config.model_name)
-        print(f"Moving model to device: {config.device}")
-        self.model.to(config.device)
+        self.model = HookedTransformer.from_pretrained_no_processing(
+            config.model_name,
+            device="cuda",
+            n_devices=2,
+            dtype=self.model_dtype,
+        )
+        print(f"Model distributed across: {self.model.hf_model.hf_device_map}")
+        # print(f"Moving model to device: {config.device}")
+        # self.model.to(config.device)
 
     def _ensure_qwen3_support(self):
     """Add qwen3 32b in because they forgot to add it to the model table"""

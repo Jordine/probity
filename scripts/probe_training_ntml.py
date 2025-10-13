@@ -188,6 +188,7 @@ def main():
     print("🚀 Contrastive NTML Probe Training")
     print(f"📄 Dataset: {dataset_path.name}")
     print(f"🤖 Model: {args.model_name}")
+   
     
     # Load dataset using the new loader
     print(f"Loading contrastive dataset from {dataset_path}")
@@ -201,13 +202,17 @@ def main():
     # Load model once
     print(f"Loading model {args.model_name}")
     model_dtype = get_model_dtype(args.model_name)
+    print(f"🤖 Model dtype: {model_dtype}")
     
     try:
         model = HookedTransformer.from_pretrained_no_processing(
             args.model_name, 
-            device=args.device,
+            device="cuda",  
+            n_devices=2,
             dtype=model_dtype
         )
+
+        
     except Exception as e:
         print(f"Error with from_pretrained_no_processing: {e}")
         print("Attempting alternative loading method...")

@@ -2,22 +2,22 @@
   "experiment_mode": "baseline_judge",
   "debate_type": "baseline",
   "models": {
-    "honest": "Qwen/Qwen2.5-14B-Instruct",
-    "dishonest": "Qwen/Qwen2.5-14B-Instruct"
+    "honest": "meta-llama/Llama-3.3-70B-Instruct",
+    "dishonest": "meta-llama/Llama-3.3-70B-Instruct"
   },
   "providers": {
     "honest": "local",
     "dishonest": "local"
   },
   "dataset": "quality",
-  "n_problems": 20,
+  "n_problems": 10,
   "max_rounds": 3,
   "probe_config": {
     "enabled": true,
     "types": [
       "logistic"
     ],
-    "layer": 26
+    "layer": 30
   },
-  "timestamp": "20251013_112949"
+  "timestamp": "20251013_174839"
 }
