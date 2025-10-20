@@ -79,34 +79,25 @@ class LocalModelProvider(BaseModelProvider):
             print(f"✓ Model loaded on {self.device} - Allocated: {allocated:.2f}GB, Reserved: {reserved:.2f}GB")
         else:
             print("✓ Model loaded on CPU")
-    
+
     def generate(self, messages: List[Dict[str, str]], 
                  capture_activations_layer: Optional[int] = None,
                  **kwargs) -> tuple:
         """
         Generate with optional activation capture for probe scoring.
-        
-        Args:
-            messages: Conversation history
-            capture_activations_layer: If provided, capture activations at this layer
-            **kwargs: Generation parameters
-        
-        Returns:
-            (completion_text, metadata) where metadata may include 'generation_activations'
         """
         if not self.is_available():
             return "", {"error": "Model not available"}
     
         start = time.time()
     
-        # Build the chat prompt string with FULL context (story + history)
+        # Build the chat prompt string
         prompt_str = self.tokenizer.apply_chat_template(
             messages,
             tokenize=False,
             add_generation_prompt=True,
         )
     
-        # Tokenize and move to correct device
         prompt_ids = self.tokenizer(
             prompt_str,
             return_tensors="pt",
@@ -127,77 +118,10 @@ class LocalModelProvider(BaseModelProvider):
     
         self.model.eval()
         
-        # CRITICAL: Choose generation method based on whether we need activations
-        if capture_activations_layer is not None:
-            # Generate WITH activation capture
-            hook_point = f"blocks.{capture_activations_layer}.hook_resid_pre"
-            
-            with torch.no_grad():
-                # Set device context for generation
-                if 'cuda' in str(self.device):
-                    with torch.cuda.device(self.device):
-                        # Use run_with_cache for generation to capture activations
-                        full_output, cache = self.model.run_with_cache(
-                            prompt_ids,
-                            max_new_tokens=max_new,
-                            temperature=gen_cfg["temperature"],
-                            do_sample=gen_cfg["do_sample"],
-                            top_p=gen_cfg["top_p"],
-                            top_k=gen_cfg["top_k"],
-                            eos_token_id=self.tokenizer.eos_token_id,
-                            stop_at_eos=True,
-                            prepend_bos=False,
-                            return_type="input",
-                            names_filter=[hook_point],  # Only cache the layer we need
-                            return_cache_object=True,
-                            stop_at_layer=capture_activations_layer + 1,
-                        )
-                else:
-                    full_output, cache = self.model.run_with_cache(
-                        prompt_ids,
-                        max_new_tokens=max_new,
-                        temperature=gen_cfg["temperature"],
-                        do_sample=gen_cfg["do_sample"],
-                        top_p=gen_cfg["top_p"],
-                        top_k=gen_cfg["top_k"],
-                        eos_token_id=self.tokenizer.eos_token_id,
-                        stop_at_eos=True,
-                        prepend_bos=False,
-                        return_type="input",
-                        names_filter=[hook_point],
-                        return_cache_object=True,
-                        stop_at_layer=capture_activations_layer + 1,
-                    )
-                
-                # Extract ONLY the generated tokens' activations
-                full_activations = cache[hook_point].squeeze(0)  # [full_seq_len, hidden_dim]
-                generation_activations = full_activations[prompt_len:].clone()  # [gen_len, hidden_dim]
-                
-                # Extract generated token IDs
-                out_ids = full_output
-                
-                # Immediate cleanup - don't keep full activations
-                del cache, full_activations
-                torch.cuda.empty_cache() if 'cuda' in str(self.device) else None
-                
-        else:
-            # Normal generation without activation capture
-            with torch.no_grad():
-                if 'cuda' in str(self.device):
-                    with torch.cuda.device(self.device):
-                        out_ids = self.model.generate(
-                            prompt_ids,
-                            max_new_tokens=max_new,
-                            temperature=gen_cfg["temperature"],
-                            do_sample=gen_cfg["do_sample"],
-                            top_p=gen_cfg["top_p"],
-                            top_k=gen_cfg["top_k"],
-                            eos_token_id=self.tokenizer.eos_token_id,
-                            stop_at_eos=True,
-                            prepend_bos=False,
-                            return_type="input",
-                        )
-                else:
+        # FAST GENERATION (no hooks!)
+        with torch.no_grad():
+            if 'cuda' in str(self.device):
+                with torch.cuda.device(self.device):
                     out_ids = self.model.generate(
                         prompt_ids,
                         max_new_tokens=max_new,
@@ -210,17 +134,106 @@ class LocalModelProvider(BaseModelProvider):
                         prepend_bos=False,
                         return_type="input",
                     )
-            
-            generation_activations = None
+            else:
+                out_ids = self.model.generate(
+                    prompt_ids,
+                    max_new_tokens=max_new,
+                    temperature=gen_cfg["temperature"],
+                    do_sample=gen_cfg["do_sample"],
+                    top_p=gen_cfg["top_p"],
+                    top_k=gen_cfg["top_k"],
+                    eos_token_id=self.tokenizer.eos_token_id,
+                    stop_at_eos=True,
+                    prepend_bos=False,
+                    return_type="input",
+                )
     
         # Decode completion
-        out_ids = torch.tensor(out_ids, device=self.device)
-        completion_ids = out_ids[0, prompt_len:]
+        if isinstance(out_ids, torch.Tensor):
+            out_ids_tensor = out_ids
+        else:
+            out_ids_tensor = torch.tensor(out_ids, device=self.device)
+        
+        completion_ids = out_ids_tensor[0, prompt_len:]
         completion_str = self.tokenizer.decode(
             completion_ids,
             skip_special_tokens=True,
             clean_up_tokenization_spaces=True
         ).lstrip()
+    
+        # NOW capture activations if requested (separate forward pass)
+        generation_activations = None
+        
+        if capture_activations_layer is not None:
+            print(f"[MEMORY EFFICIENT] Capturing activations with minimal context")
+            
+            # Build minimal context: last user message + new assistant response
+            # This maintains context for accurate activations without the full story
+            minimal_messages = []
+            
+            # Include last 2 turns for context (if available)
+            if len(messages) >= 2:
+                minimal_messages = messages[-2:]
+            else:
+                minimal_messages = messages
+            
+            # Add the new response
+            minimal_messages_with_response = minimal_messages + [
+                {"role": "assistant", "content": completion_str}
+            ]
+            
+            # Format for model
+            minimal_prompt = self.tokenizer.apply_chat_template(
+                minimal_messages_with_response,
+                tokenize=False,
+                add_generation_prompt=False
+            )
+            
+            # Tokenize
+            minimal_ids = self.tokenizer(
+                minimal_prompt,
+                return_tensors="pt",
+                add_special_tokens=False
+            ).to(self.device)
+            
+            # Find where assistant response starts in minimal context
+            minimal_messages_without_response = minimal_messages + [
+                {"role": "assistant", "content": ""}
+            ]
+            prefix_prompt = self.tokenizer.apply_chat_template(
+                minimal_messages_without_response,
+                tokenize=False,
+                add_generation_prompt=False
+            )
+            prefix_ids = self.tokenizer(
+                prefix_prompt,
+                return_tensors="pt",
+                add_special_tokens=False
+            )
+            prefix_len = prefix_ids["input_ids"].shape[1]
+            
+            # Run ONE forward pass to get activations
+            hook_point = f"blocks.{capture_activations_layer}.hook_resid_pre"
+            
+            with torch.no_grad():
+                _, cache = self.model.run_with_cache(
+                    minimal_ids["input_ids"],
+                    names_filter=[hook_point],
+                    return_cache_object=True,
+                    stop_at_layer=capture_activations_layer + 1,
+                )
+                
+                # Extract activations
+                full_acts = cache[hook_point].squeeze(0)  # [seq_len, hidden]
+                
+                # Get only the assistant response activations
+                generation_activations = full_acts[prefix_len:].clone()
+                
+                print(f"[DEBUG] Captured activations for {generation_activations.shape[0]} tokens")
+                
+                # Immediate cleanup
+                del cache, full_acts
+                torch.cuda.empty_cache() if 'cuda' in str(self.device) else None
     
         # Accounting & metadata
         output_len = completion_ids.numel()
@@ -241,8 +254,8 @@ class LocalModelProvider(BaseModelProvider):
         # Add activations to metadata if captured
         if generation_activations is not None:
             metadata['generation_activations'] = generation_activations
-            # Also store the generated token IDs for probe scoring
             metadata['generation_token_ids'] = completion_ids
+            print(f"[DEBUG] Stored {generation_activations.shape[0]} token activations")
     
         # Final cleanup
         if 'cuda' in str(self.device):
@@ -251,6 +264,8 @@ class LocalModelProvider(BaseModelProvider):
         gc.collect()
     
         return completion_str, metadata
+    
+            
     
     def is_available(self) -> bool:
         return self.model is not None and self.tokenizer is not None

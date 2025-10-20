@@ -131,7 +131,7 @@ class NoJudgeDebateRunner:
         elif 'quality_problem' in item:
             debate_type = "quality"
             problem_id = item['quality_problem'].question_id
-            problem_desc = f"{item['quality_problem'].story_title}: {item['quality_problem'].question[:50]}..."
+            problem_desc = f"{item['quality_problem'].story_title}: {item['quality_problem'].question}..."
         else:
             debate_type = "apps"
             problem_id = item['problem'].problem_id

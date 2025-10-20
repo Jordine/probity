@@ -10,14 +10,14 @@
     "dishonest": "local"
   },
   "dataset": "quality",
-  "n_problems": 2,
+  "n_problems": 10,
   "max_rounds": 3,
   "probe_config": {
     "enabled": true,
     "types": [
       "logistic"
     ],
-    "layer": 33
+    "layer": 43
   },
-  "timestamp": "20251020_025344"
+  "timestamp": "20251020_153433"
 }
