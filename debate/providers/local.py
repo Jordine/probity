@@ -79,21 +79,33 @@ class LocalModelProvider(BaseModelProvider):
             print(f"✓ Model loaded on {self.device} - Allocated: {allocated:.2f}GB, Reserved: {reserved:.2f}GB")
         else:
             print("✓ Model loaded on CPU")
-
-    def generate(self, messages: List[Dict[str, str]], **kwargs) -> tuple:
-        """Generate with proper device handling"""
+    
+    def generate(self, messages: List[Dict[str, str]], 
+                 capture_activations_layer: Optional[int] = None,
+                 **kwargs) -> tuple:
+        """
+        Generate with optional activation capture for probe scoring.
+        
+        Args:
+            messages: Conversation history
+            capture_activations_layer: If provided, capture activations at this layer
+            **kwargs: Generation parameters
+        
+        Returns:
+            (completion_text, metadata) where metadata may include 'generation_activations'
+        """
         if not self.is_available():
             return "", {"error": "Model not available"}
-
+    
         start = time.time()
-
-        # Build the chat prompt string
+    
+        # Build the chat prompt string with FULL context (story + history)
         prompt_str = self.tokenizer.apply_chat_template(
             messages,
             tokenize=False,
             add_generation_prompt=True,
         )
-
+    
         # Tokenize and move to correct device
         prompt_ids = self.tokenizer(
             prompt_str,
@@ -102,23 +114,90 @@ class LocalModelProvider(BaseModelProvider):
         )["input_ids"].to(self.device)
         
         prompt_len = prompt_ids.shape[1]
-
+    
         # Context-length protection
         gen_cfg = {**self.default_gen_kwargs, **kwargs}
         max_new = gen_cfg.get("max_new_tokens", 256)
-
+    
         if prompt_len + max_new + SAFETY_MARGIN > MAX_CONTEXT:
             allowed_new = max(1, MAX_CONTEXT - prompt_len - SAFETY_MARGIN)
             print(f"[CTX] Truncating max_new_tokens from {max_new} → {allowed_new}")
             gen_cfg["max_new_tokens"] = allowed_new
             max_new = allowed_new
-
-        # Generate on the model's device
+    
         self.model.eval()
-        with torch.no_grad():
-            # Set the current device context for generation
-            if 'cuda' in str(self.device):
-                with torch.cuda.device(self.device):
+        
+        # CRITICAL: Choose generation method based on whether we need activations
+        if capture_activations_layer is not None:
+            # Generate WITH activation capture
+            hook_point = f"blocks.{capture_activations_layer}.hook_resid_pre"
+            
+            with torch.no_grad():
+                # Set device context for generation
+                if 'cuda' in str(self.device):
+                    with torch.cuda.device(self.device):
+                        # Use run_with_cache for generation to capture activations
+                        full_output, cache = self.model.run_with_cache(
+                            prompt_ids,
+                            max_new_tokens=max_new,
+                            temperature=gen_cfg["temperature"],
+                            do_sample=gen_cfg["do_sample"],
+                            top_p=gen_cfg["top_p"],
+                            top_k=gen_cfg["top_k"],
+                            eos_token_id=self.tokenizer.eos_token_id,
+                            stop_at_eos=True,
+                            prepend_bos=False,
+                            return_type="input",
+                            names_filter=[hook_point],  # Only cache the layer we need
+                            return_cache_object=True,
+                            stop_at_layer=capture_activations_layer + 1,
+                        )
+                else:
+                    full_output, cache = self.model.run_with_cache(
+                        prompt_ids,
+                        max_new_tokens=max_new,
+                        temperature=gen_cfg["temperature"],
+                        do_sample=gen_cfg["do_sample"],
+                        top_p=gen_cfg["top_p"],
+                        top_k=gen_cfg["top_k"],
+                        eos_token_id=self.tokenizer.eos_token_id,
+                        stop_at_eos=True,
+                        prepend_bos=False,
+                        return_type="input",
+                        names_filter=[hook_point],
+                        return_cache_object=True,
+                        stop_at_layer=capture_activations_layer + 1,
+                    )
+                
+                # Extract ONLY the generated tokens' activations
+                full_activations = cache[hook_point].squeeze(0)  # [full_seq_len, hidden_dim]
+                generation_activations = full_activations[prompt_len:].clone()  # [gen_len, hidden_dim]
+                
+                # Extract generated token IDs
+                out_ids = full_output
+                
+                # Immediate cleanup - don't keep full activations
+                del cache, full_activations
+                torch.cuda.empty_cache() if 'cuda' in str(self.device) else None
+                
+        else:
+            # Normal generation without activation capture
+            with torch.no_grad():
+                if 'cuda' in str(self.device):
+                    with torch.cuda.device(self.device):
+                        out_ids = self.model.generate(
+                            prompt_ids,
+                            max_new_tokens=max_new,
+                            temperature=gen_cfg["temperature"],
+                            do_sample=gen_cfg["do_sample"],
+                            top_p=gen_cfg["top_p"],
+                            top_k=gen_cfg["top_k"],
+                            eos_token_id=self.tokenizer.eos_token_id,
+                            stop_at_eos=True,
+                            prepend_bos=False,
+                            return_type="input",
+                        )
+                else:
                     out_ids = self.model.generate(
                         prompt_ids,
                         max_new_tokens=max_new,
@@ -131,20 +210,10 @@ class LocalModelProvider(BaseModelProvider):
                         prepend_bos=False,
                         return_type="input",
                     )
-            else:
-                out_ids = self.model.generate(
-                    prompt_ids,
-                    max_new_tokens=max_new,
-                    temperature=gen_cfg["temperature"],
-                    do_sample=gen_cfg["do_sample"],
-                    top_p=gen_cfg["top_p"],
-                    top_k=gen_cfg["top_k"],
-                    eos_token_id=self.tokenizer.eos_token_id,
-                    stop_at_eos=True,
-                    prepend_bos=False,
-                    return_type="input",
-                )
-
+            
+            generation_activations = None
+    
+        # Decode completion
         out_ids = torch.tensor(out_ids, device=self.device)
         completion_ids = out_ids[0, prompt_len:]
         completion_str = self.tokenizer.decode(
@@ -152,13 +221,13 @@ class LocalModelProvider(BaseModelProvider):
             skip_special_tokens=True,
             clean_up_tokenization_spaces=True
         ).lstrip()
-
+    
         # Accounting & metadata
         output_len = completion_ids.numel()
         total_tokens = prompt_len + output_len
         latency = time.time() - start
         self._update_usage(total_tokens)
-
+    
         metadata = {
             "input_tokens": int(prompt_len),
             "output_tokens": int(output_len),
@@ -168,15 +237,21 @@ class LocalModelProvider(BaseModelProvider):
             "device": str(self.device),
             "dtype": str(self.model_dtype),
         }
-
-        # Cleanup for this specific device
+        
+        # Add activations to metadata if captured
+        if generation_activations is not None:
+            metadata['generation_activations'] = generation_activations
+            # Also store the generated token IDs for probe scoring
+            metadata['generation_token_ids'] = completion_ids
+    
+        # Final cleanup
         if 'cuda' in str(self.device):
             with torch.cuda.device(self.device):
                 torch.cuda.empty_cache()
         gc.collect()
-
+    
         return completion_str, metadata
-
+    
     def is_available(self) -> bool:
         return self.model is not None and self.tokenizer is not None
 

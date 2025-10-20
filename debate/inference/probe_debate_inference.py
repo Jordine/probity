@@ -318,6 +318,101 @@ class ProbeDebateInference:
         formatted_output = self._format_scores_for_debate(clean_tokens, scores_by_probe, speaker)
         return probe_scores, formatted_output
 
+
+
+    
+    def score_from_generation_activations(
+        self,
+        generation_activations: torch.Tensor,
+        generation_token_ids: torch.Tensor,
+        response_text: str,
+        speaker: str,
+    ) -> Tuple[List[ProbeScore], Dict[str, Any]]:
+        """
+        Score using activations captured during generation (EFFICIENT).
+        
+        This avoids re-running the model since we already have the activations
+        from the generation process with full conversation context.
+        
+        Args:
+            generation_activations: Activations for generated tokens [gen_len, hidden_dim]
+            generation_token_ids: Token IDs for generated tokens [gen_len]
+            response_text: The generated response text
+            speaker: 'honest' or 'dishonest'
+        
+        Returns:
+            (list of ProbeScore objects, formatted output dict)
+        """
+        
+        # Convert token IDs to token strings for display
+        token_strings = self.tokenizer.convert_ids_to_tokens(
+            generation_token_ids.cpu().tolist()
+        )
+        clean_tokens = self._clean_tokens_for_display(token_strings)
+        
+        # Move activations to correct device if needed
+        if generation_activations.device != self.device:
+            generation_activations = generation_activations.to(self.device)
+        
+        # Score with all probes
+        probe_scores: List[ProbeScore] = []
+        scores_by_probe: Dict[str, List[float]] = {}
+        raw_logits_by_probe: Dict[str, List[float]] = {}
+        
+        with torch.no_grad():
+            for p_type, probe in self.probes.items():
+                try:
+                    # Ensure dtype matches
+                    act = generation_activations.to(
+                        device=self.device, 
+                        dtype=probe.dtype, 
+                        copy=False
+                    )
+                    
+                    # Apply probe
+                    raw = probe(act)
+                    raw_logits = raw.cpu().squeeze().tolist()
+                    if isinstance(raw_logits, float):
+                        raw_logits = [raw_logits]
+                    raw_logits_by_probe[p_type] = raw_logits
+                    
+                    # Apply sigmoid for logistic probes
+                    if probe.__class__.__name__ == "LogisticProbe":
+                        raw = torch.sigmoid(raw)
+                    
+                    scores = raw.cpu().squeeze().tolist()
+                    if isinstance(scores, float):
+                        scores = [scores]
+                    
+                    scores_by_probe[p_type] = scores
+                    
+                    probe_scores.append(
+                        ProbeScore(
+                            probe_type=p_type,
+                            layer=self.config.layer,
+                            tokens=clean_tokens,
+                            token_scores=scores,
+                            mean_score=float(np.mean(scores)),
+                            metadata={
+                                "timestamp": time.time(),
+                                "speaker": speaker,
+                                "role": self.role,
+                                "raw_logits": raw_logits,
+                                "method": "generation_capture"  # Mark this as efficient method
+                            },
+                        )
+                    )
+                except Exception as exc:
+                    print(f"[ProbeDebateInference] Error in probe '{p_type}': {exc}")
+        
+        # Format for debate display
+        formatted_output = self._format_scores_for_debate(
+            clean_tokens, scores_by_probe, speaker
+        )
+        
+        return probe_scores, formatted_output
+        
+
     # ────────────────────────────────────────────────────────────────────
     # Utility routines (unchanged except for style tweaks)
     # ────────────────────────────────────────────────────────────────────

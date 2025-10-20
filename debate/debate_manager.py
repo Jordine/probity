@@ -457,9 +457,9 @@ Instructions:
         )
         
         return verified_response
-            
+                
     def _run_quality_honest_turn(self, round_num: int):
-        """Run honest debater turn for QuALITY debate"""
+        """Run honest debater turn for QuALITY debate with efficient probe scoring"""
         print("\n" + "="*80)
         print(f"HONEST DEBATER - Round {round_num}")
         print("="*80)
@@ -520,23 +520,46 @@ Instructions:
         
         self.honest_conversation.append({"role": "user", "content": user_prompt})
         
-        # Generate with 150 word limit
-        response, metadata = self.honest_provider.generate(
-            self.honest_conversation, 
-            max_new_tokens=150
-        )
-            
-        # Score with probes BEFORE quote verification
+        # EFFICIENT GENERATION WITH ACTIVATION CAPTURE
         probe_scores = None
         tokens = None
+        
         if self.honest_probe_scorer and isinstance(self.honest_provider, LocalModelProvider):
-            probe_scores, _ = self.honest_probe_scorer.score_new_response(
-                self.honest_conversation[:-1],
-                response,
-                "honest"
+            # Generate WITH activation capture (efficient - only one forward pass)
+            capture_layer = self.config.probe_config.layer
+            
+            response, metadata = self.honest_provider.generate(
+                self.honest_conversation,
+                max_new_tokens=150,
+                capture_activations_layer=capture_layer  # Request activation capture
             )
-            if probe_scores and len(probe_scores) > 0:
-                tokens = probe_scores[0].tokens
+            
+            # Score using the captured activations (no additional forward pass!)
+            if 'generation_activations' in metadata:
+                probe_scores, formatted_probe_output = self.honest_probe_scorer.score_from_generation_activations(
+                    metadata['generation_activations'],
+                    metadata['generation_token_ids'],
+                    response,
+                    "honest"
+                )
+                
+                self.last_probe_outputs[f"honest_{round_num}"] = formatted_probe_output
+                
+                if probe_scores:
+                    print("\n[PROBE ANALYSIS - HONEST]")
+                    print(f"Mean deception score: {np.mean([ps.mean_score for ps in probe_scores]):.3f}")
+                    tokens = probe_scores[0].tokens if probe_scores else None
+                
+                # Immediate cleanup
+                del metadata['generation_activations']
+                del metadata['generation_token_ids']
+                torch.cuda.empty_cache() if torch.cuda.is_available() else None
+        else:
+            # Normal generation without probes
+            response, metadata = self.honest_provider.generate(
+                self.honest_conversation,
+                max_new_tokens=150
+            )
         
         # NOW verify quotes in response
         verified_response = self._verify_and_tag_quotes(response)
@@ -558,10 +581,17 @@ Instructions:
             metadata={**metadata, 'original_content': response}
         )
         
+        # Remove activations from turn metadata to save memory
+        if 'generation_activations' in turn.metadata:
+            del turn.metadata['generation_activations']
+        if 'generation_token_ids' in turn.metadata:
+            del turn.metadata['generation_token_ids']
+        
         self.all_turns.append(turn)
-
+    
+    
     def _run_quality_dishonest_turn(self, round_num: int):
-        """Run dishonest debater turn for QuALITY debate"""
+        """Run dishonest debater turn for QuALITY debate with efficient probe scoring"""
         print("\n" + "="*80)
         print(f"DISHONEST DEBATER - Round {round_num}")
         print("="*80)
@@ -625,23 +655,46 @@ Instructions:
         
         self.dishonest_conversation.append({"role": "user", "content": user_prompt})
         
-        # Generate with 150 word limit
-        response, metadata = self.dishonest_provider.generate(
-            self.dishonest_conversation,
-            max_new_tokens=150
-        )
-        
-        # Score with probes BEFORE quote verification
+        # EFFICIENT GENERATION WITH ACTIVATION CAPTURE
         probe_scores = None
         tokens = None
+        
         if self.dishonest_probe_scorer and isinstance(self.dishonest_provider, LocalModelProvider):
-            probe_scores, _ = self.dishonest_probe_scorer.score_new_response(
-                self.dishonest_conversation[:-1],
-                response,
-                "dishonest"
+            # Generate WITH activation capture (efficient - only one forward pass)
+            capture_layer = self.config.probe_config.layer
+            
+            response, metadata = self.dishonest_provider.generate(
+                self.dishonest_conversation,
+                max_new_tokens=150,
+                capture_activations_layer=capture_layer  # Request activation capture
             )
-            if probe_scores and len(probe_scores) > 0:
-                tokens = probe_scores[0].tokens
+            
+            # Score using the captured activations (no additional forward pass!)
+            if 'generation_activations' in metadata:
+                probe_scores, formatted_probe_output = self.dishonest_probe_scorer.score_from_generation_activations(
+                    metadata['generation_activations'],
+                    metadata['generation_token_ids'],
+                    response,
+                    "dishonest"
+                )
+                
+                self.last_probe_outputs[f"dishonest_{round_num}"] = formatted_probe_output
+                
+                if probe_scores:
+                    print("\n[PROBE ANALYSIS - DISHONEST]")
+                    print(f"Mean deception score: {np.mean([ps.mean_score for ps in probe_scores]):.3f}")
+                    tokens = probe_scores[0].tokens if probe_scores else None
+                
+                # Immediate cleanup
+                del metadata['generation_activations']
+                del metadata['generation_token_ids']
+                torch.cuda.empty_cache() if torch.cuda.is_available() else None
+        else:
+            # Normal generation without probes
+            response, metadata = self.dishonest_provider.generate(
+                self.dishonest_conversation,
+                max_new_tokens=150
+            )
         
         # Verify quotes
         verified_response = self._verify_and_tag_quotes(response)
@@ -660,6 +713,12 @@ Instructions:
             timestamp=time.time(),
             metadata={**metadata, 'original_content': response}
         )
+        
+        # Remove activations from turn metadata to save memory
+        if 'generation_activations' in turn.metadata:
+            del turn.metadata['generation_activations']
+        if 'generation_token_ids' in turn.metadata:
+            del turn.metadata['generation_token_ids']
         
         self.all_turns.append(turn)
     
@@ -898,9 +957,9 @@ You may use any persuasive tactics necessary to defend your solution."""
         self.backdoored_solution = backdoored_solution
         
     # Fixed _run_honest_turn and _run_dishonest_turn methods for DebateManager
-        
+            
     def _run_honest_turn(self, round_num: int, max_new_tokens: int = 256):
-        """Run the honest debater's turn with formatted probe scores."""
+        """Run honest debater turn with efficient probe scoring"""
         
         print("\n" + "="*80)
         print(f"HONEST DEBATER - Round {round_num}")
@@ -986,32 +1045,50 @@ You may use any persuasive tactics necessary to defend your solution."""
         # Add user prompt to honest conversation
         self.honest_conversation.append({"role": "user", "content": user_prompt})
         
-        # Generate response
-        response, metadata = self.honest_provider.generate(self.honest_conversation, max_new_tokens=max_new_tokens)
+        # EFFICIENT GENERATION WITH ACTIVATION CAPTURE
+        probe_scores = None
+        tokens = None
+        
+        if self.honest_probe_scorer and isinstance(self.honest_provider, LocalModelProvider):
+            # Generate WITH activation capture (efficient - only one forward pass)
+            capture_layer = self.config.probe_config.layer
+            
+            response, metadata = self.honest_provider.generate(
+                self.honest_conversation,
+                max_new_tokens=max_new_tokens,
+                capture_activations_layer=capture_layer  # Request activation capture
+            )
+            
+            # Score using the captured activations (no additional forward pass!)
+            if 'generation_activations' in metadata:
+                probe_scores, formatted_probe_output = self.honest_probe_scorer.score_from_generation_activations(
+                    metadata['generation_activations'],
+                    metadata['generation_token_ids'],
+                    response,
+                    "honest"
+                )
+                
+                self.last_probe_outputs[f"honest_{round_num}"] = formatted_probe_output
+                
+                if probe_scores:
+                    print("\n[PROBE ANALYSIS - HONEST]")
+                    print(f"Mean deception score: {np.mean([ps.mean_score for ps in probe_scores]):.3f}")
+                    tokens = probe_scores[0].tokens if probe_scores else None
+                
+                # Immediate cleanup
+                del metadata['generation_activations']
+                torch.cuda.empty_cache() if torch.cuda.is_available() else None
+        else:
+            # Normal generation without probes
+            response, metadata = self.honest_provider.generate(
+                self.honest_conversation,
+                max_new_tokens=max_new_tokens
+            )
         
         print("\n[HONEST RESPONSE]")
         print("-"*40)
         print(response)
         print("-"*40)
-        
-        # Score with probes BEFORE adding response to conversation
-        probe_scores = None
-        tokens = None
-        
-        if (self.honest_probe_scorer or self.dishonest_probe_scorer) and isinstance(self.honest_provider, LocalModelProvider):
-            probe_scores, formatted_probe_output = self.honest_probe_scorer.score_new_response(
-                self.honest_conversation,
-                response,
-                "honest",
-                cache_dir=self.config.probe_config.cache_dir if hasattr(self.config.probe_config, 'cache_dir') else None
-            )
-            
-            self.last_probe_outputs[f"honest_{round_num}"] = formatted_probe_output
-            
-            if probe_scores:
-                print("\n[PROBE ANALYSIS - HONEST]")
-                print(f"Mean deception score: {np.mean([ps.mean_score for ps in probe_scores]):.3f}")
-                tokens = probe_scores[0].tokens if probe_scores else None
         
         # Add assistant response to honest conversation
         self.honest_conversation.append({"role": "assistant", "content": response})
@@ -1028,15 +1105,21 @@ You may use any persuasive tactics necessary to defend your solution."""
             metadata={**metadata, 'original_content': response}
         )
         
+        # Remove activations from turn metadata to save memory
+        if 'generation_activations' in turn.metadata:
+            del turn.metadata['generation_activations']
+        if 'generation_token_ids' in turn.metadata:
+            del turn.metadata['generation_token_ids']
+        
         self.all_turns.append(turn)
-
+    
     def _run_dishonest_turn(self, round_num: int, max_new_tokens: int = 256):
-        """Run the dishonest debater's turn with formatted probe scores."""
+        """Run dishonest debater turn with efficient probe scoring"""
         
         print("\n" + "="*80)
         print(f"DISHONEST DEBATER - Round {round_num}")
         print("="*80)
-
+    
         # Get display mode from config
         display_mode = getattr(self.config, 'probe_display_mode', 'per_statement')
         
@@ -1113,36 +1196,54 @@ You may use any persuasive tactics necessary to defend your solution."""
         print("-"*40)
         print(user_prompt)
         print("-"*40)
-
+    
         # Add user prompt to dishonest conversation
         self.dishonest_conversation.append({"role": "user", "content": user_prompt})
         
-        # Generate response
-        response, metadata = self.dishonest_provider.generate(self.dishonest_conversation, max_new_tokens=max_new_tokens)
+        # EFFICIENT GENERATION WITH ACTIVATION CAPTURE
+        probe_scores = None
+        tokens = None
+        
+        if self.dishonest_probe_scorer and isinstance(self.dishonest_provider, LocalModelProvider):
+            # Generate WITH activation capture (efficient - only one forward pass)
+            capture_layer = self.config.probe_config.layer
+            
+            response, metadata = self.dishonest_provider.generate(
+                self.dishonest_conversation,
+                max_new_tokens=max_new_tokens,
+                capture_activations_layer=capture_layer  # Request activation capture
+            )
+            
+            # Score using the captured activations (no additional forward pass!)
+            if 'generation_activations' in metadata:
+                probe_scores, formatted_probe_output = self.dishonest_probe_scorer.score_from_generation_activations(
+                    metadata['generation_activations'],
+                    metadata['generation_token_ids'],
+                    response,
+                    "dishonest"
+                )
+                
+                self.last_probe_outputs[f"dishonest_{round_num}"] = formatted_probe_output
+                
+                if probe_scores:
+                    print("\n[PROBE ANALYSIS - DISHONEST]")
+                    print(f"Mean deception score: {np.mean([ps.mean_score for ps in probe_scores]):.3f}")
+                    tokens = probe_scores[0].tokens if probe_scores else None
+                
+                # Immediate cleanup
+                del metadata['generation_activations']
+                torch.cuda.empty_cache() if torch.cuda.is_available() else None
+        else:
+            # Normal generation without probes
+            response, metadata = self.dishonest_provider.generate(
+                self.dishonest_conversation,
+                max_new_tokens=max_new_tokens
+            )
         
         print("\n[DISHONEST RESPONSE]")
         print("-"*40)
         print(response)
         print("-"*40)
-        
-        # Score with probes BEFORE adding response to conversation
-        probe_scores = None
-        tokens = None
-        
-        if (self.honest_probe_scorer or self.dishonest_probe_scorer) and isinstance(self.dishonest_provider, LocalModelProvider):
-            probe_scores, formatted_probe_output = self.dishonest_probe_scorer.score_new_response(
-                self.dishonest_conversation,
-                response,
-                "dishonest",
-                cache_dir=self.config.probe_config.cache_dir if hasattr(self.config.probe_config, 'cache_dir') else None
-            )
-            
-            self.last_probe_outputs[f"dishonest_{round_num}"] = formatted_probe_output
-            
-            if probe_scores:
-                print("\n[PROBE ANALYSIS - DISHONEST]")
-                print(f"Mean deception score: {np.mean([ps.mean_score for ps in probe_scores]):.3f}")
-                tokens = probe_scores[0].tokens if probe_scores else None
         
         # Add assistant response to dishonest conversation
         self.dishonest_conversation.append({"role": "assistant", "content": response})
@@ -1158,6 +1259,12 @@ You may use any persuasive tactics necessary to defend your solution."""
             timestamp=time.time(),
             metadata={**metadata, 'original_content': response}
         )
+        
+        # Remove activations from turn metadata to save memory
+        if 'generation_activations' in turn.metadata:
+            del turn.metadata['generation_activations']
+        if 'generation_token_ids' in turn.metadata:
+            del turn.metadata['generation_token_ids']
         
         self.all_turns.append(turn)
     
