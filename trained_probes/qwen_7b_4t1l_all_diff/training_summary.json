@@ -1,0 +1,223 @@
+{
+  "6": {
+    "logistic": {
+      "final_train_loss": 0.7206517269736842,
+      "final_val_loss": 1.260485197368421,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/logistic/layer_6_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.48046875,
+      "final_val_loss": 0.48046875,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/meandiff/layer_6_probe.pt"
+    },
+    "attention": {
+      "final_train_loss": 0.7955208333333333,
+      "final_val_loss": 0.9862253289473685,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/attention/layer_6_probe.pt"
+    }
+  },
+  "7": {
+    "logistic": {
+      "final_train_loss": 0.7105989583333333,
+      "final_val_loss": 1.188733552631579,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/logistic/layer_7_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.46484375,
+      "final_val_loss": 0.46484375,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/meandiff/layer_7_probe.pt"
+    },
+    "attention": {
+      "final_train_loss": 0.7625411184210527,
+      "final_val_loss": 1.1227384868421053,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/attention/layer_7_probe.pt"
+    }
+  },
+  "8": {
+    "logistic": {
+      "final_train_loss": 0.7597142269736842,
+      "final_val_loss": 1.1395970394736843,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/logistic/layer_8_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 1.2734375,
+      "final_val_loss": 1.2734375,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/meandiff/layer_8_probe.pt"
+    },
+    "attention": {
+      "final_train_loss": 0.8578844572368421,
+      "final_val_loss": 1.2166940789473684,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/attention/layer_8_probe.pt"
+    }
+  },
+  "9": {
+    "logistic": {
+      "final_train_loss": 0.6243832236842105,
+      "final_val_loss": 0.9381167763157895,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/logistic/layer_9_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.474609375,
+      "final_val_loss": 0.474609375,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/meandiff/layer_9_probe.pt"
+    },
+    "attention": {
+      "final_train_loss": 0.6449167351973685,
+      "final_val_loss": 1.010279605263158,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/attention/layer_9_probe.pt"
+    }
+  },
+  "10": {
+    "logistic": {
+      "final_train_loss": 0.594495271381579,
+      "final_val_loss": 1.035361842105263,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/logistic/layer_10_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.4140625,
+      "final_val_loss": 0.4140625,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/meandiff/layer_10_probe.pt"
+    },
+    "attention": {
+      "final_train_loss": 0.5926449424342105,
+      "final_val_loss": 0.9029605263157895,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/attention/layer_10_probe.pt"
+    }
+  },
+  "13": {
+    "logistic": {
+      "final_train_loss": 0.5061420641447368,
+      "final_val_loss": 0.909436677631579,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/logistic/layer_13_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.384765625,
+      "final_val_loss": 0.384765625,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/meandiff/layer_13_probe.pt"
+    },
+    "attention": {
+      "final_train_loss": 0.5216666666666666,
+      "final_val_loss": 0.936328125,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/attention/layer_13_probe.pt"
+    }
+  },
+  "14": {
+    "logistic": {
+      "final_train_loss": 0.494765625,
+      "final_val_loss": 0.9056332236842105,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/logistic/layer_14_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.419921875,
+      "final_val_loss": 0.419921875,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/meandiff/layer_14_probe.pt"
+    },
+    "attention": {
+      "final_train_loss": 0.5165104166666666,
+      "final_val_loss": 0.8412828947368421,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/attention/layer_14_probe.pt"
+    }
+  },
+  "15": {
+    "logistic": {
+      "final_train_loss": 0.4179557291666667,
+      "final_val_loss": 0.85224609375,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/logistic/layer_15_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.3359375,
+      "final_val_loss": 0.3359375,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/meandiff/layer_15_probe.pt"
+    },
+    "attention": {
+      "final_train_loss": 0.4226302083333333,
+      "final_val_loss": 0.610205078125,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/attention/layer_15_probe.pt"
+    }
+  },
+  "18": {
+    "logistic": {
+      "final_train_loss": 0.3171744791666667,
+      "final_val_loss": 0.561181640625,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/logistic/layer_18_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.298828125,
+      "final_val_loss": 0.298828125,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/meandiff/layer_18_probe.pt"
+    },
+    "attention": {
+      "final_train_loss": 0.2737890625,
+      "final_val_loss": 0.5075041118421053,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/attention/layer_18_probe.pt"
+    }
+  },
+  "19": {
+    "logistic": {
+      "final_train_loss": 0.29377604166666665,
+      "final_val_loss": 0.6194490131578947,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/logistic/layer_19_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.25,
+      "final_val_loss": 0.25,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/meandiff/layer_19_probe.pt"
+    },
+    "attention": {
+      "final_train_loss": 0.24790553042763158,
+      "final_val_loss": 0.4877672697368421,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/attention/layer_19_probe.pt"
+    }
+  },
+  "20": {
+    "logistic": {
+      "final_train_loss": 0.6953638980263158,
+      "final_val_loss": 1.0879934210526316,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/logistic/layer_20_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 2.125,
+      "final_val_loss": 2.125,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/meandiff/layer_20_probe.pt"
+    },
+    "attention": {
+      "final_train_loss": 0.7122481496710527,
+      "final_val_loss": 1.1632401315789473,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/attention/layer_20_probe.pt"
+    }
+  },
+  "21": {
+    "logistic": {
+      "final_train_loss": 0.2931100945723684,
+      "final_val_loss": 0.46756784539473684,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/logistic/layer_21_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.34375,
+      "final_val_loss": 0.34375,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/meandiff/layer_21_probe.pt"
+    },
+    "attention": {
+      "final_train_loss": 0.20633095189144737,
+      "final_val_loss": 0.3407175164473684,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/attention/layer_21_probe.pt"
+    }
+  },
+  "22": {
+    "logistic": {
+      "final_train_loss": 0.3019661458333333,
+      "final_val_loss": 0.373187255859375,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/logistic/layer_22_probe.pt"
+    },
+    "meandiff": {
+      "final_train_loss": 0.359375,
+      "final_val_loss": 0.359375,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/meandiff/layer_22_probe.pt"
+    },
+    "attention": {
+      "final_train_loss": 0.16884765625,
+      "final_val_loss": 0.689710115131579,
+      "save_path": "trained_probes/qwen_7b_4t1l_all_diff/attention/layer_22_probe.pt"
+    }
+  }
+}
