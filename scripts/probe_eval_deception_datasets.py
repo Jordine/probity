@@ -213,7 +213,7 @@ def evaluate_on_assistant_tokens(evaluator: OptimizedBatchProbeEvaluator,
     # Get activations for all texts
     print("Getting activations...")
     layers = list(set(layer for layer, _ in probe_configs.keys()))
-    activation_data = evaluator.get_batch_activations(formatted_texts, layers, batch_size=1, disk_cache_dir="./cache/val_acts")
+    activation_data = evaluator.get_batch_activations(formatted_texts, layers, batch_size=4, disk_cache_dir="./cache/val_acts")
     activations = activation_data['activations']
     tokens_by_text = activation_data['tokens_by_text']
     
