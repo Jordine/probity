@@ -3,12 +3,16 @@
 
 echo "🔧 Patching TransformerLens for explicit GPU assignment..."
 
-# Function to find TransformerLens installation
+# Function to find TransformerLens installation - using same logic as n_ctx patch
 find_transformerlens() {
     python -c "
-import transformer_lens
-import os
-print(os.path.dirname(transformer_lens.__file__))
+import site
+from pathlib import Path
+for sp in site.getsitepackages():
+    p = Path(sp) / 'transformer_lens'
+    if p.exists():
+        print(p)
+        break
 " 2>/dev/null
 }
 
@@ -33,7 +37,7 @@ python -c "
 import os
 import re
 
-tl_path = '$TL_PATH'  # Use the path directly
+tl_path = '$TL_PATH'
 config_file = os.path.join(tl_path, 'HookedTransformerConfig.py')
 
 with open(config_file, 'r') as f:
@@ -67,7 +71,7 @@ echo "📝 Patching devices.py..."
 python -c "
 import os
 
-tl_path = '$TL_PATH'  # Use the path directly
+tl_path = '$TL_PATH'
 devices_file = os.path.join(tl_path, 'utilities', 'devices.py')
 
 with open(devices_file, 'r') as f:
@@ -234,7 +238,7 @@ python -c "
 import os
 import re
 
-tl_path = '$TL_PATH'  # Use the path directly
+tl_path = '$TL_PATH'
 ht_file = os.path.join(tl_path, 'HookedTransformer.py')
 
 with open(ht_file, 'r') as f:
