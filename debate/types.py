@@ -35,7 +35,8 @@ class ModelConfig:
     base_url: Optional[str] = None
     generation_kwargs: Dict[str, Any] = field(default_factory=dict)
     supports_probes: bool = False
-    device_id: Optional[int] = None  
+    device_id: Optional[int] = None  #single gpu for backward compatibility
+    gpu_indices: Optional[List[int]] = None  #multi gpu
 
     def __post_init__(self):
         self.supports_probes = (self.provider == ProviderType.LOCAL)

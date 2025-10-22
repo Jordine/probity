@@ -13,3 +13,6 @@ for sp in site.getsitepackages():
         print('✓ Patched TransformerLens')
         break
 "
+
+chmod +x patch_transformerlens_explicit_gpu.sh
+./patch_transformerlens_explicit_gpu.sh

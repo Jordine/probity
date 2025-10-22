@@ -359,7 +359,9 @@ class NoJudgeDebateRunner:
         return df
 
 
-def create_model_config(model_name: str, provider: str, args, device_id: Optional[int] = None) -> ModelConfig:
+def create_model_config(model_name: str, provider: str, args, 
+                        device_id: Optional[int] = None,
+                        gpu_indices: Optional[List[int]] = None) -> ModelConfig:  # ADD gpu_indices param
     """Create model configuration with optional GPU assignment"""
     provider_type = ProviderType[provider.upper()]
     
@@ -376,7 +378,8 @@ def create_model_config(model_name: str, provider: str, args, device_id: Optiona
         provider=provider_type,
         model_name=model_name,
         api_key=api_key,
-        device_id=device_id,  
+        device_id=device_id,  # Keep for backward compatibility
+        gpu_indices=gpu_indices,  # ADD THIS
         generation_kwargs={
             "temperature": 0.7,
             "max_tokens": 512
@@ -411,6 +414,13 @@ def main():
                        help='GPU device ID for honest model (auto-detect if not specified)')
     parser.add_argument('--dishonest_gpu', type=int, default=None,
                        help='GPU device ID for dishonest model (auto-detect if not specified)')
+    
+    #use indices
+    
+    parser.add_argument('--honest_gpu_indices', nargs='+', type=int, default=None,
+                       help='GPU indices for honest model (e.g., --honest_gpu_indices 0 1)')
+    parser.add_argument('--dishonest_gpu_indices', nargs='+', type=int, default=None,
+                       help='GPU indices for dishonest model (e.g., --dishonest_gpu_indices 2 3)')
     
     
     # API keys
@@ -454,7 +464,6 @@ def main():
     
     args = parser.parse_args()
 
-
     # GPU Detection and Configuration
     print("\n" + "="*60)
     print("GPU CONFIGURATION")
@@ -466,37 +475,41 @@ def main():
         print("⚠️  No GPUs detected, will use CPU (not recommended for large models)")
         honest_device_id = None
         dishonest_device_id = None
+        honest_gpu_indices = None
+        dishonest_gpu_indices = None
     else:
         print(f"✓ Found {gpu_info.num_gpus} GPU(s):")
         for i, (name, memory) in enumerate(zip(gpu_info.gpu_names, gpu_info.gpu_memory)):
             print(f"  GPU {i}: {name} ({memory:.1f}GB)")
         
-        # Check if models can fit
-        can_fit, assignment = can_fit_models(gpu_info, args.honest_model, args.dishonest_model)
-        
-        if not can_fit:
-            print(f"\n⚠️  Models may not fit in available GPU memory!")
-            print(f"  Honest model ({args.honest_model}) and Dishonest model ({args.dishonest_model})")
-            print(f"  Proceeding anyway, but may encounter OOM errors...")
-            
-        # Allow manual override or use automatic assignment
-        if args.honest_gpu is not None and args.dishonest_gpu is not None:
-            # Manual assignment
+        # Handle multi-GPU indices
+        if args.honest_gpu_indices and args.dishonest_gpu_indices:
+            # Explicit multi-GPU assignment
+            honest_gpu_indices = args.honest_gpu_indices
+            dishonest_gpu_indices = args.dishonest_gpu_indices
+            honest_device_id = honest_gpu_indices[0]  # Primary device
+            dishonest_device_id = dishonest_gpu_indices[0]  # Primary device
+            print(f"\n📌 Using explicit multi-GPU assignment:")
+            print(f"  Honest debater → GPUs {honest_gpu_indices}")
+            print(f"  Dishonest debater → GPUs {dishonest_gpu_indices}")
+        elif args.honest_gpu is not None and args.dishonest_gpu is not None:
+            # Legacy single GPU assignment
             honest_device_id = args.honest_gpu
             dishonest_device_id = args.dishonest_gpu
-            print(f"\n📌 Using manual GPU assignment:")
-        elif assignment:
-            # Automatic assignment
-            honest_device_id, dishonest_device_id = assignment
-            print(f"\n🔧 Using automatic GPU assignment:")
+            honest_gpu_indices = [args.honest_gpu]
+            dishonest_gpu_indices = [args.dishonest_gpu]
+            print(f"\n📌 Using manual single GPU assignment:")
+            print(f"  Honest debater → GPU {honest_device_id}")
+            print(f"  Dishonest debater → GPU {dishonest_device_id}")
         else:
-            # Fallback to GPU 0
+            # Fallback to GPU 0 - FIX: set gpu_indices too
             honest_device_id = 0
             dishonest_device_id = 0
+            honest_gpu_indices = [0]  # ADD THIS
+            dishonest_gpu_indices = [0]  # ADD THIS
             print(f"\n⚠️  Using GPU 0 for both models (may cause OOM):")
-        
-        print(f"  Honest debater → GPU {honest_device_id}")
-        print(f"  Dishonest debater → GPU {dishonest_device_id}")
+            print(f"  Honest debater → GPU {honest_device_id}")
+            print(f"  Dishonest debater → GPU {dishonest_device_id}")
     
     print("="*60 + "\n")
     
@@ -518,9 +531,21 @@ def main():
     save_dir = Path(args.save_dir) / experiment_name
     save_dir.mkdir(parents=True, exist_ok=True)
     
-    # Create model configs
-    honest_config = create_model_config(args.honest_model, args.honest_provider, args, device_id=honest_device_id)
-    dishonest_config = create_model_config(args.dishonest_model, args.dishonest_provider, args, device_id=dishonest_device_id)
+    # Create model configs with explicit gpu assignments
+    honest_config = create_model_config(
+        args.honest_model, 
+        args.honest_provider, 
+        args, 
+        device_id=honest_device_id,
+        gpu_indices=honest_gpu_indices  # ADD THIS
+    )
+    dishonest_config = create_model_config(
+        args.dishonest_model, 
+        args.dishonest_provider, 
+        args, 
+        device_id=dishonest_device_id,
+        gpu_indices=dishonest_gpu_indices  # ADD THIS
+    )
     
     # Create probe configuration if provided
     probe_config = None

@@ -24,16 +24,20 @@ class LocalModelProvider(BaseModelProvider):
 
     def __init__(self, config: ModelConfig):
         super().__init__(config)
-
-        # Determine device - either specified GPU or auto-detect
+        
+        # Determine device - check gpu_indices first, then device_id
+        self.gpu_indices = getattr(config, 'gpu_indices', None)
         self.device_id = config.device_id
-        if self.device_id is not None:
-            if not torch.cuda.is_available():
-                raise ValueError("CUDA not available but device_id specified")
-            if self.device_id >= torch.cuda.device_count():
-                raise ValueError(f"Device {self.device_id} not available. Only {torch.cuda.device_count()} GPUs found.")
+        
+        if self.gpu_indices and len(self.gpu_indices) > 0:
+            # Multi-GPU mode
+            self.device = torch.device(f"cuda:{self.gpu_indices[0]}")
+            print(f"[LocalModelProvider] Using GPUs: {self.gpu_indices}")
+        elif self.device_id is not None:
+            # Single GPU mode
             self.device = torch.device(f"cuda:{self.device_id}")
         else:
+            # Auto mode
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         print(f"[LocalModelProvider] Using device: {self.device}")
@@ -57,28 +61,51 @@ class LocalModelProvider(BaseModelProvider):
         bf16_families = ["llama", "mistral", "gemma", "phi", "qwen"]
         return torch.bfloat16 if any(m in self.config.model_name.lower() for m in bf16_families) else torch.float32
 
+
+        
     def _load_model(self):
         print(f"Loading local model {self.config.model_name} on {self.device}...")
-
+        
         self.tokenizer = AutoTokenizer.from_pretrained(self.config.model_name, use_fast=True)
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
-
-        # Load model with specific device assignment
-        with torch.cuda.device(self.device) if 'cuda' in str(self.device) else warnings.catch_warnings():
-            self.model = HookedTransformer.from_pretrained_no_processing(
-                self.config.model_name,
-                device=self.device,
-                dtype=self.model_dtype,
-            )
         
-        # Print memory usage
-        if 'cuda' in str(self.device):
-            allocated = torch.cuda.memory_allocated(self.device) / 1024**3
-            reserved = torch.cuda.memory_reserved(self.device) / 1024**3
-            print(f"✓ Model loaded on {self.device} - Allocated: {allocated:.2f}GB, Reserved: {reserved:.2f}GB")
+        # Check for multi-GPU with explicit assignment
+        if self.gpu_indices and len(self.gpu_indices) > 1:
+            print(f"  Distributing model across GPUs: {self.gpu_indices}")
+            with torch.cuda.device(self.device) if 'cuda' in str(self.device) else warnings.catch_warnings():
+                self.model = HookedTransformer.from_pretrained_no_processing(
+                    self.config.model_name,
+                    device="cuda",
+                    n_devices=len(self.gpu_indices),
+                    gpu_indices=self.gpu_indices,  # Pass explicit GPU assignment
+                    dtype=self.model_dtype,
+                )
+            
+            # Report memory usage for each GPU
+            if 'cuda' in str(self.device):
+                for gpu_idx in self.gpu_indices:
+                    allocated = torch.cuda.memory_allocated(gpu_idx) / 1024**3
+                    reserved = torch.cuda.memory_reserved(gpu_idx) / 1024**3
+                    print(f"  ✓ GPU {gpu_idx} - Allocated: {allocated:.2f}GB, Reserved: {reserved:.2f}GB")
+                print(f"✓ Model loaded across GPUs {self.gpu_indices}")
+            
         else:
-            print("✓ Model loaded on CPU")
+            # Single GPU or CPU mode
+            with torch.cuda.device(self.device) if 'cuda' in str(self.device) else warnings.catch_warnings():
+                self.model = HookedTransformer.from_pretrained_no_processing(
+                    self.config.model_name,
+                    device=self.device,
+                    dtype=self.model_dtype,
+                )
+            
+            # Report memory usage
+            if 'cuda' in str(self.device):
+                allocated = torch.cuda.memory_allocated(self.device) / 1024**3
+                reserved = torch.cuda.memory_reserved(self.device) / 1024**3
+                print(f"✓ Model loaded on {self.device} - Allocated: {allocated:.2f}GB, Reserved: {reserved:.2f}GB")
+            else:
+                print("✓ Model loaded on CPU")
     
     def generate(self, messages: List[Dict[str, str]], 
                  capture_activations_layer: Optional[int] = None,
