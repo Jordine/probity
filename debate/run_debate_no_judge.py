@@ -162,13 +162,21 @@ class NoJudgeDebateRunner:
             # Run debate rounds (but not judge)
             for round_num in range(self.config.max_rounds):
                 print(f"  Round {round_num + 1}/{self.config.max_rounds}")
-                if self.manager.honest_goes_first:
-                    self.manager._run_honest_turn(round_num + 1)
-                    self.manager._run_dishonest_turn(round_num + 1)
+                if debate_type == "quality":
+                    if self.manager.honest_goes_first:
+                        self.manager._run_quality_honest_turn(round_num + 1)
+                        self.manager._run_quality_dishonest_turn(round_num + 1)
+                    else:
+                        self.manager._run_quality_dishonest_turn(round_num + 1)
+                        self.manager._run_quality_honest_turn(round_num + 1)
                 else:
-                    self.manager._run_dishonest_turn(round_num + 1)
-                    self.manager._run_honest_turn(round_num + 1)
-            
+                    if self.manager.honest_goes_first:
+                        self.manager._run_honest_turn(round_num + 1)
+                        self.manager._run_dishonest_turn(round_num + 1)
+                    else:
+                        self.manager._run_dishonest_turn(round_num + 1)
+                        self.manager._run_honest_turn(round_num + 1)
+                        
             # Extract and save comprehensive transcript
             transcript = self._create_transcript(self.manager, item, debate_id, debate_type)
             

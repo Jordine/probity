@@ -281,8 +281,9 @@ class DebateManager:
 
 
 
-    def run_quality_debate(self, problem: QuALITYProblem) -> DebateResult:
+    def run_quality_debate(self, problem: QuALITYProblem) -> DebateResult: 
         """Run a QuALITY reading comprehension debate"""
+        print("DEPRECATED! USE RUN DEBATE NO JUDGE INSTEAD! THIS FUNCTION PROBABLY HAS THE MAPPING PROBLEM.")
         start_time = time.time()
         debate_id = f"quality_{problem.question_id}_{int(start_time)}"
         
@@ -464,6 +465,10 @@ Instructions:
         print(f"HONEST DEBATER - Round {round_num}")
         print("="*80)
         
+        print(f"[DEBUG] HONEST turn - provider device: {self.honest_provider.device}")
+        print(f"[DEBUG] HONEST turn - conversation system prompt snippet: {self.honest_conversation[0]['content'][:200]}...{self.honest_conversation[0]['content'][-50:]}")
+        
+        
         # Check if responding to opponent
         has_opponent_spoken = len([t for t in self.all_turns if t.speaker == DebateRole.DISHONEST]) > 0
         
@@ -597,7 +602,7 @@ Instructions:
         print("="*80)
         
         print(f"[DEBUG] DISHONEST turn - provider device: {self.dishonest_provider.device}")
-        print(f"[DEBUG] DISHONEST turn - conversation system prompt snippet: {self.dishonest_conversation[0]['content'][:200]}")
+        print(f"[DEBUG] DISHONEST turn - conversation system prompt snippet: {self.dishonest_conversation[0]['content'][:200]}...{self.dishonest_conversation[0]['content'][-50:]}")
         
         # Check if responding to opponent
         has_opponent_spoken = len([t for t in self.all_turns if t.speaker == DebateRole.HONEST]) > 0
