@@ -10,6 +10,9 @@ from typing import List, Dict, Any, Optional
 from transformer_lens import HookedTransformer
 from transformers import AutoTokenizer
 import warnings
+import psutil
+import os
+
 
 from .base import BaseModelProvider
 from ..types import ModelConfig
@@ -56,6 +59,8 @@ class LocalModelProvider(BaseModelProvider):
             "top_k": 50,
         }
         self.default_gen_kwargs.update(config.generation_kwargs or {})
+
+        self.generation_count = 0  
 
     def _get_model_dtype(self) -> torch.dtype:
         bf16_families = ["llama", "mistral", "gemma", "phi", "qwen"]
@@ -106,12 +111,13 @@ class LocalModelProvider(BaseModelProvider):
                 print(f"✓ Model loaded on {self.device} - Allocated: {allocated:.2f}GB, Reserved: {reserved:.2f}GB")
             else:
                 print("✓ Model loaded on CPU")
+
     
     def generate(self, messages: List[Dict[str, str]], 
                  capture_activations_layer: Optional[int] = None,
                  **kwargs) -> tuple:
         """
-        Generate with optional activation capture for probe scoring.
+        Generate with optional activation capture for probe scoring and memory debugging.
         
         Args:
             messages: Conversation history
@@ -123,16 +129,34 @@ class LocalModelProvider(BaseModelProvider):
         """
         if not self.is_available():
             return "", {"error": "Model not available"}
-    
+        
+        # Increment generation counter
+        self.generation_count += 1
+        
+        # Memory state before generation
+        print(f"\n[MEMORY DEBUG - Generation #{self.generation_count}]")
+        self._print_memory_status("BEFORE GENERATION")
+        
+        # Clear any lingering KV cache before starting
+        print("CLEARING KV CACHE!!! WARNING!!")
+        self._clear_kv_cache()
+        torch.cuda.empty_cache()
+        gc.collect()
+        self._print_memory_status("AFTER INITIAL CLEANUP")
+        
         start = time.time()
-    
+        
         # Build the chat prompt string with FULL context (story + history)
         prompt_str = self.tokenizer.apply_chat_template(
             messages,
             tokenize=False,
             add_generation_prompt=True,
         )
-    
+        
+        # Track conversation size
+        print(f"[DEBUG] Conversation has {len(messages)} messages")
+        print(f"[DEBUG] Prompt string length: {len(prompt_str)} characters")
+        
         # Tokenize and move to correct device
         prompt_ids = self.tokenizer(
             prompt_str,
@@ -141,17 +165,31 @@ class LocalModelProvider(BaseModelProvider):
         )["input_ids"].to(self.device)
         
         prompt_len = prompt_ids.shape[1]
-    
+        print(f"[DEBUG] Input length: {prompt_len} tokens")
+        print(f"[DEBUG] Input tensor shape: {prompt_ids.shape}")
+        print(f"[DEBUG] Input tensor memory: {prompt_ids.element_size() * prompt_ids.nelement() / 1024**2:.2f}MB")
+        
+        # Check KV cache state before generation
+        if hasattr(self.model, 'model'):
+            if hasattr(self.model.model, '_past_key_values'):
+                print(f"[DEBUG] KV Cache exists before gen: {self.model.model._past_key_values is not None}")
+                if self.model.model._past_key_values is not None:
+                    print(f"[DEBUG] KV Cache length: {len(self.model.model._past_key_values)}")
+        
         # Context-length protection
         gen_cfg = {**self.default_gen_kwargs, **kwargs}
         max_new = gen_cfg.get("max_new_tokens", 256)
-    
+        
+        # Check if we're hitting context limits
+        total_expected_length = prompt_len + max_new
+        print(f"[DEBUG] Expected max total length: {total_expected_length}")
+        
         if prompt_len + max_new + SAFETY_MARGIN > MAX_CONTEXT:
             allowed_new = max(1, MAX_CONTEXT - prompt_len - SAFETY_MARGIN)
-            print(f"[CTX] Truncating max_new_tokens from {max_new} → {allowed_new}")
+            print(f"[CTX WARNING] Approaching context limit! Truncating max_new_tokens from {max_new} → {allowed_new}")
             gen_cfg["max_new_tokens"] = allowed_new
             max_new = allowed_new
-    
+        
         self.model.eval()
         
         generation_activations = None
@@ -172,9 +210,11 @@ class LocalModelProvider(BaseModelProvider):
                 
                 if is_first_call[0]:
                     # Skip the prompt forward pass - we only want generated tokens
+                    print(f"[HOOK DEBUG] First call - prompt shape: {activations.shape}")
                     is_first_call[0] = False
                 else:
                     # This is a generated token - capture it
+                    print(f"[HOOK DEBUG] Token {len(captured_acts)+1} - shape: {activations.shape}")
                     # Shape should be [batch, 1, hidden] or [batch, seq_len, hidden]
                     # Take the last token's activation (the newly generated one)
                     if activations.dim() == 3:  # [batch, seq, hidden]
@@ -195,6 +235,8 @@ class LocalModelProvider(BaseModelProvider):
                 self.model.add_hook(hook_point, capture_hook, dir='fwd')
                 
                 try:
+                    self._print_memory_status("BEFORE GENERATION WITH HOOKS")
+                    
                     if 'cuda' in str(self.device):
                         with torch.cuda.device(self.device):
                             out_ids = self.model.generate(
@@ -222,9 +264,13 @@ class LocalModelProvider(BaseModelProvider):
                             prepend_bos=False,
                             return_type="input",
                         )
+                    
+                    self._print_memory_status("AFTER GENERATION WITH HOOKS")
+                    
                 finally:
                     # Remove hooks after generation
                     self.model.reset_hooks(including_permanent=False)
+                    print(f"[DEBUG] Hooks removed")
             
             # Concatenate all captured activations
             if captured_acts:
@@ -235,6 +281,7 @@ class LocalModelProvider(BaseModelProvider):
                 
                 print(f"[DEBUG] Captured {len(captured_acts)} token activations")
                 print(f"[DEBUG] Final generation_activations shape: {generation_activations.shape}")
+                print(f"[DEBUG] Activations memory: {generation_activations.element_size() * generation_activations.nelement() / 1024**3:.3f}GB")
                 
                 # Cleanup
                 del captured_acts
@@ -244,6 +291,8 @@ class LocalModelProvider(BaseModelProvider):
         else:
             # Normal generation without activation capture
             with torch.no_grad():
+                self._print_memory_status("BEFORE NORMAL GENERATION")
+                
                 if 'cuda' in str(self.device):
                     with torch.cuda.device(self.device):
                         out_ids = self.model.generate(
@@ -271,7 +320,12 @@ class LocalModelProvider(BaseModelProvider):
                         prepend_bos=False,
                         return_type="input",
                     )
-    
+                
+                self._print_memory_status("AFTER NORMAL GENERATION")
+        
+        # Debug output shape
+        print(f"[DEBUG] Output shape: {out_ids.shape if hasattr(out_ids, 'shape') else 'N/A'}")
+        
         # Decode completion
         if isinstance(out_ids, torch.Tensor):
             out_ids_tensor = out_ids
@@ -279,18 +333,22 @@ class LocalModelProvider(BaseModelProvider):
             out_ids_tensor = torch.tensor(out_ids, device=self.device)
         
         completion_ids = out_ids_tensor[0, prompt_len:]
+        print(f"[DEBUG] Generated {completion_ids.numel()} new tokens")
+        
         completion_str = self.tokenizer.decode(
             completion_ids,
             skip_special_tokens=True,
             clean_up_tokenization_spaces=True
         ).lstrip()
-    
+        
         # Accounting & metadata
         output_len = completion_ids.numel()
         total_tokens = prompt_len + output_len
         latency = time.time() - start
         self._update_usage(total_tokens)
-    
+        
+        print(f"[DEBUG] Total tokens processed: {total_tokens} (prompt: {prompt_len}, output: {output_len})")
+        
         metadata = {
             "input_tokens": int(prompt_len),
             "output_tokens": int(output_len),
@@ -299,24 +357,80 @@ class LocalModelProvider(BaseModelProvider):
             "model": self.config.model_name,
             "device": str(self.device),
             "dtype": str(self.model_dtype),
+            "generation_count": self.generation_count,
         }
         
         # Add activations to metadata if captured
         if generation_activations is not None:
             # Move back to original device for probe scoring
-            metadata['generation_activations'] = generation_activations.to(self.device)
+            generation_activations = generation_activations.to(self.device)
+            metadata['generation_activations'] = generation_activations
             metadata['generation_token_ids'] = completion_ids
             print(f"[DEBUG] Stored {generation_activations.shape[0]} token activations in metadata")
         else:
             print(f"[DEBUG] No activations to store in metadata")
-    
+        
+        # Check KV cache state after generation
+        if hasattr(self.model, 'model'):
+            if hasattr(self.model.model, '_past_key_values'):
+                print(f"[DEBUG] KV Cache exists after gen: {self.model.model._past_key_values is not None}")
+        
         # Final cleanup
+        print("CLEARING KV CACHE AGAIN!!! WARNING!!")
+        self._clear_kv_cache()
         if 'cuda' in str(self.device):
             with torch.cuda.device(self.device):
                 torch.cuda.empty_cache()
         gc.collect()
-    
+        
+        self._print_memory_status("AFTER FINAL CLEANUP")
+        print(f"[DEBUG] Generation #{self.generation_count} complete\n")
+        
         return completion_str, metadata
+        
+    def _print_memory_status(self, label: str):
+        """Print detailed memory status for all GPUs"""
+        print(f"\n[{label}]")
+        
+        # System memory
+        process = psutil.Process(os.getpid())
+        print(f"System RAM: {process.memory_info().rss / 1024**3:.2f} GB")
+        
+        # GPU memory for each device
+        if self.gpu_indices:
+            for gpu_idx in self.gpu_indices:
+                allocated = torch.cuda.memory_allocated(gpu_idx) / 1024**3
+                reserved = torch.cuda.memory_reserved(gpu_idx) / 1024**3
+                free = (torch.cuda.get_device_properties(gpu_idx).total_memory - 
+                       torch.cuda.memory_allocated(gpu_idx)) / 1024**3
+                print(f"GPU {gpu_idx}: Allocated={allocated:.2f}GB, Reserved={reserved:.2f}GB, Free={free:.2f}GB")
+        
+        # Count tensors
+        tensor_count = 0
+        total_size = 0
+        for obj in gc.get_objects():
+            try:
+                if torch.is_tensor(obj):
+                    tensor_count += 1
+                    if obj.is_cuda:
+                        total_size += obj.element_size() * obj.nelement()
+            except:
+                pass
+        print(f"Live tensors: {tensor_count}, Total CUDA tensor memory: {total_size/1024**3:.2f}GB")
+    
+    def _clear_kv_cache(self):
+        """Explicitly clear KV cache"""
+        print("[DEBUG] Clearing KV cache...")
+        try:
+            # For HuggingFace models
+            if hasattr(self.model, 'model'):
+                if hasattr(self.model.model, '_past_key_values'):
+                    self.model.model._past_key_values = None
+                # Also try resetting cache
+                if hasattr(self.model.model, 'reset_cache'):
+                    self.model.model.reset_cache()
+        except Exception as e:
+            print(f"[DEBUG] Error clearing KV cache: {e}")
     
         
     def is_available(self) -> bool:

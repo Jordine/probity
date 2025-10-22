@@ -385,6 +385,7 @@ class DebateManager:
         print(f"[DEBUG SETUP] Honest defending: {honest_answer}")
         print(f"[DEBUG SETUP] Dishonest defending: {dishonest_answer}")
         print(f"[DEBUG SETUP] model_a_is_honest: {self.model_a_is_honest}")
+        print(f"[DEBUG SETUP] honest_goes_first: {self.honest_goes_first}")
         
         
         # Honest debater system prompt (WITH story)
