@@ -12,6 +12,11 @@ from pathlib import Path
 from typing import List, Dict, Optional, Any
 import pandas as pd
 from datetime import datetime
+import sys
+import io
+from contextlib import redirect_stdout, redirect_stderr
+from tqdm import tqdm
+
 
 
 from debate.types import (
@@ -29,20 +34,38 @@ from debate.utils.gpu_utils import detect_gpu_configuration, can_fit_models
 class NoJudgeDebateRunner:
     """Run debates without judge decision, save full transcripts with probe data"""
     
-    def __init__(self, config: DebateConfig, save_dir: Path, experiment_mode: str):
+    def __init__(self, config: DebateConfig, save_dir: Path, experiment_mode: str, log_to_file: bool = False):
         self.config = config
         self.save_dir = save_dir
         self.experiment_mode = experiment_mode
         self.transcripts_dir = save_dir / "transcripts"
         self.transcripts_dir.mkdir(parents=True, exist_ok=True)
         
+        # Setup logging
+        self.log_to_file = log_to_file
+        self.log_file = None
+        if log_to_file:
+            self.log_file = open(save_dir / "debate_log.txt", 'w', buffering=1)  # Line buffered
+        
         # Create summary file for tracking progress
         self.summary_file = save_dir / "transcript_summary.jsonl"
         
         # Create DebateManager once and reuse it
-        print("Loading models and probes once...")
-        self.manager = DebateManager(config)
-        print("Models and probes loaded successfully!")
+        self._print("Loading models and probes once...")
+        self.manager = DebateManager(config, log_file=self.log_file)  
+        self._print("Models and probes loaded successfully!")
+    
+    def _print(self, *args, **kwargs):
+        """Print to log file if logging enabled, otherwise print normally"""
+        if self.log_to_file and self.log_file:
+            print(*args, **kwargs, file=self.log_file, flush=True)
+        else:
+            print(*args, **kwargs)
+    
+    def __del__(self):
+        """Close log file on cleanup"""
+        if self.log_file:
+            self.log_file.close()
         
     def _calculate_probe_only_winners(self, manager: DebateManager) -> Dict[str, str]:
         """Calculate probe-only winners based on mean and max scores"""
@@ -113,109 +136,137 @@ class NoJudgeDebateRunner:
             results['probe_only_max'] = None
         
         return results
-    
-
         
-        
+            
+            
     def run_debate_no_judge(self, item: Dict, debate_idx: int) -> Dict:
-        """Run a single debate without judge decision"""
-        
-        # Reset the manager for a new debate (keeps models loaded)
-        self.manager.reset_for_new_debate()
-        
-        # Determine debate type and problem ID
-        if 'scenario' in item:
-            debate_type = "simple"
-            problem_id = item['scenario'].get('scenario_id', f'scenario_{debate_idx}')
-            problem_desc = item['scenario'].get('topic', 'Unknown topic')
-        elif 'quality_problem' in item:
-            debate_type = "quality"
-            problem_id = item['quality_problem'].question_id
-            problem_desc = f"{item['quality_problem'].story_title}: {item['quality_problem'].question}..."
-        else:
-            debate_type = "apps"
-            problem_id = item['problem'].problem_id
-            problem_desc = f"Difficulty: {item['problem'].difficulty}"
+            """Run a single debate without judge decision"""
             
-        print(f"\nDebate {debate_idx}/{self.total_debates}: {problem_id}")
-        print(f"  Type: {debate_type}")
-        print(f"  Mode: {self.experiment_mode}")
-        print(f"  Details: {problem_desc}")
-        
-        # Start debate
-        start_time = time.time()
-        debate_id = f"{debate_type}_{problem_id}_{self.experiment_mode}_{int(start_time)}"
-        
-        try:
-            # Setup debate based on type (using the existing manager)
-            if debate_type == "simple":
-                self.manager.run_simple_debate_setup(item['scenario'])
-            elif debate_type == "quality":
-                self.manager.run_quality_debate_setup(item['quality_problem'])
+            # Reset the manager for a new debate (keeps models loaded)
+            self.manager.reset_for_new_debate()
+            
+            # Determine debate type and problem ID
+            if 'scenario' in item:
+                debate_type = "simple"
+                problem_id = item['scenario'].get('scenario_id', f'scenario_{debate_idx}')
+                problem_desc = item['scenario'].get('topic', 'Unknown topic')
+            elif 'quality_problem' in item:
+                debate_type = "quality"
+                problem_id = item['quality_problem'].question_id
+                problem_desc = f"{item['quality_problem'].story_title}: {item['quality_problem'].question}..."
             else:
-                self.manager.run_apps_debate_setup(
-                    item['problem'], 
-                    item['honest_solution'], 
-                    item['backdoored_solution']
-                )
+                debate_type = "apps"
+                problem_id = item['problem'].problem_id
+                problem_desc = f"Difficulty: {item['problem'].difficulty}"
+                
+            self._print(f"\nDebate {debate_idx}/{self.total_debates}: {problem_id}")
+            self._print(f"  Type: {debate_type}")
+            self._print(f"  Mode: {self.experiment_mode}")
+            self._print(f"  Details: {problem_desc}")
             
-            # Run debate rounds (but not judge)
-            for round_num in range(self.config.max_rounds):
-                print(f"  Round {round_num + 1}/{self.config.max_rounds}")
-                if self.manager.honest_goes_first:
-                    self.manager._run_honest_turn(round_num + 1)
-                    self.manager._run_dishonest_turn(round_num + 1)
+            # Start debate
+            start_time = time.time()
+            debate_id = f"{debate_type}_{problem_id}_{self.experiment_mode}_{int(start_time)}"
+            
+            try:
+                # Redirect print statements to log file if enabled
+                if self.log_to_file and self.log_file:
+                    old_stdout = sys.stdout
+                    sys.stdout = self.log_file
+                
+                try:
+                    # Setup debate based on type (using the existing manager)
+                    if debate_type == "simple":
+                        self.manager.run_simple_debate_setup(item['scenario'])
+                    elif debate_type == "quality":
+                        self.manager.run_quality_debate_setup(item['quality_problem'])
+                    else:
+                        self.manager.run_apps_debate_setup(
+                            item['problem'], 
+                            item['honest_solution'], 
+                            item['backdoored_solution']
+                        )
+                    
+                    # Run debate rounds
+                    for round_num in range(self.config.max_rounds):
+                        print(f"  Round {round_num + 1}/{self.config.max_rounds}")
+                        
+                        if debate_type == "quality":
+                            # Use QuALITY-specific methods with quote verification
+                            if self.manager.honest_goes_first:
+                                self.manager._run_quality_honest_turn(round_num + 1)
+                                self.manager._run_quality_dishonest_turn(round_num + 1)
+                            else:
+                                self.manager._run_quality_dishonest_turn(round_num + 1)
+                                self.manager._run_quality_honest_turn(round_num + 1)
+                        else:
+                            # Use standard methods for APPS and simple debates
+                            if self.manager.honest_goes_first:
+                                self.manager._run_honest_turn(round_num + 1)
+                                self.manager._run_dishonest_turn(round_num + 1)
+                            else:
+                                self.manager._run_dishonest_turn(round_num + 1)
+                                self.manager._run_honest_turn(round_num + 1)
+                
+                finally:
+                    # Restore stdout
+                    if self.log_to_file and self.log_file:
+                        sys.stdout = old_stdout
+                
+                # Extract and save comprehensive transcript
+                transcript = self._create_transcript(self.manager, item, debate_id, debate_type)
+                
+                # Save immediately (incremental saving)
+                transcript_file = self.transcripts_dir / f"{debate_id}.json"
+                with open(transcript_file, 'w') as f:
+                    json.dump(transcript, f, indent=2)
+                
+                duration = time.time() - start_time
+                self._print(f"  Duration: {duration:.1f}s")
+                self._print(f"  Saved: {transcript_file.name}")
+                
+                # Save to summary file (append mode for crash recovery)
+                summary_entry = {
+                    "debate_id": debate_id,
+                    "problem_id": problem_id,
+                    "transcript_file": str(transcript_file.name),
+                    "duration": duration,
+                    "experiment_mode": self.experiment_mode,
+                    "timestamp": datetime.now().isoformat(),
+                    "success": True
+                }
+                
+                with open(self.summary_file, 'a') as f:
+                    f.write(json.dumps(summary_entry) + '\n')
+                
+                return summary_entry
+                
+            except Exception as e:
+                # Restore stdout if there was an error
+                if self.log_to_file and self.log_file:
+                    sys.stdout = old_stdout
+                
+                self._print(f"  ERROR: {e}")
+                import traceback
+                if self.log_to_file and self.log_file:
+                    traceback.print_exc(file=self.log_file)
                 else:
-                    self.manager._run_dishonest_turn(round_num + 1)
-                    self.manager._run_honest_turn(round_num + 1)
-            
-            # Extract and save comprehensive transcript
-            transcript = self._create_transcript(self.manager, item, debate_id, debate_type)
-            
-            # Save immediately (incremental saving)
-            transcript_file = self.transcripts_dir / f"{debate_id}.json"
-            with open(transcript_file, 'w') as f:
-                json.dump(transcript, f, indent=2)
-            
-            duration = time.time() - start_time
-            print(f"  Duration: {duration:.1f}s")
-            print(f"  Saved: {transcript_file.name}")
-            
-            # Save to summary file (append mode for crash recovery)
-            summary_entry = {
-                "debate_id": debate_id,
-                "problem_id": problem_id,
-                "transcript_file": str(transcript_file.name),
-                "duration": duration,
-                "experiment_mode": self.experiment_mode,
-                "timestamp": datetime.now().isoformat(),
-                "success": True
-            }
-            
-            with open(self.summary_file, 'a') as f:
-                f.write(json.dumps(summary_entry) + '\n')
-            
-            return summary_entry
-            
-        except Exception as e:
-            print(f"  ERROR: {e}")
-            import traceback
-            traceback.print_exc()
-            
-            # Save error entry
-            error_entry = {
-                "debate_id": debate_id,
-                "problem_id": problem_id,
-                "error": str(e),
-                "experiment_mode": self.experiment_mode,
-                "timestamp": datetime.now().isoformat(),
-                "success": False
-            }
-            
-            with open(self.summary_file, 'a') as f:
-                f.write(json.dumps(error_entry) + '\n')
-            
-            return error_entry
+                    traceback.print_exc()
+                
+                # Save error entry
+                error_entry = {
+                    "debate_id": debate_id,
+                    "problem_id": problem_id,
+                    "error": str(e),
+                    "experiment_mode": self.experiment_mode,
+                    "timestamp": datetime.now().isoformat(),
+                    "success": False
+                }
+                
+                with open(self.summary_file, 'a') as f:
+                    f.write(json.dumps(error_entry) + '\n')
+                
+                return error_entry
     
     def _create_transcript(self, manager: DebateManager, item: Dict, 
                           debate_id: str, debate_type: str) -> Dict:
@@ -321,42 +372,46 @@ class NoJudgeDebateRunner:
         }
         
         return transcript
-    
+        
     def run_all_debates(self, dataset: List[Dict]) -> pd.DataFrame:
-        """Run all debates in the dataset"""
-        self.total_debates = len(dataset)
-        results = []
-        
-        print(f"\n{'='*60}")
-        print(f"Running {self.total_debates} debates in {self.experiment_mode} mode")
-        print(f"Saving transcripts to: {self.transcripts_dir}")
-        print(f"{'='*60}")
-        
-        for i, item in enumerate(dataset, 1):
-            result = self.run_debate_no_judge(item, i)
-            results.append(result)
-        
-        # Create summary DataFrame
-        df = pd.DataFrame(results)
-        
-        # Print summary statistics
-        print(f"\n{'='*60}")
-        print("TRANSCRIPT GENERATION SUMMARY")
-        print(f"{'='*60}")
-        print(f"Total debates: {len(results)}")
-        print(f"Successful: {df['success'].sum()}")
-        print(f"Failed: {(~df['success']).sum()}")
-        print(f"Average duration: {df[df['success']]['duration'].mean():.1f}s")
-        print(f"Total time: {df['duration'].sum()/60:.1f} minutes")
-        print(f"\nTranscripts saved to: {self.transcripts_dir}")
-        print(f"Summary saved to: {self.summary_file}")
-        print(f"{'='*60}")
-        
-        # Save summary CSV
-        summary_csv = self.save_dir / "transcript_generation_summary.csv"
-        df.to_csv(summary_csv, index=False)
-        
-        return df
+            """Run all debates in the dataset"""
+            self.total_debates = len(dataset)
+            results = []
+            
+            self._print(f"\n{'='*60}")
+            self._print(f"Running {self.total_debates} debates in {self.experiment_mode} mode")
+            self._print(f"Saving transcripts to: {self.transcripts_dir}")
+            if self.log_to_file:
+                self._print(f"Logging to: {self.save_dir / 'debate_log.txt'}")
+            self._print(f"{'='*60}")
+            
+            # Use tqdm for progress bar (writes to stderr by default, so visible even with stdout redirect)
+            for i, item in enumerate(tqdm(dataset, desc="Running debates", unit="debate", disable=not self.log_to_file), 1):
+                result = self.run_debate_no_judge(item, i)
+                results.append(result)
+            
+            # Create summary DataFrame
+            df = pd.DataFrame(results)
+            
+            # Print summary statistics
+            self._print(f"\n{'='*60}")
+            self._print("TRANSCRIPT GENERATION SUMMARY")
+            self._print(f"{'='*60}")
+            self._print(f"Total debates: {len(results)}")
+            self._print(f"Successful: {df['success'].sum()}")
+            self._print(f"Failed: {(~df['success']).sum()}")
+            if df[df['success']]['duration'].count() > 0:
+                self._print(f"Average duration: {df[df['success']]['duration'].mean():.1f}s")
+            self._print(f"Total time: {df['duration'].sum()/60:.1f} minutes")
+            self._print(f"\nTranscripts saved to: {self.transcripts_dir}")
+            self._print(f"Summary saved to: {self.summary_file}")
+            self._print(f"{'='*60}")
+            
+            # Save summary CSV
+            summary_csv = self.save_dir / "transcript_generation_summary.csv"
+            df.to_csv(summary_csv, index=False)
+            
+            return df
 
 
 def create_model_config(model_name: str, provider: str, args, device_id: Optional[int] = None) -> ModelConfig:
@@ -378,8 +433,8 @@ def create_model_config(model_name: str, provider: str, args, device_id: Optiona
         api_key=api_key,
         device_id=device_id,  
         generation_kwargs={
-            "temperature": 0.7,
-            "max_tokens": 512
+            "temperature": 0,
+            "max_tokens": 256
         }
     )
 
@@ -451,6 +506,10 @@ def main():
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--resume', action='store_true',
                        help='Resume from existing transcripts')
+
+    parser.add_argument('--log_to_file', action='store_true',
+                       help='Redirect all output to log file and show only progress bar')
+    
     
     args = parser.parse_args()
 
@@ -553,6 +612,13 @@ def main():
         max_rounds=args.max_rounds,
         save_dir=str(save_dir)
     )
+
+    print(f"\n[DEBUG] Created DebateConfig with:")
+    print(f"  - debate_type: {config.debate_type}")
+    print(f"  - probe_config enabled: {config.probe_config is not None}")
+
+
+    
     
     # Save configuration
     config_dict = {
@@ -658,7 +724,7 @@ def main():
         json.dump(serializable_dataset, f, indent=2)
     
     # Run debates
-    runner = NoJudgeDebateRunner(config, save_dir, args.experiment_mode)
+    runner = NoJudgeDebateRunner(config, save_dir, args.experiment_mode, log_to_file=args.log_to_file)
     results_df = runner.run_all_debates(dataset)
     
     print(f"\nExperiment complete! Transcripts saved to: {save_dir}")

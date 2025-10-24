@@ -46,7 +46,7 @@ class LocalModelProvider(BaseModelProvider):
         # Generation defaults
         self.default_gen_kwargs: Dict[str, Any] = {
             "max_new_tokens": 256,
-            "temperature": 0.7,
+            "temperature": 0,
             "do_sample": True,
             "top_p": 0.9,
             "top_k": 50,
@@ -131,7 +131,7 @@ class LocalModelProvider(BaseModelProvider):
         
         # FIXED: Use hooks during generation to capture activations
         if capture_activations_layer is not None:
-            print(f"[MEMORY EFFICIENT] Capturing activations at layer {capture_activations_layer} during generation")
+            # print(f"[MEMORY EFFICIENT] Capturing activations at layer {capture_activations_layer} during generation")
             
             hook_point = f"blocks.{capture_activations_layer}.hook_resid_pre"
             captured_acts = []
@@ -206,8 +206,8 @@ class LocalModelProvider(BaseModelProvider):
                 generation_activations = torch.cat(captured_acts, dim=1)  # [batch, seq, hidden]
                 generation_activations = generation_activations.squeeze(0)  # Remove batch -> [seq, hidden]
                 
-                print(f"[DEBUG] Captured {len(captured_acts)} token activations")
-                print(f"[DEBUG] Final generation_activations shape: {generation_activations.shape}")
+                # print(f"[DEBUG] Captured {len(captured_acts)} token activations")
+                # print(f"[DEBUG] Final generation_activations shape: {generation_activations.shape}")
                 
                 # Cleanup
                 del captured_acts
@@ -279,7 +279,7 @@ class LocalModelProvider(BaseModelProvider):
             # Move back to original device for probe scoring
             metadata['generation_activations'] = generation_activations.to(self.device)
             metadata['generation_token_ids'] = completion_ids
-            print(f"[DEBUG] Stored {generation_activations.shape[0]} token activations in metadata")
+            # print(f"[DEBUG] Stored {generation_activations.shape[0]} token activations in metadata")
         else:
             print(f"[DEBUG] No activations to store in metadata")
     
