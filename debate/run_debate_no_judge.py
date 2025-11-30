@@ -20,8 +20,8 @@ from debate.types import (
 )
 from debate.debate_manager import DebateManager
 from debate.dataset_loader import (
-    FlexibleDatasetLoader, SimpleDebateDatasetLoader, 
-    QuALITYDatasetLoader, APPSDatasetLoader, SolutionGenerator
+    FlexibleDatasetLoader, SimpleDebateDatasetLoader,
+    QuALITYDatasetLoader, SyntheticQuALITYDatasetLoader, APPSDatasetLoader, SolutionGenerator
 )
 
 from debate.utils.gpu_utils import detect_gpu_configuration, can_fit_models
@@ -447,7 +447,7 @@ def main():
     
     # Dataset configuration
     parser.add_argument('--dataset', type=str, required=True,
-                       choices=['apps', 'simple_debate', 'quality'])
+                       choices=['apps', 'simple_debate', 'quality', 'quality_synthetic'])
     parser.add_argument('--dataset_path', type=str,
                        help='Path to dataset file')
     parser.add_argument('--difficulty', type=str,
@@ -625,7 +625,15 @@ def main():
         loader = QuALITYDatasetLoader(csv_path=args.dataset_path, seed=args.seed)
         problems = loader.get_problems_batch(n=args.n_problems, shuffle=True)
         dataset = [{"quality_problem": p} for p in problems]
-        
+
+    elif args.dataset == "quality_synthetic":
+        # Load synthetic (uncontaminated) QuALITY dataset from local files
+        stories_path = args.dataset_path or "data/quality_synthetic/stories.jsonl"
+        questions_path = "data/quality_synthetic/questions.jsonl"
+        loader = SyntheticQuALITYDatasetLoader(stories_path, questions_path, seed=args.seed)
+        problems = loader.get_problems_batch(n=args.n_problems, shuffle=True)
+        dataset = [{"quality_problem": p} for p in problems]
+
     elif args.dataset == "apps":
         loader = APPSDatasetLoader(difficulty=args.difficulty, seed=args.seed)
         problems = loader.get_problems_batch(n=args.n_problems, shuffle=True)

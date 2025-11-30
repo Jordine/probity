@@ -200,6 +200,131 @@ class QuALITYDatasetLoader:
             self.random.shuffle(items)
         return [QuALITYProblem(**item) for item in items[:n]]
 
+
+class SyntheticQuALITYDatasetLoader:
+    """Loader for synthetic (uncontaminated) QuALITY dataset from local files"""
+
+    def __init__(self, stories_path: str, questions_path: Optional[str] = None, seed: int = 42):
+        """
+        Load synthetic QuALITY dataset from local JSONL files.
+
+        Args:
+            stories_path: Path to stories.jsonl (each line has story + embedded question)
+            questions_path: Optional path to separate questions.jsonl (links by story_idx)
+            seed: Random seed for sampling
+        """
+        self.stories_path = Path(stories_path)
+        self.questions_path = Path(questions_path) if questions_path else None
+        self.random = random.Random(seed)
+        self.dataset = []
+        self._load_dataset()
+
+    def _load_dataset(self):
+        """Load dataset from local files"""
+        print(f"Loading synthetic QuALITY dataset from {self.stories_path}")
+
+        if not self.stories_path.exists():
+            raise FileNotFoundError(f"Stories file not found: {self.stories_path}")
+
+        # Load stories (each has story text + one embedded question)
+        stories = []
+        with open(self.stories_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                if line.strip():
+                    stories.append(json.loads(line))
+
+        print(f"Loaded {len(stories)} stories")
+
+        # If we have a separate questions file, use that to map story_idx -> questions
+        if self.questions_path and self.questions_path.exists():
+            questions = []
+            with open(self.questions_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    if line.strip():
+                        questions.append(json.loads(line))
+
+            print(f"Loaded {len(questions)} questions from separate file")
+
+            # Build story index map
+            story_map = {i: s for i, s in enumerate(stories)}
+
+            for q in questions:
+                story_idx = q['story_idx']
+                if story_idx not in story_map:
+                    continue
+
+                story = story_map[story_idx]
+                self._add_problem(
+                    story_text=story['synthetic_story'],
+                    story_title=story.get('story_name', f'Story_{story_idx}'),
+                    question=q['question'],
+                    option_a=q['option_a'],
+                    option_b=q['option_b'],
+                    correct_answer=q['correct_answer'],
+                    story_idx=story_idx
+                )
+        else:
+            # Use embedded questions in stories file
+            for i, story in enumerate(stories):
+                self._add_problem(
+                    story_text=story['synthetic_story'],
+                    story_title=story.get('story_name', f'Story_{i}'),
+                    question=story['question'],
+                    option_a=story['option_a'],
+                    option_b=story['option_b'],
+                    correct_answer=story['correct_answer'],
+                    story_idx=i
+                )
+
+        print(f"Successfully loaded {len(self.dataset)} synthetic QuALITY problems")
+
+    def _add_problem(self, story_text: str, story_title: str, question: str,
+                     option_a: str, option_b: str, correct_answer: str, story_idx: int):
+        """Add a problem to the dataset"""
+        # Convert A/B to actual answer text
+        if correct_answer.upper() == 'A':
+            correct_text = option_a
+            incorrect_text = option_b
+            gold_label = 1
+        else:
+            correct_text = option_b
+            incorrect_text = option_a
+            gold_label = 2
+
+        self.dataset.append({
+            'question_id': f"synthetic_{story_idx}_{question[:20].replace(' ', '_')}",
+            'story': story_text,
+            'story_title': story_title,
+            'question': question,
+            'answers': [option_a, option_b],
+            'correct_answer': correct_text,
+            'incorrect_answer': incorrect_text,
+            'gold_label': gold_label,
+            'difficulty': 0,
+            'metadata': {
+                'story_idx': story_idx,
+                'source': 'synthetic_quality',
+            }
+        })
+
+    def get_problem(self, index: int) -> QuALITYProblem:
+        """Get a specific problem by index"""
+        item = self.dataset[index]
+        return QuALITYProblem(**item)
+
+    def get_random_problem(self) -> QuALITYProblem:
+        """Get a random problem"""
+        item = self.random.choice(self.dataset)
+        return QuALITYProblem(**item)
+
+    def get_problems_batch(self, n: int, shuffle: bool = True) -> List[QuALITYProblem]:
+        """Get batch of problems"""
+        items = self.dataset.copy()
+        if shuffle:
+            self.random.shuffle(items)
+        return [QuALITYProblem(**item) for item in items[:n]]
+
+
 class APPSDatasetLoader:
     """Loader for APPS dataset problems"""
     

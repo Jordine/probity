@@ -10,7 +10,7 @@ for sp in site.getsitepackages():
         content = p.read_text()
         content = content.replace('\"n_ctx\": 2048', '\"n_ctx\": 16384')
         p.write_text(content)
-        print('✓ Patched TransformerLens')
+        print('✓ Patched TransformerLens n_ctx')
         break
 "
 

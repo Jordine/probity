@@ -1,4 +1,3 @@
-# debate/providers/local.py
 """
 LocalModelProvider with multi-GPU support
 """
@@ -138,11 +137,11 @@ class LocalModelProvider(BaseModelProvider):
         self._print_memory_status("BEFORE GENERATION")
         
         # Clear any lingering KV cache before starting
-        print("CLEARING KV CACHE!!! WARNING!!")
-        self._clear_kv_cache()
-        torch.cuda.empty_cache()
-        gc.collect()
-        self._print_memory_status("AFTER INITIAL CLEANUP")
+        # print("CLEARING KV CACHE!!! WARNING!!")
+        # self._clear_kv_cache()
+        # torch.cuda.empty_cache()
+        # gc.collect()
+        # self._print_memory_status("AFTER INITIAL CLEANUP")
         
         start = time.time()
         
@@ -210,11 +209,11 @@ class LocalModelProvider(BaseModelProvider):
                 
                 if is_first_call[0]:
                     # Skip the prompt forward pass - we only want generated tokens
-                    print(f"[HOOK DEBUG] First call - prompt shape: {activations.shape}")
+                    # print(f"[HOOK DEBUG] First call - prompt shape: {activations.shape}")
                     is_first_call[0] = False
                 else:
                     # This is a generated token - capture it
-                    print(f"[HOOK DEBUG] Token {len(captured_acts)+1} - shape: {activations.shape}")
+                    # print(f"[HOOK DEBUG] Token {len(captured_acts)+1} - shape: {activations.shape}")
                     # Shape should be [batch, 1, hidden] or [batch, seq_len, hidden]
                     # Take the last token's activation (the newly generated one)
                     if activations.dim() == 3:  # [batch, seq, hidden]
@@ -376,14 +375,14 @@ class LocalModelProvider(BaseModelProvider):
                 print(f"[DEBUG] KV Cache exists after gen: {self.model.model._past_key_values is not None}")
         
         # Final cleanup
-        print("CLEARING KV CACHE AGAIN!!! WARNING!!")
-        self._clear_kv_cache()
-        if 'cuda' in str(self.device):
-            with torch.cuda.device(self.device):
-                torch.cuda.empty_cache()
-        gc.collect()
+        # print("CLEARING KV CACHE AGAIN!!! WARNING!!")
+        # self._clear_kv_cache()
+        # if 'cuda' in str(self.device):
+        #     with torch.cuda.device(self.device):
+        #         torch.cuda.empty_cache()
+        # gc.collect()
         
-        self._print_memory_status("AFTER FINAL CLEANUP")
+        # self._print_memory_status("AFTER FINAL CLEANUP")
         print(f"[DEBUG] Generation #{self.generation_count} complete\n")
         
         return completion_str, metadata
