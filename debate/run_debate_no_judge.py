@@ -629,8 +629,7 @@ def main():
     elif args.dataset == "quality_synthetic":
         # Load synthetic (uncontaminated) QuALITY dataset from local files
         stories_path = args.dataset_path or "data/quality_synthetic/stories.jsonl"
-        questions_path = "data/quality_synthetic/questions.jsonl"
-        loader = SyntheticQuALITYDatasetLoader(stories_path, questions_path, seed=args.seed)
+        loader = SyntheticQuALITYDatasetLoader(stories_path, questions_path=None, seed=args.seed)
         problems = loader.get_problems_batch(n=args.n_problems, shuffle=True)
         dataset = [{"quality_problem": p} for p in problems]
 
