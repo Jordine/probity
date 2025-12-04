@@ -116,14 +116,15 @@ class ProbeDebateInference:
                     config.device = str(self.device)  # Update to target device
                 
                 # Dynamically pick the concrete class
-                from probity.probes import LogisticProbe, PCAProbe, MeanDifferenceProbe, MLPProbe, AttentionProbe
+                from probity.probes import LogisticProbe, PCAProbe, MeanDifferenceProbe, MLPProbe, AttentionProbe, ApolloProbe
     
                 probe_cls_map = {
                     "LogisticProbe": LogisticProbe,
                     "PCAProbe": PCAProbe,
                     "MeanDifferenceProbe": MeanDifferenceProbe,
                     "MLPProbe": MLPProbe,
-                    "AttentionProbe": AttentionProbe
+                    "AttentionProbe": AttentionProbe,
+                    "ApolloProbe": ApolloProbe
                 }
                 cls_name = checkpoint.get("probe_type")
                 probe_cls = probe_cls_map.get(cls_name)

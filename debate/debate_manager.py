@@ -225,7 +225,7 @@ class DebateManager:
                 self.dishonest_conversation = [{"role": "system", "content": model_a_prompt}]
      
             # Get max tokens from scenario or use default
-            max_tokens = scenario.get('max_tokens', 150)
+            max_tokens = scenario.get('max_tokens', 256)
             
             # Run debate rounds
             for round_num in range(self.config.max_rounds):
@@ -536,7 +536,7 @@ Instructions:
             
             response, metadata = self.honest_provider.generate(
                 self.honest_conversation,
-                max_new_tokens=150,
+                max_new_tokens=256,
                 capture_activations_layer=capture_layer  # Request activation capture
             )
             
@@ -564,7 +564,7 @@ Instructions:
             # Normal generation without probes
             response, metadata = self.honest_provider.generate(
                 self.honest_conversation,
-                max_new_tokens=150
+                max_new_tokens=256
             )
         
         # NOW verify quotes in response
@@ -671,7 +671,7 @@ Instructions:
             
             response, metadata = self.dishonest_provider.generate(
                 self.dishonest_conversation,
-                max_new_tokens=150,
+                max_new_tokens=256,
                 capture_activations_layer=capture_layer  # Request activation capture
             )
             
@@ -699,7 +699,7 @@ Instructions:
             # Normal generation without probes
             response, metadata = self.dishonest_provider.generate(
                 self.dishonest_conversation,
-                max_new_tokens=150
+                max_new_tokens=256
             )
         
         # Verify quotes

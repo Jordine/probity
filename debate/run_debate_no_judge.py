@@ -389,7 +389,7 @@ def create_model_config(model_name: str, provider: str, args,
         device_id=device_id,  # Keep for backward compatibility
         gpu_indices=gpu_indices,  # ADD THIS
         generation_kwargs={
-            "temperature": 0.7,
+            "temperature": 0,
             "max_tokens": 512
         }
     )

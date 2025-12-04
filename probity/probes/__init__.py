@@ -59,3 +59,4 @@ __all__ = [
     # Probe Collection
     "ProbeSet",
 ]
+from .apollo_probe import ApolloProbe, ApolloProbeConfig
