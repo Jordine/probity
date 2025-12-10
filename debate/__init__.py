@@ -1,3 +1,4 @@
+#__init__.py
 """
 Debate package for AI oversight with probe-based deception detection
 """

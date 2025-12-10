@@ -1,4 +1,4 @@
-# debate/providers/local.py
+# debate/providers/local.py THIS IS NOT TL THIS IS PROBITY/DEBATE
 """
 LocalModelProvider with multi-GPU support
 """
@@ -13,14 +13,13 @@ import warnings
 import psutil
 import os
 
+
 from .base import BaseModelProvider
 from ..types import ModelConfig
 
-# Toggle for verbose debug output
-DEBUG_LOGGING = False
 
 MAX_CONTEXT = 16384          # Hard budget
-SAFETY_MARGIN = 256          # Reserve space
+SAFETY_MARGIN = 256         # Reserve space
 
 
 class LocalModelProvider(BaseModelProvider):
@@ -54,7 +53,7 @@ class LocalModelProvider(BaseModelProvider):
         # Generation defaults
         self.default_gen_kwargs: Dict[str, Any] = {
             "max_new_tokens": 256,
-            "temperature": 0,
+            "temperature": 0.7,
             "do_sample": True,
             "top_p": 0.9,
             "top_k": 50,
@@ -67,6 +66,8 @@ class LocalModelProvider(BaseModelProvider):
         bf16_families = ["llama", "mistral", "gemma", "phi", "qwen"]
         return torch.bfloat16 if any(m in self.config.model_name.lower() for m in bf16_families) else torch.float32
 
+
+        
     def _load_model(self):
         print(f"Loading local model {self.config.model_name} on {self.device}...")
         
@@ -82,7 +83,7 @@ class LocalModelProvider(BaseModelProvider):
                     self.config.model_name,
                     device="cuda",
                     n_devices=len(self.gpu_indices),
-                    gpu_indices=self.gpu_indices,
+                    gpu_indices=self.gpu_indices,  # Pass explicit GPU assignment
                     dtype=self.model_dtype,
                 )
             
@@ -111,11 +112,12 @@ class LocalModelProvider(BaseModelProvider):
             else:
                 print("✓ Model loaded on CPU")
 
+    
     def generate(self, messages: List[Dict[str, str]], 
                  capture_activations_layer: Optional[int] = None,
                  **kwargs) -> tuple:
         """
-        Generate with optional activation capture for probe scoring.
+        Generate with optional activation capture for probe scoring and memory debugging.
         
         Args:
             messages: Conversation history
@@ -128,11 +130,19 @@ class LocalModelProvider(BaseModelProvider):
         if not self.is_available():
             return "", {"error": "Model not available"}
         
+        # Increment generation counter
         self.generation_count += 1
         
-        if DEBUG_LOGGING:
-            print(f"\n[MEMORY DEBUG - Generation #{self.generation_count}]")
-            self._print_memory_status("BEFORE GENERATION")
+        # Memory state before generation
+        print(f"\n[MEMORY DEBUG - Generation #{self.generation_count}]")
+        self._print_memory_status("BEFORE GENERATION")
+        
+        # Clear any lingering KV cache before starting
+        # print("CLEARING KV CACHE!!! WARNING!!")
+        # self._clear_kv_cache()
+        # torch.cuda.empty_cache()
+        # gc.collect()
+        # self._print_memory_status("AFTER INITIAL CLEANUP")
         
         start = time.time()
         
@@ -143,9 +153,9 @@ class LocalModelProvider(BaseModelProvider):
             add_generation_prompt=True,
         )
         
-        if DEBUG_LOGGING:
-            print(f"[DEBUG] Conversation has {len(messages)} messages")
-            print(f"[DEBUG] Prompt string length: {len(prompt_str)} characters")
+        # Track conversation size
+        print(f"[DEBUG] Conversation has {len(messages)} messages")
+        print(f"[DEBUG] Prompt string length: {len(prompt_str)} characters")
         
         # Tokenize and move to correct device
         prompt_ids = self.tokenizer(
@@ -155,18 +165,24 @@ class LocalModelProvider(BaseModelProvider):
         )["input_ids"].to(self.device)
         
         prompt_len = prompt_ids.shape[1]
+        print(f"[DEBUG] Input length: {prompt_len} tokens")
+        print(f"[DEBUG] Input tensor shape: {prompt_ids.shape}")
+        print(f"[DEBUG] Input tensor memory: {prompt_ids.element_size() * prompt_ids.nelement() / 1024**2:.2f}MB")
         
-        if DEBUG_LOGGING:
-            print(f"[DEBUG] Input length: {prompt_len} tokens")
-            print(f"[DEBUG] Input tensor shape: {prompt_ids.shape}")
+        # Check KV cache state before generation
+        if hasattr(self.model, 'model'):
+            if hasattr(self.model.model, '_past_key_values'):
+                print(f"[DEBUG] KV Cache exists before gen: {self.model.model._past_key_values is not None}")
+                if self.model.model._past_key_values is not None:
+                    print(f"[DEBUG] KV Cache length: {len(self.model.model._past_key_values)}")
         
         # Context-length protection
         gen_cfg = {**self.default_gen_kwargs, **kwargs}
         max_new = gen_cfg.get("max_new_tokens", 256)
         
-        if DEBUG_LOGGING:
-            total_expected_length = prompt_len + max_new
-            print(f"[DEBUG] Expected max total length: {total_expected_length}")
+        # Check if we're hitting context limits
+        total_expected_length = prompt_len + max_new
+        print(f"[DEBUG] Expected max total length: {total_expected_length}")
         
         if prompt_len + max_new + SAFETY_MARGIN > MAX_CONTEXT:
             allowed_new = max(1, MAX_CONTEXT - prompt_len - SAFETY_MARGIN)
@@ -178,37 +194,49 @@ class LocalModelProvider(BaseModelProvider):
         
         generation_activations = None
         
+        # FIXED: Use hooks during generation to capture activations
         if capture_activations_layer is not None:
-            if DEBUG_LOGGING:
-                print(f"[DEBUG] Capturing activations at layer {capture_activations_layer} during generation")
+            print(f"[MEMORY EFFICIENT] Capturing activations at layer {capture_activations_layer} during generation")
             
             hook_point = f"blocks.{capture_activations_layer}.hook_resid_pre"
             captured_acts = []
-            is_first_call = [True]
+            is_first_call = [True]  # Use list to allow modification in nested function
             
             def capture_hook(activations, hook):
-                """Hook to capture activations during generation - keeps tensors on GPU"""
+                """Hook to capture activations during generation"""
+                # During autoregressive generation:
+                # - First call: processes full prompt [batch, prompt_len, hidden]
+                # - Subsequent calls: process one new token at a time [batch, 1, hidden]
+                
                 if is_first_call[0]:
                     # Skip the prompt forward pass - we only want generated tokens
+                    # print(f"[HOOK DEBUG] First call - prompt shape: {activations.shape}")
                     is_first_call[0] = False
                 else:
-                    # Keep on GPU during generation, handle different tensor shapes
+                    # This is a generated token - capture it
+                    # print(f"[HOOK DEBUG] Token {len(captured_acts)+1} - shape: {activations.shape}")
+                    # Shape should be [batch, 1, hidden] or [batch, seq_len, hidden]
+                    # Take the last token's activation (the newly generated one)
                     if activations.dim() == 3:  # [batch, seq, hidden]
-                        new_token_act = activations[:, -1:, :].clone().detach()
-                    elif activations.dim() == 2:  # [batch, hidden]
-                        new_token_act = activations.unsqueeze(1).clone().detach()
+                        new_token_act = activations[:, -1:, :].clone().detach().cpu()
+                    elif activations.dim() == 2:  # [batch, hidden] - already just one token
+                        new_token_act = activations.unsqueeze(1).clone().detach().cpu()  # [batch, 1, hidden]
                     else:
-                        if DEBUG_LOGGING:
-                            print(f"[WARNING] Unexpected activation shape: {activations.shape}")
+                        print(f"[WARNING] Unexpected activation shape: {activations.shape}")
                         return activations
+                    
                     captured_acts.append(new_token_act)
+                
                 return activations
             
             # Run generation with hook
             with torch.no_grad():
+                # Add the hook
                 self.model.add_hook(hook_point, capture_hook, dir='fwd')
                 
                 try:
+                    self._print_memory_status("BEFORE GENERATION WITH HOOKS")
+                    
                     if 'cuda' in str(self.device):
                         with torch.cuda.device(self.device):
                             out_ids = self.model.generate(
@@ -237,36 +265,33 @@ class LocalModelProvider(BaseModelProvider):
                             return_type="input",
                         )
                     
-                    if DEBUG_LOGGING:
-                        self._print_memory_status("AFTER GENERATION WITH HOOKS")
+                    self._print_memory_status("AFTER GENERATION WITH HOOKS")
                     
                 finally:
+                    # Remove hooks after generation
                     self.model.reset_hooks(including_permanent=False)
-                    if DEBUG_LOGGING:
-                        print(f"[DEBUG] Hooks removed")
+                    print(f"[DEBUG] Hooks removed")
             
-            # Concatenate all captured activations - single CPU transfer at the end
+            # Concatenate all captured activations
             if captured_acts:
-                # All tensors are on GPU, concatenate there first
+                # Each element is [batch, 1, hidden]
+                # Concatenate along sequence dimension -> [batch, num_generated, hidden]
                 generation_activations = torch.cat(captured_acts, dim=1)  # [batch, seq, hidden]
-                generation_activations = generation_activations.squeeze(0).cpu()  # [seq, hidden], single CPU transfer
+                generation_activations = generation_activations.squeeze(0)  # Remove batch -> [seq, hidden]
                 
-                if DEBUG_LOGGING:
-                    print(f"[DEBUG] Captured {len(captured_acts)} token activations")
-                    print(f"[DEBUG] Final generation_activations shape: {generation_activations.shape}")
-                    print(f"[DEBUG] Activations memory: {generation_activations.element_size() * generation_activations.nelement() / 1024**3:.3f}GB")
+                print(f"[DEBUG] Captured {len(captured_acts)} token activations")
+                print(f"[DEBUG] Final generation_activations shape: {generation_activations.shape}")
+                print(f"[DEBUG] Activations memory: {generation_activations.element_size() * generation_activations.nelement() / 1024**3:.3f}GB")
                 
-                # Cleanup GPU tensors
+                # Cleanup
                 del captured_acts
             else:
-                if DEBUG_LOGGING:
-                    print(f"[ERROR] No activations captured during generation!")
+                print(f"[ERROR] No activations captured during generation!")
                 
         else:
             # Normal generation without activation capture
             with torch.no_grad():
-                if DEBUG_LOGGING:
-                    self._print_memory_status("BEFORE NORMAL GENERATION")
+                self._print_memory_status("BEFORE NORMAL GENERATION")
                 
                 if 'cuda' in str(self.device):
                     with torch.cuda.device(self.device):
@@ -296,8 +321,10 @@ class LocalModelProvider(BaseModelProvider):
                         return_type="input",
                     )
                 
-                if DEBUG_LOGGING:
-                    self._print_memory_status("AFTER NORMAL GENERATION")
+                self._print_memory_status("AFTER NORMAL GENERATION")
+        
+        # Debug output shape
+        print(f"[DEBUG] Output shape: {out_ids.shape if hasattr(out_ids, 'shape') else 'N/A'}")
         
         # Decode completion
         if isinstance(out_ids, torch.Tensor):
@@ -306,10 +333,7 @@ class LocalModelProvider(BaseModelProvider):
             out_ids_tensor = torch.tensor(out_ids, device=self.device)
         
         completion_ids = out_ids_tensor[0, prompt_len:]
-        
-        if DEBUG_LOGGING:
-            print(f"[DEBUG] Output shape: {out_ids_tensor.shape}")
-            print(f"[DEBUG] Generated {completion_ids.numel()} new tokens")
+        print(f"[DEBUG] Generated {completion_ids.numel()} new tokens")
         
         completion_str = self.tokenizer.decode(
             completion_ids,
@@ -323,8 +347,7 @@ class LocalModelProvider(BaseModelProvider):
         latency = time.time() - start
         self._update_usage(total_tokens)
         
-        if DEBUG_LOGGING:
-            print(f"[DEBUG] Total tokens processed: {total_tokens} (prompt: {prompt_len}, output: {output_len})")
+        print(f"[DEBUG] Total tokens processed: {total_tokens} (prompt: {prompt_len}, output: {output_len})")
         
         metadata = {
             "input_tokens": int(prompt_len),
@@ -343,21 +366,30 @@ class LocalModelProvider(BaseModelProvider):
             generation_activations = generation_activations.to(self.device)
             metadata['generation_activations'] = generation_activations
             metadata['generation_token_ids'] = completion_ids
-            if DEBUG_LOGGING:
-                print(f"[DEBUG] Stored {generation_activations.shape[0]} token activations in metadata")
+            print(f"[DEBUG] Stored {generation_activations.shape[0]} token activations in metadata")
+        else:
+            print(f"[DEBUG] No activations to store in metadata")
         
-        if DEBUG_LOGGING:
-            if hasattr(self.model, 'model') and hasattr(self.model.model, '_past_key_values'):
+        # Check KV cache state after generation
+        if hasattr(self.model, 'model'):
+            if hasattr(self.model.model, '_past_key_values'):
                 print(f"[DEBUG] KV Cache exists after gen: {self.model.model._past_key_values is not None}")
-            print(f"[DEBUG] Generation #{self.generation_count} complete\n")
+        
+        # Final cleanup
+        # print("CLEARING KV CACHE AGAIN!!! WARNING!!")
+        # self._clear_kv_cache()
+        # if 'cuda' in str(self.device):
+        #     with torch.cuda.device(self.device):
+        #         torch.cuda.empty_cache()
+        # gc.collect()
+        
+        # self._print_memory_status("AFTER FINAL CLEANUP")
+        print(f"[DEBUG] Generation #{self.generation_count} complete\n")
         
         return completion_str, metadata
         
     def _print_memory_status(self, label: str):
-        """Print memory status for GPUs (only called when DEBUG_LOGGING=True)"""
-        if not DEBUG_LOGGING:
-            return
-            
+        """Print detailed memory status for all GPUs"""
         print(f"\n[{label}]")
         
         # System memory
@@ -372,27 +404,34 @@ class LocalModelProvider(BaseModelProvider):
                 free = (torch.cuda.get_device_properties(gpu_idx).total_memory - 
                        torch.cuda.memory_allocated(gpu_idx)) / 1024**3
                 print(f"GPU {gpu_idx}: Allocated={allocated:.2f}GB, Reserved={reserved:.2f}GB, Free={free:.2f}GB")
-        elif 'cuda' in str(self.device):
-            gpu_idx = self.device.index or 0
-            allocated = torch.cuda.memory_allocated(gpu_idx) / 1024**3
-            reserved = torch.cuda.memory_reserved(gpu_idx) / 1024**3
-            free = (torch.cuda.get_device_properties(gpu_idx).total_memory - 
-                   torch.cuda.memory_allocated(gpu_idx)) / 1024**3
-            print(f"GPU {gpu_idx}: Allocated={allocated:.2f}GB, Reserved={reserved:.2f}GB, Free={free:.2f}GB")
+        
+        # Count tensors
+        tensor_count = 0
+        total_size = 0
+        for obj in gc.get_objects():
+            try:
+                if torch.is_tensor(obj):
+                    tensor_count += 1
+                    if obj.is_cuda:
+                        total_size += obj.element_size() * obj.nelement()
+            except:
+                pass
+        print(f"Live tensors: {tensor_count}, Total CUDA tensor memory: {total_size/1024**3:.2f}GB")
     
     def _clear_kv_cache(self):
         """Explicitly clear KV cache"""
-        if DEBUG_LOGGING:
-            print("[DEBUG] Clearing KV cache...")
+        print("[DEBUG] Clearing KV cache...")
         try:
+            # For HuggingFace models
             if hasattr(self.model, 'model'):
                 if hasattr(self.model.model, '_past_key_values'):
                     self.model.model._past_key_values = None
+                # Also try resetting cache
                 if hasattr(self.model.model, 'reset_cache'):
                     self.model.model.reset_cache()
         except Exception as e:
-            if DEBUG_LOGGING:
-                print(f"[DEBUG] Error clearing KV cache: {e}")
+            print(f"[DEBUG] Error clearing KV cache: {e}")
+    
         
     def is_available(self) -> bool:
         return self.model is not None and self.tokenizer is not None

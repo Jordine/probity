@@ -29,10 +29,11 @@ from debate.utils.gpu_utils import detect_gpu_configuration, can_fit_models
 class NoJudgeDebateRunner:
     """Run debates without judge decision, save full transcripts with probe data"""
     
-    def __init__(self, config: DebateConfig, save_dir: Path, experiment_mode: str):
+    def __init__(self, config: DebateConfig, save_dir: Path, experiment_mode: str, dishonesty_level: str = "selective"):
         self.config = config
         self.save_dir = save_dir
         self.experiment_mode = experiment_mode
+        self.dishonesty_level = dishonesty_level
         self.transcripts_dir = save_dir / "transcripts"
         self.transcripts_dir.mkdir(parents=True, exist_ok=True)
         
@@ -151,7 +152,7 @@ class NoJudgeDebateRunner:
             if debate_type == "simple":
                 self.manager.run_simple_debate_setup(item['scenario'])
             elif debate_type == "quality":
-                self.manager.run_quality_debate_setup(item['quality_problem'])
+                self.manager.run_quality_debate_setup(item['quality_problem'], dishonesty_level=self.dishonesty_level)
             else:
                 self.manager.run_apps_debate_setup(
                     item['problem'], 
@@ -301,6 +302,7 @@ class NoJudgeDebateRunner:
             "debate_id": debate_id,
             "debate_type": debate_type,
             "experiment_mode": self.experiment_mode,
+            "dishonesty_level": manager.dishonesty_level if hasattr(manager, 'dishonesty_level') else "unknown",
             "timestamp": time.time(),
             "debate_config": {
                 "debate_type": self.config.debate_type.value,
@@ -457,6 +459,9 @@ def main():
                        help='Number of problems to run')
     
     # Debate parameters
+    parser.add_argument('--dishonesty_level', type=str, default='selective',
+                   choices=['symmetric', 'persuasive', 'selective', 'explicit'],
+                   help='Level of deceptive framing for dishonest debater')
     parser.add_argument('--max_rounds', type=int, default=3,
                        help='Maximum debate rounds')
     parser.add_argument('--save_dir', type=str, default='./debate_transcripts',
@@ -591,6 +596,7 @@ def main():
     config_dict = {
         "experiment_mode": args.experiment_mode,
         "debate_type": debate_type.value,
+        "dishonesty_level": args.dishonesty_level,
         "models": {
             "honest": args.honest_model,
             "dishonest": args.dishonest_model
@@ -698,7 +704,7 @@ def main():
         json.dump(serializable_dataset, f, indent=2)
     
     # Run debates
-    runner = NoJudgeDebateRunner(config, save_dir, args.experiment_mode)
+    runner = NoJudgeDebateRunner(config, save_dir, args.experiment_mode, args.dishonesty_level)
     results_df = runner.run_all_debates(dataset)
     
     print(f"\nExperiment complete! Transcripts saved to: {save_dir}")

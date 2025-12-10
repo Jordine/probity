@@ -25,6 +25,12 @@ class DebateRole(Enum):
     DISHONEST = "dishonest"
     JUDGE = "judge"
 
+class DishonestyLevel(Enum):
+    """Different levels of explicit deception framing for testing probe sensitivity"""
+    SYMMETRIC = "symmetric"       # Identical instructions, only answer differs
+    PERSUASIVE = "persuasive"     # "Be persuasive" vs "Be accurate"
+    SELECTIVE = "selective"       # "May selectively interpret evidence" (current default)
+    EXPLICIT = "explicit"         # "You're defending the potentially wrong answer"
 
 @dataclass
 class ModelConfig:
