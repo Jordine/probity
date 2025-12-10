@@ -71,6 +71,12 @@ class ApolloProbe(torch.nn.Module):
             self.config = config
         
         self.n_layers = len(self.layers)
+        
+        # Calibration bias (99th percentile of alpaca control data)
+        if isinstance(config, dict):
+            self.bias = config.get('bias', 0.0)
+        else:
+            self.bias = getattr(config, 'bias', 0.0)
 
         # These will be loaded from checkpoint
         # Apollo format: [n_layers, hidden_dim]
@@ -131,6 +137,9 @@ class ApolloProbe(torch.nn.Module):
         # Average across layers (Apollo does this when multiple layers)
         scores = scores.mean(dim=-1)  # [seq_len]
 
+        # Apply calibration bias (shifts so 0 = 99th percentile of honest)
+        scores = scores - self.bias
+        
         # Apply sigmoid to get [0, 1] range (higher = more deceptive)
         scores = torch.sigmoid(scores)
 
