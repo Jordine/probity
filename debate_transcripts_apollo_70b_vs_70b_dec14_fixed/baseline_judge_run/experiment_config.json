@@ -1,0 +1,24 @@
+{
+  "experiment_mode": "baseline_judge",
+  "debate_type": "baseline",
+  "dishonesty_level": "selective",
+  "models": {
+    "honest": "meta-llama/Llama-3.3-70B-Instruct",
+    "dishonest": "meta-llama/Llama-3.3-70B-Instruct"
+  },
+  "providers": {
+    "honest": "local",
+    "dishonest": "local"
+  },
+  "dataset": "quality_synthetic",
+  "n_problems": 166,
+  "max_rounds": 3,
+  "probe_config": {
+    "enabled": true,
+    "types": [
+      "apollo"
+    ],
+    "layer": 22
+  },
+  "timestamp": "20251213_175424"
+}
