@@ -20,36 +20,48 @@ from probity.utils.caching import get_dataset_hash, smart_cache_activations
 from probity.utils.dataset_loading import load_contrastive_ntml_dataset, get_model_dtype
 
 
-def train_all_probes_for_layer(layer: int, activation_store: ActivationStore, 
-                              probe_types: List[str], args, 
-                              model_name: str, hidden_size: int, 
+def train_all_probes_for_layer(layer: int, activation_store: ActivationStore,
+                              probe_types: List[str], args,
+                              model_name: str, hidden_size: int,
                               device: str, dtype: torch.dtype) -> Dict[str, Dict]:
     """Train all probe types for a single layer efficiently"""
-    
+
     hook_point = f"blocks.{layer}.hook_resid_pre"
     layer_results = {}
-    
+
     for probe_type in probe_types:
-        print(f"Training {probe_type} probe on layer {layer}")
-        
+        mode_str = " [max_aggr]" if args.use_max_aggregation else ""
+        print(f"Training {probe_type} probe on layer {layer}{mode_str}")
+
         # Get configurations
         probe_config = get_probe_config(
-            probe_type, hidden_size, model_name, 
+            probe_type, hidden_size, model_name,
             hook_point, layer, dtype
         )
         probe_cls = get_probe_class(probe_type)
         trainer_config = get_trainer_config(probe_type, device, args.batch_size)
         trainer_cls = get_trainer_class(probe_type)
-        
+
+        # Apply max aggregation config if enabled
+        if args.use_max_aggregation and hasattr(trainer_config, 'use_max_aggregation'):
+            trainer_config.use_max_aggregation = True
+            trainer_config.anneal_warmup = args.anneal_warmup
+            trainer_config.sparsity_penalty = args.sparsity_penalty
+
         # Initialize probe and trainer
         probe = probe_cls(probe_config).to(device)
         trainer = trainer_cls(trainer_config)
-        
-        # Prepare data once per layer (shared across probe types)
-        train_loader, val_loader = trainer.prepare_supervised_data(
-            activation_store, "LIE_SPAN"  # Same position key as original
-        )
-        
+
+        # Prepare data - use span-aware prep for max aggregation
+        if args.use_max_aggregation and hasattr(trainer, 'prepare_supervised_data_with_spans'):
+            train_loader, val_loader, _, _ = trainer.prepare_supervised_data_with_spans(
+                activation_store, "LIE_SPAN"
+            )
+        else:
+            train_loader, val_loader = trainer.prepare_supervised_data(
+                activation_store, "LIE_SPAN"
+            )
+
         # Train
         history = trainer.train(probe, train_loader, val_loader)
         
@@ -62,9 +74,14 @@ def train_all_probes_for_layer(layer: int, activation_store: ActivationStore,
         layer_results[probe_type] = {
             'final_train_loss': history['train_loss'][-1],
             'final_val_loss': history['val_loss'][-1] if 'val_loss' in history else None,
-            'save_path': str(save_path)
+            'save_path': str(save_path),
+            'max_aggregation': args.use_max_aggregation,
         }
-        
+        # Add omega info if max aggregation was used
+        if args.use_max_aggregation and 'omega' in history and history['omega']:
+            layer_results[probe_type]['final_omega'] = history['omega'][-1]
+            layer_results[probe_type]['anneal_warmup'] = args.anneal_warmup
+
         print(f"Saved {probe_type} probe for layer {layer} to {save_path}")
         
         # Clear probe from memory
@@ -142,9 +159,18 @@ def parse_args():
     parser.add_argument('--dishonest_mode', type=str, choices=['all', 'diff'], 
                        default='all', required=True,
                        help='Which statements from dishonest sample: all or diff only')
-    parser.add_argument('--honest_mode', type=str, choices=['none', 'diff', 'all'], 
+    parser.add_argument('--honest_mode', type=str, choices=['none', 'diff', 'all'],
                        default='none', required=True,
                        help='Which statements from honest sample: none, diff only, or all')
+    parser.add_argument('--last_k_tokens', type=int, default=0,
+                       help='Only use last K tokens of each span (Apollo style). 0=all tokens, 5=last 5')
+    # Max aggregation training options
+    parser.add_argument('--use_max_aggregation', action='store_true',
+                       help='Use span-level max aggregation loss (like hallucination probes)')
+    parser.add_argument('--anneal_warmup', type=float, default=0.3,
+                       help='Fraction of training for BCE→max_aggr annealing (default: 0.3)')
+    parser.add_argument('--sparsity_penalty', type=float, default=0.0,
+                       help='Penalty for high average activation (default: 0.0, off)')
     return parser.parse_args()
 
 
@@ -192,11 +218,12 @@ def main():
     
     # Load dataset using the new loader
     print(f"Loading contrastive dataset from {dataset_path}")
-    dataset = load_contrastive_ntml_dataset(str(dataset_path), 
-                                            args.model_name, 
-                                            max_length=args.max_length, 
+    dataset = load_contrastive_ntml_dataset(str(dataset_path),
+                                            args.model_name,
+                                            max_length=args.max_length,
                                             dishonest_mode=args.dishonest_mode,
-                                            honest_mode=args.honest_mode)
+                                            honest_mode=args.honest_mode,
+                                            last_k_tokens=args.last_k_tokens)
     print(f"Dataset size: {len(dataset.examples)}")
     
     # Load model once

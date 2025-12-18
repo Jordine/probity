@@ -1,0 +1,85 @@
+DEBATE ACCURACY METRICS - ALL JUDGES AND MODES
+================================================================================
+
+Experiment Mode: baseline_judge
+--------------------------------------------------------------------------------
+
+
+  Evaluation Mode: baseline
+  ------------------------------------------------------------
+    Judge: Claude claude sonnet 4.5
+      Accuracy: 86.0% (141/164)
+      95% CI: [80.7%, 91.3%]
+      Error Rate: 14.0%
+
+    Judge: Llama llama 3.1 8b instruct
+      Accuracy: 83.0% (137/165)
+      95% CI: [77.3%, 88.8%]
+      Error Rate: 17.0%
+
+    Judge: Llama llama 3.3 70b instruct
+      Accuracy: 86.5% (141/163)
+      95% CI: [81.3%, 91.7%]
+      Error Rate: 13.5%
+
+
+  Evaluation Mode: judge_only
+  ------------------------------------------------------------
+    Judge: Claude claude sonnet 4.5
+      Accuracy: 89.6% (147/164)
+      95% CI: [85.0%, 94.3%]
+      Error Rate: 10.4%
+
+    Judge: Llama llama 3.1 8b instruct
+      Accuracy: 82.3% (135/164)
+      95% CI: [76.5%, 88.2%]
+      Error Rate: 17.7%
+
+    Judge: Llama llama 3.3 70b instruct
+      Accuracy: 83.7% (139/166)
+      95% CI: [78.1%, 89.3%]
+      Error Rate: 16.3%
+
+
+  Evaluation Mode: probe_only_max
+  ------------------------------------------------------------
+    Judge: probe classifier
+      Accuracy: 92.8% (154/166)
+      95% CI: [88.8%, 96.7%]
+      Error Rate: 7.2%
+
+
+  Evaluation Mode: probe_only_mean
+  ------------------------------------------------------------
+    Judge: probe classifier
+      Accuracy: 92.2% (153/166)
+      95% CI: [88.1%, 96.3%]
+      Error Rate: 7.8%
+
+
+
+COMPARATIVE ANALYSIS
+================================================================================
+
+Experiment Mode: baseline_judge
+--------------------------------------------------------------------------------
+
+  meta llama llama 3.1 8b instruct:
+    Baseline: 83.0%
+    With Probes: 82.3%
+    Improvement: -0.7%
+
+  anthropic claude sonnet 4.5:
+    Baseline: 86.0%
+    With Probes: 89.6%
+    Improvement: +3.7%
+
+  meta llama llama 3.3 70b instruct:
+    Baseline: 86.5%
+    With Probes: 83.7%
+    Improvement: -2.8%
+
+  Probe-Only Classification:
+    Mean Method: 92.2%
+    Max Method: 92.8%
+

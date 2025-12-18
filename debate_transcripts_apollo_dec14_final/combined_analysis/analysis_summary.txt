@@ -1,0 +1,151 @@
+================================================================================
+COMBINED DEBATE ANALYSIS SUMMARY
+================================================================================
+
+Paired samples: 140
+Baseline run samples: 163
+Debater-full run samples: 140
+
+--------------------------------------------------------------------------------
+WIN RATES BY JUDGE AND MODE
+--------------------------------------------------------------------------------
+
+anthropic_claude_sonnet_4.5:
+  baseline            : 88.5% (123/139) [82.1%, 92.8%]
+  judge_only          : 91.4% (127/139) [85.5%, 95.0%]
+  debater_only        : 88.6% (124/140) [82.2%, 92.8%]
+  full_access         : 86.8% (118/136) [80.0%, 91.5%]
+
+meta_llama_llama_3.1_8b_instruct:
+  baseline            : 83.5% (116/139) [76.4%, 88.7%]
+  judge_only          : 84.1% (116/138) [77.0%, 89.2%]
+  debater_only        : 86.4% (121/140) [79.8%, 91.1%]
+  full_access         : 83.5% (116/139) [76.4%, 88.7%]
+
+meta_llama_llama_3.3_70b_instruct:
+  baseline            : 86.1% (118/137) [79.4%, 90.9%]
+  judge_only          : 82.9% (116/140) [75.8%, 88.2%]
+  debater_only        : 82.0% (114/139) [74.8%, 87.5%]
+  full_access         : 84.1% (116/138) [77.0%, 89.2%]
+
+probe_classifier:
+  probe_only_mean     : 91.4% (128/140) [85.6%, 95.0%]
+  probe_only_max      : 92.1% (129/140) [86.5%, 95.6%]
+
+--------------------------------------------------------------------------------
+STATISTICAL SIGNIFICANCE (McNemar Tests)
+--------------------------------------------------------------------------------
+
+anthropic_claude_sonnet_4.5 - Baseline vs Judge-Only (probes help judge?)
+  baseline: 88.4% vs judge_only: 91.3%
+  Difference: +2.9%
+  n_paired: 138, p=0.3877 ns
+  Test: McNemar exact (binomial)
+
+anthropic_claude_sonnet_4.5 - Baseline vs Debater-Only (probes help debaters?)
+  baseline: 88.5% vs debater_only: 88.5%
+  Difference: +0.0%
+  n_paired: 139, p=1.0000 ns
+  Test: McNemar exact (binomial)
+
+anthropic_claude_sonnet_4.5 - Baseline vs Full-Access (full transparency?)
+  baseline: 88.9% vs full_access: 86.7%
+  Difference: -2.2%
+  n_paired: 135, p=0.6291 ns
+  Test: McNemar exact (binomial)
+
+anthropic_claude_sonnet_4.5 - Judge-Only vs Full-Access
+  judge_only: 91.1% vs full_access: 86.7%
+  Difference: -4.4%
+  n_paired: 135, p=0.1796 ns
+  Test: McNemar exact (binomial)
+
+anthropic_claude_sonnet_4.5 - Debater-Only vs Full-Access
+  debater_only: 89.0% vs full_access: 86.8%
+  Difference: -2.2%
+  n_paired: 136, p=0.5488 ns
+  Test: McNemar exact (binomial)
+
+meta_llama_llama_3.1_8b_instruct - Baseline vs Judge-Only (probes help judge?)
+  baseline: 83.9% vs judge_only: 83.9%
+  Difference: +0.0%
+  n_paired: 137, p=1.0000 ns
+  Test: McNemar exact (binomial)
+
+meta_llama_llama_3.1_8b_instruct - Baseline vs Debater-Only (probes help debaters?)
+  baseline: 83.5% vs debater_only: 86.3%
+  Difference: +2.9%
+  n_paired: 139, p=0.5563 ns
+  Test: McNemar chi-square
+
+meta_llama_llama_3.1_8b_instruct - Baseline vs Full-Access (full transparency?)
+  baseline: 83.3% vs full_access: 83.3%
+  Difference: +0.0%
+  n_paired: 138, p=0.8551 ns
+  Test: McNemar chi-square
+
+meta_llama_llama_3.1_8b_instruct - Judge-Only vs Full-Access
+  judge_only: 83.9% vs full_access: 84.7%
+  Difference: +0.7%
+  n_paired: 137, p=1.0000 ns
+  Test: McNemar chi-square
+
+meta_llama_llama_3.1_8b_instruct - Debater-Only vs Full-Access
+  debater_only: 86.3% vs full_access: 83.5%
+  Difference: -2.9%
+  n_paired: 139, p=0.4807 ns
+  Test: McNemar exact (binomial)
+
+meta_llama_llama_3.3_70b_instruct - Baseline vs Judge-Only (probes help judge?)
+  baseline: 86.1% vs judge_only: 82.5%
+  Difference: -3.6%
+  n_paired: 137, p=0.2266 ns
+  Test: McNemar exact (binomial)
+
+meta_llama_llama_3.3_70b_instruct - Baseline vs Debater-Only (probes help debaters?)
+  baseline: 86.0% vs debater_only: 81.6%
+  Difference: -4.4%
+  n_paired: 136, p=0.2101 ns
+  Test: McNemar exact (binomial)
+
+meta_llama_llama_3.3_70b_instruct - Baseline vs Full-Access (full transparency?)
+  baseline: 85.9% vs full_access: 84.4%
+  Difference: -1.5%
+  n_paired: 135, p=0.7744 ns
+  Test: McNemar exact (binomial)
+
+meta_llama_llama_3.3_70b_instruct - Judge-Only vs Full-Access
+  judge_only: 82.6% vs full_access: 84.1%
+  Difference: +1.4%
+  n_paired: 138, p=0.7905 ns
+  Test: McNemar exact (binomial)
+
+meta_llama_llama_3.3_70b_instruct - Debater-Only vs Full-Access
+  debater_only: 81.8% vs full_access: 83.9%
+  Difference: +2.2%
+  n_paired: 137, p=0.6291 ns
+  Test: McNemar exact (binomial)
+
+--------------------------------------------------------------------------------
+PROBE PERFORMANCE
+--------------------------------------------------------------------------------
+
+Turn-level (one data point per turn, mean of token scores):
+  AUROC: 0.741
+  Honest turns: 420 (mean: 0.460, std: 0.010)
+  Dishonest turns: 420 (mean: 0.471, std: 0.013)
+  Score separation: 0.011
+
+Debate-level MEAN aggregation (one data point per debater per debate):
+  AUROC: 0.861
+  N debates: 140
+  Honest debaters (mean: 0.460, std: 0.006)
+  Dishonest debaters (mean: 0.471, std: 0.007)
+  Score separation: 0.011
+
+Debate-level MAX aggregation (one data point per debater per debate):
+  AUROC: 0.869
+  N debates: 140
+  Honest debaters (mean: 0.469, std: 0.009)
+  Dishonest debaters (mean: 0.484, std: 0.010)
+  Score separation: 0.014

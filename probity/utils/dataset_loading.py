@@ -322,12 +322,13 @@ def load_lie_truth_dataset(json_path: str,
     
     return tokenized_dataset
 
-def load_contrastive_ntml_dataset(json_path: str, 
+def load_contrastive_ntml_dataset(json_path: str,
                                  tokenizer_name: str = "meta-llama/Llama-3.1-8B-Instruct",
                                  max_length: int = 512,
                                  warn_on_truncation: bool = True,
-                                 dishonest_mode: str = 'all',  
-                                 honest_mode: str = 'none') -> TokenizedProbingDataset:
+                                 dishonest_mode: str = 'all',
+                                 honest_mode: str = 'none',
+                                 last_k_tokens: int = 0) -> TokenizedProbingDataset:
     """
     Load contrastive NTML dataset with flexible training modes.
     
@@ -588,7 +589,21 @@ def load_contrastive_ntml_dataset(json_path: str,
         truncation=True,
         add_special_tokens=False
     )
-    
+
+    # Apply last-K-tokens filtering if specified (Apollo style: only use last K tokens of each span)
+    if last_k_tokens > 0:
+        print(f"\n🎯 Applying last-{last_k_tokens}-tokens filtering (Apollo style)")
+        filtered_count = 0
+        for example in tokenized_dataset.examples:
+            if example.token_positions is not None:
+                for key, positions in example.token_positions.positions.items():
+                    if isinstance(positions, list) and len(positions) > last_k_tokens:
+                        # Keep only last K tokens
+                        original_len = len(positions)
+                        example.token_positions.positions[key] = positions[-last_k_tokens:]
+                        filtered_count += 1
+        print(f"  • Filtered {filtered_count} spans to last {last_k_tokens} tokens")
+
     return tokenized_dataset
 
 def get_model_dtype(model_name: str) -> torch.dtype:

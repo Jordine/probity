@@ -14,6 +14,7 @@ class DebateType(Enum):
 class ProviderType(Enum):
     """Supported model providers"""
     LOCAL = "local"
+    FAST_LOCAL = "fast_local"  # New: transformers + native hooks, no tlens
     OPENAI = "openai"
     ANTHROPIC = "anthropic"
     OPENROUTER = "openrouter"
@@ -45,7 +46,7 @@ class ModelConfig:
     gpu_indices: Optional[List[int]] = None  #multi gpu
 
     def __post_init__(self):
-        self.supports_probes = (self.provider == ProviderType.LOCAL)
+        self.supports_probes = (self.provider in [ProviderType.LOCAL, ProviderType.FAST_LOCAL])
 
 
 @dataclass
@@ -63,6 +64,16 @@ class ProbeConfig:
     cache_dir: Optional[str] = None
     format_for_debaters: bool = True
 
+class ProbeDisplayMode(Enum):
+    """How to display probe scores to debaters/judge"""
+    PER_TOKEN = "per_token"                     # Show all token scores
+    PER_STATEMENT = "per_statement"             # Show statement-level scores
+    PER_STATEMENT_RANKED = "per_statement_ranked"  # Statements sorted by score, no values
+    SUMMARY_ONLY = "summary_only"               # Only mean/max/min stats
+    RANKING_ONLY = "ranking_only"               # Only ordinal ranking (1st, 2nd, 3rd most suspicious)
+    HIDDEN = "hidden"                           # Don't show (for baseline)
+
+
 @dataclass
 class DebateConfig:
     """Configuration for a debate"""
@@ -75,8 +86,9 @@ class DebateConfig:
     topic: Optional[str] = None
     problem_id: Optional[str] = None
     save_dir: str = "./debate_results"
-    probe_display_mode: str = "per_statement"
-    judge_probe_display_mode: str = "per_statement"
+    probe_display_mode: str = "per_statement"           # For debaters
+    judge_probe_display_mode: str = "summary_only"      # For judge
+    dishonesty_level: str = "selective"                 # symmetric/persuasive/selective/explicit
 
 
 @dataclass

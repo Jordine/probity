@@ -1,0 +1,15 @@
+STATISTICAL SIGNIFICANCE ANALYSIS
+================================================================================
+
+Experiment Mode: debater_full
+--------------------------------------------------------------------------------
+
+Full access vs Probe classifier (mean)
+  full_access: 0.847 (n=413)
+  probe_only_mean: 0.907 (n=140)
+  Difference: -0.060
+  Test: Two-proportion z-test
+  p-value: 0.0763 ns
+  Significant: NO
+
+

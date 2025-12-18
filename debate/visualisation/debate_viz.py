@@ -241,6 +241,90 @@ def create_debate_chat_visualization(transcript: Dict, output_path: Path):
             background: #f8d7da;
             color: #721c24;
         }
+
+        .judge-results {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .judge-result {
+            background: white;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .judge-result.correct {
+            border-left: 4px solid #28a745;
+        }
+
+        .judge-result.incorrect {
+            border-left: 4px solid #dc3545;
+        }
+
+        .judge-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .judge-name {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .judge-verdict {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .judge-verdict.correct {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .judge-verdict.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .judge-reasoning {
+            font-size: 13px;
+            color: #555;
+            margin-top: 8px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .judge-meta {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .probe-results {
+            background: #e8f5e9;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 4px solid #4caf50;
+        }
+
+        .probe-result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0"></script>
@@ -261,7 +345,57 @@ def create_debate_chat_visualization(transcript: Dict, output_path: Path):
                         {{ context_html | safe }}
                     </div>
                 </div>
-                
+
+                <!-- Judge Results -->
+                {% if judge_results %}
+                <div class="judge-results">
+                    <h3>⚖️ Judge Decisions</h3>
+
+                    {% if probe_only_results %}
+                    <div class="probe-results">
+                        <strong>🔬 Probe Classifier Results</strong>
+                        <div class="probe-result-item">
+                            <span>Mean aggregation:</span>
+                            <span class="judge-verdict {{ 'correct' if probe_only_results.probe_only_mean == 'honest' else 'incorrect' }}">
+                                {{ probe_only_results.probe_only_mean | upper }} wins
+                            </span>
+                        </div>
+                        <div class="probe-result-item">
+                            <span>Max aggregation:</span>
+                            <span class="judge-verdict {{ 'correct' if probe_only_results.probe_only_max == 'honest' else 'incorrect' }}">
+                                {{ probe_only_results.probe_only_max | upper }} wins
+                            </span>
+                        </div>
+                        <div class="judge-meta">
+                            Honest mean: {{ "%.4f" | format(probe_only_results.honest_mean_score) }} |
+                            Dishonest mean: {{ "%.4f" | format(probe_only_results.dishonest_mean_score) }} |
+                            Δ = {{ "%.4f" | format(probe_only_results.dishonest_mean_score - probe_only_results.honest_mean_score) }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% for judge in judge_results %}
+                    <div class="judge-result {{ 'correct' if judge.correct else 'incorrect' }}">
+                        <div class="judge-header">
+                            <span class="judge-name">{{ judge.display_name }}</span>
+                            <span class="judge-verdict {{ 'correct' if judge.correct else 'incorrect' }}">
+                                {% if judge.correct %}✓ CORRECT{% else %}✗ INCORRECT{% endif %}
+                            </span>
+                        </div>
+                        <div>
+                            <strong>Mode:</strong> {{ judge.eval_mode }} |
+                            <strong>Winner:</strong> {{ judge.winner_role | upper }}
+                        </div>
+                        {% if judge.reasoning %}
+                        <div class="judge-reasoning">
+                            {{ judge.reasoning }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
                 <!-- Debate Transcript -->
                 <h3>💬 Debate Transcript</h3>
                 <div id="transcript">
@@ -1012,6 +1146,44 @@ def create_debate_chat_visualization(transcript: Dict, output_path: Path):
                 'statements': statements
             })
     
+    # Extract judge results
+    judge_results_data = []
+    raw_judge_results = transcript.get('judge_results', {})
+    for key, result in raw_judge_results.items():
+        # Parse key to get eval_mode and judge_name
+        # Format: evaluation_mode_judge_name (e.g., "baseline_meta_llama_llama_3.1_8b_instruct")
+        eval_mode = None
+        judge_name = key
+        for mode in ['baseline', 'judge_only', 'debater_only', 'full_access']:
+            if key.startswith(mode + '_'):
+                eval_mode = mode
+                judge_name = key[len(mode) + 1:]
+                break
+
+        # Create display name
+        display_name = judge_name.replace('_', ' ').title()
+        if 'llama' in display_name.lower():
+            display_name = display_name.replace('Meta Llama ', 'Llama ')
+        if 'anthropic' in display_name.lower():
+            display_name = display_name.replace('Anthropic ', '')
+
+        judge_results_data.append({
+            'key': key,
+            'eval_mode': eval_mode or 'unknown',
+            'judge_name': judge_name,
+            'display_name': display_name,
+            'correct': result.get('correct', False),
+            'winner_role': result.get('winner_role', 'unknown'),
+            'reasoning': result.get('reasoning', ''),
+        })
+
+    # Sort by eval_mode then judge_name
+    mode_order = {'baseline': 0, 'judge_only': 1, 'debater_only': 2, 'full_access': 3, 'unknown': 4}
+    judge_results_data.sort(key=lambda x: (mode_order.get(x['eval_mode'], 5), x['judge_name']))
+
+    # Extract probe_only_results
+    probe_only_results = transcript.get('probe_only_results', {})
+
     # Render template
     from jinja2 import Template
     template = Template(html_template)
@@ -1020,6 +1192,8 @@ def create_debate_chat_visualization(transcript: Dict, output_path: Path):
         debate_type=debate_type,
         context_html=context_html,
         turns=turns_data,
+        judge_results=judge_results_data,
+        probe_only_results=probe_only_results if probe_only_results else None,
         score_to_color=score_to_color  # Pass the function
     )
     

@@ -1,0 +1,204 @@
+"""
+Advanced loss functions for probe training.
+
+Ported from hallucination_probes with modifications for probity.
+"""
+
+from typing import List, Tuple, Optional
+import torch
+import torch.nn.functional as F
+from torch import Tensor
+
+
+def compute_probe_bce_loss(
+    probe_logits: Tensor,
+    labels: Tensor,
+    weights: Optional[Tensor] = None,
+    pos_weight: Optional[Tensor] = None,
+    ignore_label: float = -100.0,
+    max_clipped_logits: float = 100.0,
+) -> Tensor:
+    """
+    Standard BCE loss for probe training with optional weighting.
+
+    Args:
+        probe_logits: Shape (batch_size,) or (batch_size, 1)
+        labels: Shape (batch_size,) or (batch_size, 1)
+        weights: Per-sample weights, shape (batch_size,)
+        pos_weight: Weight for positive class (for class imbalance)
+        ignore_label: Label value to ignore in loss calculation
+        max_clipped_logits: Clip logits to prevent extreme values
+    """
+    # Flatten if needed
+    if probe_logits.dim() > 1:
+        probe_logits = probe_logits.squeeze(-1)
+    if labels.dim() > 1:
+        labels = labels.squeeze(-1)
+
+    # Clip logits
+    probe_logits_clipped = torch.clamp(probe_logits, -max_clipped_logits, max_clipped_logits)
+
+    # Create mask for valid labels
+    valid_mask = labels != ignore_label
+
+    if not valid_mask.any():
+        return torch.tensor(0.0, device=probe_logits.device, dtype=probe_logits.dtype)
+
+    # Filter to valid samples
+    valid_logits = probe_logits_clipped[valid_mask]
+    valid_labels = labels[valid_mask]
+
+    # Compute BCE loss
+    if pos_weight is not None:
+        loss = F.binary_cross_entropy_with_logits(
+            valid_logits, valid_labels.float(), pos_weight=pos_weight, reduction='none'
+        )
+    else:
+        loss = F.binary_cross_entropy_with_logits(
+            valid_logits, valid_labels.float(), reduction='none'
+        )
+
+    # Apply per-sample weights if provided
+    if weights is not None:
+        valid_weights = weights[valid_mask]
+        loss = loss * valid_weights
+
+    return loss.mean()
+
+
+def compute_max_aggregation_loss(
+    probe_logits: Tensor,
+    positive_spans: List[List[Tuple[int, int]]],
+    negative_spans: List[List[Tuple[int, int]]],
+    max_clipped_logits: float = 100.0,
+) -> Tensor:
+    """
+    Span-level max-aggregation loss.
+
+    For positive (deceptive) spans: BCE(max(logits_in_span), 1.0)
+    For negative (truthful) spans: BCE(max(logits_in_span), 0.0)
+
+    This encourages the probe to fire on at least one token within each
+    deceptive span, and NOT fire on any token within truthful spans.
+
+    Args:
+        probe_logits: Shape (batch_size, seq_len) - probe outputs for each token
+        positive_spans: List of lists of (start, end) tuples for deceptive spans
+        negative_spans: List of lists of (start, end) tuples for truthful spans
+        max_clipped_logits: Clip logits to prevent extreme values
+
+    Returns:
+        Scalar loss averaged over all spans
+    """
+    device = probe_logits.device
+    dtype = probe_logits.dtype
+
+    # Handle 1D input (single sequence)
+    if probe_logits.dim() == 1:
+        probe_logits = probe_logits.unsqueeze(0)
+        positive_spans = [positive_spans] if positive_spans and isinstance(positive_spans[0], tuple) else positive_spans
+        negative_spans = [negative_spans] if negative_spans and isinstance(negative_spans[0], tuple) else negative_spans
+
+    # Clip logits
+    probe_logits_clipped = torch.clamp(probe_logits, -max_clipped_logits, max_clipped_logits)
+
+    span_losses = []
+
+    for batch_idx in range(probe_logits_clipped.shape[0]):
+        # Process positive (deceptive) spans
+        if batch_idx < len(positive_spans):
+            for span in positive_spans[batch_idx]:
+                if isinstance(span, (tuple, list)) and len(span) >= 2:
+                    start, end = span[0], span[1]
+                    if start <= end and end < probe_logits_clipped.shape[1]:
+                        span_logits = probe_logits_clipped[batch_idx, start:end+1]
+                        max_logit = torch.max(span_logits)
+                        target = torch.tensor(1.0, device=device, dtype=dtype)
+                        loss = F.binary_cross_entropy_with_logits(max_logit, target)
+                        span_losses.append(loss)
+
+        # Process negative (truthful) spans
+        if batch_idx < len(negative_spans):
+            for span in negative_spans[batch_idx]:
+                if isinstance(span, (tuple, list)) and len(span) >= 2:
+                    start, end = span[0], span[1]
+                    if start <= end and end < probe_logits_clipped.shape[1]:
+                        span_logits = probe_logits_clipped[batch_idx, start:end+1]
+                        max_logit = torch.max(span_logits)
+                        target = torch.tensor(0.0, device=device, dtype=dtype)
+                        loss = F.binary_cross_entropy_with_logits(max_logit, target)
+                        span_losses.append(loss)
+
+    if not span_losses:
+        return torch.tensor(0.0, device=device, dtype=dtype)
+
+    return torch.mean(torch.stack(span_losses))
+
+
+def compute_annealed_loss(
+    bce_loss: Tensor,
+    max_aggr_loss: Tensor,
+    epoch: int,
+    num_epochs: int,
+    anneal_warmup: float = 0.3,
+) -> Tuple[Tensor, float]:
+    """
+    Compute annealed loss that transitions from BCE to max aggregation.
+
+    During warmup period: mostly BCE (stable training)
+    After warmup: mostly max aggregation (span-level signal)
+
+    Args:
+        bce_loss: Token-level BCE loss
+        max_aggr_loss: Span-level max aggregation loss
+        epoch: Current epoch (0-indexed)
+        num_epochs: Total number of epochs
+        anneal_warmup: Fraction of training for warmup (0.3 = first 30%)
+
+    Returns:
+        Tuple of (combined_loss, omega value)
+    """
+    if num_epochs <= 0:
+        omega = 1.0
+    else:
+        progress = epoch / num_epochs
+        omega = min(1.0, progress / anneal_warmup) if anneal_warmup > 0 else 1.0
+
+    combined_loss = (1 - omega) * bce_loss + omega * max_aggr_loss
+
+    return combined_loss, omega
+
+
+def compute_sparsity_loss(
+    probe_logits: Tensor,
+    attention_mask: Optional[Tensor] = None,
+) -> Tensor:
+    """
+    Sparsity loss to encourage probe to be selective.
+
+    Penalizes high average activation, preventing the probe
+    from flagging everything as deceptive.
+
+    Args:
+        probe_logits: Probe output logits
+        attention_mask: Mask for valid tokens (1 = valid, 0 = padding)
+
+    Returns:
+        Scalar sparsity loss (average probability across valid tokens)
+    """
+    # Get probabilities
+    probe_probs = torch.sigmoid(probe_logits)
+
+    if attention_mask is not None:
+        # Only consider valid tokens
+        if attention_mask.shape != probe_probs.shape:
+            attention_mask = attention_mask.view_as(probe_probs)
+        masked_probs = probe_probs * attention_mask
+        num_valid = attention_mask.sum()
+        if num_valid == 0:
+            return torch.tensor(0.0, device=probe_logits.device)
+        avg_activation = masked_probs.sum() / num_valid
+    else:
+        avg_activation = probe_probs.mean()
+
+    return avg_activation

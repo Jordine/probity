@@ -17,7 +17,14 @@ from typing import Dict, List, Optional, Tuple, Any
 import numpy as np
 import torch
 from transformers import AutoTokenizer
-from transformer_lens import HookedTransformer
+
+# Optional import - transformer_lens only needed for ProbeDebateInference, not FastProbeDebateInference
+try:
+    from transformer_lens import HookedTransformer
+    TRANSFORMER_LENS_AVAILABLE = True
+except ImportError:
+    HookedTransformer = None
+    TRANSFORMER_LENS_AVAILABLE = False
 
 from probity.probes import BaseProbe
 from probity.utils.dataset_loading import get_model_dtype
@@ -39,6 +46,12 @@ class ProbeDebateInference:
     """
 
     def __init__(self, config: ProbeInferenceConfig, role: str = "honest"):
+        if not TRANSFORMER_LENS_AVAILABLE:
+            raise ImportError(
+                "ProbeDebateInference requires transformer_lens. "
+                "Install it with: pip install transformer_lens\n"
+                "Or use FastProbeDebateInference instead (no transformer_lens required)."
+            )
         if role not in {"honest", "dishonest"}:
             raise ValueError("role must be 'honest' or 'dishonest'")
 

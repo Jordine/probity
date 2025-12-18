@@ -1,0 +1,17 @@
+{
+  "debater_full": [
+    {
+      "comparison": "Full access vs Probe classifier (mean)",
+      "mode1": "full_access",
+      "mode2": "probe_only_mean",
+      "rate1": 0.847457627118644,
+      "rate2": 0.9071428571428571,
+      "difference": -0.05968523002421311,
+      "p_value": 0.07630059508254217,
+      "significant": false,
+      "test": "Two-proportion z-test",
+      "n1": 413,
+      "n2": 140
+    }
+  ]
+}

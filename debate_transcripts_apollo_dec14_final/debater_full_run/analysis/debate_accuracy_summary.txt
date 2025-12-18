@@ -1,0 +1,70 @@
+DEBATE ACCURACY METRICS - ALL JUDGES AND MODES
+================================================================================
+
+Experiment Mode: debater_full
+--------------------------------------------------------------------------------
+
+
+  Evaluation Mode: debater_only
+  ------------------------------------------------------------
+    Judge: Claude claude sonnet 4.5
+      Accuracy: 88.6% (124/140)
+      95% CI: [83.3%, 93.8%]
+      Error Rate: 11.4%
+
+    Judge: Llama llama 3.1 8b instruct
+      Accuracy: 86.4% (121/140)
+      95% CI: [80.8%, 92.1%]
+      Error Rate: 13.6%
+
+    Judge: Llama llama 3.3 70b instruct
+      Accuracy: 82.0% (114/139)
+      95% CI: [75.6%, 88.4%]
+      Error Rate: 18.0%
+
+
+  Evaluation Mode: full_access
+  ------------------------------------------------------------
+    Judge: Claude claude sonnet 4.5
+      Accuracy: 86.8% (118/136)
+      95% CI: [81.1%, 92.5%]
+      Error Rate: 13.2%
+
+    Judge: Llama llama 3.1 8b instruct
+      Accuracy: 83.5% (116/139)
+      95% CI: [77.3%, 89.6%]
+      Error Rate: 16.5%
+
+    Judge: Llama llama 3.3 70b instruct
+      Accuracy: 84.1% (116/138)
+      95% CI: [78.0%, 90.2%]
+      Error Rate: 15.9%
+
+
+  Evaluation Mode: probe_only_max
+  ------------------------------------------------------------
+    Judge: probe classifier
+      Accuracy: 86.4% (121/140)
+      95% CI: [80.8%, 92.1%]
+      Error Rate: 13.6%
+
+
+  Evaluation Mode: probe_only_mean
+  ------------------------------------------------------------
+    Judge: probe classifier
+      Accuracy: 90.7% (127/140)
+      95% CI: [85.9%, 95.5%]
+      Error Rate: 9.3%
+
+
+
+COMPARATIVE ANALYSIS
+================================================================================
+
+Experiment Mode: debater_full
+--------------------------------------------------------------------------------
+
+  Probe-Only Classification:
+    Mean Method: 90.7%
+    Max Method: 86.4%
+

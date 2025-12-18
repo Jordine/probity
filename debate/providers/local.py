@@ -6,13 +6,19 @@ LocalModelProvider with multi-GPU support
 import torch
 import time
 import gc
-from typing import List, Dict, Any, Optional
-from transformer_lens import HookedTransformer
+from typing import List, Dict, Any, Optional, TYPE_CHECKING
 from transformers import AutoTokenizer
 import warnings
 import psutil
 import os
 
+# Optional import - transformer_lens is only needed for LocalModelProvider, not FastLocalModelProvider
+try:
+    from transformer_lens import HookedTransformer
+    TRANSFORMER_LENS_AVAILABLE = True
+except ImportError:
+    HookedTransformer = None
+    TRANSFORMER_LENS_AVAILABLE = False
 
 from .base import BaseModelProvider
 from ..types import ModelConfig
@@ -26,6 +32,12 @@ class LocalModelProvider(BaseModelProvider):
     """Provider for local HuggingFace / Transformer-Lens models with multi-GPU support"""
 
     def __init__(self, config: ModelConfig):
+        if not TRANSFORMER_LENS_AVAILABLE:
+            raise ImportError(
+                "LocalModelProvider requires transformer_lens. "
+                "Install it with: pip install transformer_lens\n"
+                "Or use FastLocalModelProvider instead (no transformer_lens required)."
+            )
         super().__init__(config)
         
         # Determine device - check gpu_indices first, then device_id

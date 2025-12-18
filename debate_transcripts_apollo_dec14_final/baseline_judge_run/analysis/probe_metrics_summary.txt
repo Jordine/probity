@@ -1,0 +1,70 @@
+COMPREHENSIVE PROBE PERFORMANCE SUMMARY
+================================================================================
+
+Experiment Mode: baseline_judge
+--------------------------------------------------------------------------------
+
+statement_max_speaker:
+  N: 166 debates, 7226 samples
+
+  AUROC: 0.552 ± 0.110
+    Range: [0.269, 0.801]
+    Median: 0.546
+
+  AUPRC: 0.572 ± 0.092
+    Median: 0.557
+
+  Accuracy: 0.617 ± 0.067
+  F1 Score: 0.620 ± 0.162
+  Precision: 0.622 ± 0.137
+  Recall (TPR): 0.711 ± 0.263
+  Specificity (TNR): 0.526 ± 0.262
+  FPR: 0.474
+
+  Score Separation: 0.006 ± 0.013
+
+----------------------------------------
+
+statement_mean_speaker:
+  N: 166 debates, 7226 samples
+
+  AUROC: 0.648 ± 0.116
+    Range: [0.386, 0.955]
+    Median: 0.644
+
+  AUPRC: 0.661 ± 0.111
+    Median: 0.652
+
+  Accuracy: 0.671 ± 0.081
+  F1 Score: 0.648 ± 0.132
+  Precision: 0.704 ± 0.111
+  Recall (TPR): 0.657 ± 0.216
+  Specificity (TNR): 0.688 ± 0.190
+  FPR: 0.312
+
+  Score Separation: 0.010 ± 0.009
+
+----------------------------------------
+
+token_speaker:
+  N: 166 debates, 175189 samples
+
+  AUROC: 0.583 ± 0.057
+    Range: [0.442, 0.775]
+    Median: 0.586
+
+  AUPRC: 0.561 ± 0.052
+    Median: 0.555
+
+  Accuracy: 0.581 ± 0.039
+  F1 Score: 0.575 ± 0.100
+  Precision: 0.578 ± 0.064
+  Recall (TPR): 0.604 ± 0.180
+  Specificity (TNR): 0.558 ± 0.172
+  FPR: 0.442
+
+  Score Separation: 0.010 ± 0.008
+
+----------------------------------------
+
+

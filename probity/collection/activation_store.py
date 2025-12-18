@@ -1,7 +1,7 @@
 import os
 import torch
 from dataclasses import dataclass
-from typing import Callable, List, Tuple
+from typing import Callable, List, Tuple, Dict
 from probity.datasets.tokenized import TokenizedProbingDataset
 
 @dataclass
@@ -85,6 +85,42 @@ class ActivationStore:
         # Stub for now
         raise NotImplementedError
     
+
+    def get_probe_data_with_spans(self, position_key: str) -> Tuple[torch.Tensor, torch.Tensor, List[List[Tuple[int, int]]], List[int]]:
+        """Get activations with span boundaries for max aggregation training.
+
+        Args:
+            position_key: Key from TokenPositions dictionary
+
+        Returns:
+            Tuple of:
+            - full_activations: (num_examples, seq_len, hidden_size)
+            - labels: (num_examples,) label per example
+            - spans: List[List[Tuple[int, int]]] - span boundaries per example
+            - span_labels: List[int] - label for each span (same as example label)
+        """
+        spans_per_example = []
+        span_labels = []
+
+        for i, idx in enumerate(self.example_indices):
+            example = self.dataset.examples[idx]
+            if example.token_positions and position_key in example.token_positions.positions:
+                pos = example.token_positions[position_key]
+                if isinstance(pos, list) and len(pos) > 0:
+                    # Convert list of positions to (start, end) span
+                    start = min(pos)
+                    end = max(pos)
+                    spans_per_example.append([(start, end)])
+                    span_labels.append(int(self.labels[i].item()))
+                elif isinstance(pos, int):
+                    spans_per_example.append([(pos, pos)])
+                    span_labels.append(int(self.labels[i].item()))
+                else:
+                    spans_per_example.append([])
+            else:
+                spans_per_example.append([])
+
+        return self.raw_activations, self.labels, spans_per_example, span_labels
 
     def get_probe_data(self, position_key: str) -> Tuple[torch.Tensor, torch.Tensor]:
         """Get activations and labels formatted for probe training.

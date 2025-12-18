@@ -1,0 +1,108 @@
+{
+  "debater_full": {
+    "debater_only_meta_llama_llama_3.1_8b_instruct": {
+      "judge_name": "meta_llama_llama_3.1_8b_instruct",
+      "eval_mode": "debater_only",
+      "accuracy": 0.8642857142857143,
+      "correct": 121,
+      "total": 140,
+      "error_rate": 0.13571428571428568,
+      "confidence_interval": {
+        "lower": 0.8075530076695128,
+        "upper": 0.9210184209019159
+      },
+      "standard_error": 0.028945258477653855
+    },
+    "debater_only_meta_llama_llama_3.3_70b_instruct": {
+      "judge_name": "meta_llama_llama_3.3_70b_instruct",
+      "eval_mode": "debater_only",
+      "accuracy": 0.8201438848920863,
+      "correct": 114,
+      "total": 139,
+      "error_rate": 0.17985611510791366,
+      "confidence_interval": {
+        "lower": 0.7562945612719012,
+        "upper": 0.8839932085122715
+      },
+      "standard_error": 0.032576185520502635
+    },
+    "debater_only_anthropic_claude_sonnet_4.5": {
+      "judge_name": "anthropic_claude_sonnet_4.5",
+      "eval_mode": "debater_only",
+      "accuracy": 0.8857142857142857,
+      "correct": 124,
+      "total": 140,
+      "error_rate": 0.11428571428571432,
+      "confidence_interval": {
+        "lower": 0.8330113446198837,
+        "upper": 0.9384172268086877
+      },
+      "standard_error": 0.026889255660409155
+    },
+    "full_access_meta_llama_llama_3.1_8b_instruct": {
+      "judge_name": "meta_llama_llama_3.1_8b_instruct",
+      "eval_mode": "full_access",
+      "accuracy": 0.8345323741007195,
+      "correct": 116,
+      "total": 139,
+      "error_rate": 0.16546762589928055,
+      "confidence_interval": {
+        "lower": 0.772755378478285,
+        "upper": 0.8963093697231539
+      },
+      "standard_error": 0.03151887531756858
+    },
+    "full_access_meta_llama_llama_3.3_70b_instruct": {
+      "judge_name": "meta_llama_llama_3.3_70b_instruct",
+      "eval_mode": "full_access",
+      "accuracy": 0.8405797101449275,
+      "correct": 116,
+      "total": 138,
+      "error_rate": 0.1594202898550725,
+      "confidence_interval": {
+        "lower": 0.7795026989378805,
+        "upper": 0.9016567213519745
+      },
+      "standard_error": 0.031161740411758686
+    },
+    "full_access_anthropic_claude_sonnet_4.5": {
+      "judge_name": "anthropic_claude_sonnet_4.5",
+      "eval_mode": "full_access",
+      "accuracy": 0.8676470588235294,
+      "correct": 118,
+      "total": 136,
+      "error_rate": 0.13235294117647056,
+      "confidence_interval": {
+        "lower": 0.8106929625526967,
+        "upper": 0.9246011550943621
+      },
+      "standard_error": 0.029058212383077885
+    },
+    "probe_only_mean_probe_classifier": {
+      "judge_name": "probe_classifier",
+      "eval_mode": "probe_only_mean",
+      "accuracy": 0.9071428571428571,
+      "correct": 127,
+      "total": 140,
+      "error_rate": 0.09285714285714286,
+      "confidence_interval": {
+        "lower": 0.8590658356044965,
+        "upper": 0.9552198786812178
+      },
+      "standard_error": 0.02452909262161261
+    },
+    "probe_only_max_probe_classifier": {
+      "judge_name": "probe_classifier",
+      "eval_mode": "probe_only_max",
+      "accuracy": 0.8642857142857143,
+      "correct": 121,
+      "total": 140,
+      "error_rate": 0.13571428571428568,
+      "confidence_interval": {
+        "lower": 0.8075530076695128,
+        "upper": 0.9210184209019159
+      },
+      "standard_error": 0.028945258477653855
+    }
+  }
+}

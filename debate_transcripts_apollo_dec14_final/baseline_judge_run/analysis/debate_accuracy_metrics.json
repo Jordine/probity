@@ -1,0 +1,108 @@
+{
+  "baseline_judge": {
+    "baseline_meta_llama_llama_3.1_8b_instruct": {
+      "judge_name": "meta_llama_llama_3.1_8b_instruct",
+      "eval_mode": "baseline",
+      "accuracy": 0.8303030303030303,
+      "correct": 137,
+      "total": 165,
+      "error_rate": 0.16969696969696968,
+      "confidence_interval": {
+        "lower": 0.7730274557725735,
+        "upper": 0.8875786048334872
+      },
+      "standard_error": 0.02922223190329431
+    },
+    "baseline_meta_llama_llama_3.3_70b_instruct": {
+      "judge_name": "meta_llama_llama_3.3_70b_instruct",
+      "eval_mode": "baseline",
+      "accuracy": 0.8650306748466258,
+      "correct": 141,
+      "total": 163,
+      "error_rate": 0.13496932515337423,
+      "confidence_interval": {
+        "lower": 0.8125746276403305,
+        "upper": 0.917486722052921
+      },
+      "standard_error": 0.02676328939096695
+    },
+    "baseline_anthropic_claude_sonnet_4.5": {
+      "judge_name": "anthropic_claude_sonnet_4.5",
+      "eval_mode": "baseline",
+      "accuracy": 0.8597560975609756,
+      "correct": 141,
+      "total": 164,
+      "error_rate": 0.1402439024390244,
+      "confidence_interval": {
+        "lower": 0.8066109308631109,
+        "upper": 0.9129012642588403
+      },
+      "standard_error": 0.027114880968298324
+    },
+    "judge_only_meta_llama_llama_3.1_8b_instruct": {
+      "judge_name": "meta_llama_llama_3.1_8b_instruct",
+      "eval_mode": "judge_only",
+      "accuracy": 0.823170731707317,
+      "correct": 135,
+      "total": 164,
+      "error_rate": 0.17682926829268297,
+      "confidence_interval": {
+        "lower": 0.7647783509580391,
+        "upper": 0.8815631124565949
+      },
+      "standard_error": 0.029792030994529525
+    },
+    "judge_only_meta_llama_llama_3.3_70b_instruct": {
+      "judge_name": "meta_llama_llama_3.3_70b_instruct",
+      "eval_mode": "judge_only",
+      "accuracy": 0.8373493975903614,
+      "correct": 139,
+      "total": 166,
+      "error_rate": 0.16265060240963858,
+      "confidence_interval": {
+        "lower": 0.7812079997810775,
+        "upper": 0.8934907953996454
+      },
+      "standard_error": 0.02864357031085919
+    },
+    "judge_only_anthropic_claude_sonnet_4.5": {
+      "judge_name": "anthropic_claude_sonnet_4.5",
+      "eval_mode": "judge_only",
+      "accuracy": 0.8963414634146342,
+      "correct": 147,
+      "total": 164,
+      "error_rate": 0.10365853658536583,
+      "confidence_interval": {
+        "lower": 0.8496891239232056,
+        "upper": 0.9429938029060627
+      },
+      "standard_error": 0.02380221402623906
+    },
+    "probe_only_mean_probe_classifier": {
+      "judge_name": "probe_classifier",
+      "eval_mode": "probe_only_mean",
+      "accuracy": 0.9216867469879518,
+      "correct": 153,
+      "total": 166,
+      "error_rate": 0.07831325301204817,
+      "confidence_interval": {
+        "lower": 0.880816117113436,
+        "upper": 0.9625573768624677
+      },
+      "standard_error": 0.02085236218087544
+    },
+    "probe_only_max_probe_classifier": {
+      "judge_name": "probe_classifier",
+      "eval_mode": "probe_only_max",
+      "accuracy": 0.927710843373494,
+      "correct": 154,
+      "total": 166,
+      "error_rate": 0.07228915662650603,
+      "confidence_interval": {
+        "lower": 0.8883154970468664,
+        "upper": 0.9671061897001215
+      },
+      "standard_error": 0.020099666493177314
+    }
+  }
+}

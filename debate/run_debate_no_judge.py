@@ -417,9 +417,9 @@ def main():
     
     # Provider configuration
     parser.add_argument('--honest_provider', type=str, default='local',
-                       choices=['local', 'openai', 'anthropic', 'openrouter'])
+                       choices=['local', 'fast_local', 'openai', 'anthropic', 'openrouter'])
     parser.add_argument('--dishonest_provider', type=str, default='local',
-                       choices=['local', 'openai', 'anthropic', 'openrouter'])
+                       choices=['local', 'fast_local', 'openai', 'anthropic', 'openrouter'])
     parser.add_argument('--honest_gpu', type=int, default=None,
                        help='GPU device ID for honest model (auto-detect if not specified)')
     parser.add_argument('--dishonest_gpu', type=int, default=None,
@@ -462,6 +462,14 @@ def main():
     parser.add_argument('--dishonesty_level', type=str, default='selective',
                    choices=['symmetric', 'persuasive', 'selective', 'explicit'],
                    help='Level of deceptive framing for dishonest debater')
+    parser.add_argument('--probe_display_mode', type=str, default='per_statement',
+                   choices=['per_token', 'per_statement', 'per_statement_ranked',
+                            'summary_only', 'ranking_only', 'hidden'],
+                   help='How to display probe scores to debaters')
+    parser.add_argument('--judge_probe_display_mode', type=str, default='summary_only',
+                   choices=['per_token', 'per_statement', 'per_statement_ranked',
+                            'summary_only', 'ranking_only', 'hidden'],
+                   help='How to display probe scores to judge')
     parser.add_argument('--max_rounds', type=int, default=3,
                        help='Maximum debate rounds')
     parser.add_argument('--save_dir', type=str, default='./debate_transcripts',
@@ -589,7 +597,10 @@ def main():
         probe_config=probe_config,
         debate_type=debate_type,
         max_rounds=args.max_rounds,
-        save_dir=str(save_dir)
+        save_dir=str(save_dir),
+        probe_display_mode=args.probe_display_mode,
+        judge_probe_display_mode=args.judge_probe_display_mode,
+        dishonesty_level=args.dishonesty_level
     )
     
     # Save configuration
@@ -597,6 +608,8 @@ def main():
         "experiment_mode": args.experiment_mode,
         "debate_type": debate_type.value,
         "dishonesty_level": args.dishonesty_level,
+        "probe_display_mode": args.probe_display_mode,
+        "judge_probe_display_mode": args.judge_probe_display_mode,
         "models": {
             "honest": args.honest_model,
             "dishonest": args.dishonest_model
@@ -605,14 +618,21 @@ def main():
             "honest": args.honest_provider,
             "dishonest": args.dishonest_provider
         },
+        "gpu_config": {
+            "honest_gpu_indices": honest_gpu_indices,
+            "dishonest_gpu_indices": dishonest_gpu_indices
+        },
         "dataset": args.dataset,
         "n_problems": args.n_problems,
         "max_rounds": args.max_rounds,
         "probe_config": {
             "enabled": probe_config is not None,
             "types": args.probe_types if probe_config else [],
-            "layer": args.probe_layer if probe_config else None
+            "layer": args.probe_layer if probe_config else None,
+            "honest_probe_dir": args.honest_probe_dir,
+            "dishonest_probe_dir": args.dishonest_probe_dir
         },
+        "seed": args.seed,
         "timestamp": timestamp
     }
     

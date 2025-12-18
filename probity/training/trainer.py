@@ -16,6 +16,12 @@ from probity.probes import (
     LogisticProbe,
     LinearProbe,
 )
+from probity.training.losses import (
+    compute_probe_bce_loss,
+    compute_max_aggregation_loss,
+    compute_annealed_loss,
+    compute_sparsity_loss,
+)
 
 
 @dataclass
@@ -167,6 +173,12 @@ class SupervisedTrainerConfig(BaseTrainerConfig):
     train_ratio: float = 0.8
     patience: int = 5
     min_delta: float = 1e-4
+    # Advanced training options (ported from hallucination probes)
+    use_max_aggregation: bool = False  # Use span-level max aggregation loss
+    anneal_warmup: float = 0.3  # Fraction of training for BCE → max aggr transition
+    pos_weight_override: float = 0.0  # Manual pos_weight (0 = auto-calculate)
+    neg_weight_override: float = 0.0  # Manual neg_weight (0 = equal to pos)
+    sparsity_penalty: float = 0.0  # Penalize high average activation (0 = off)
 
 
 class SupervisedProbeTrainer(BaseProbeTrainer):
@@ -176,6 +188,50 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
         if not isinstance(config, SupervisedTrainerConfig):
             raise TypeError("SupervisedProbeTrainer requires a SupervisedTrainerConfig")
         self.config: SupervisedTrainerConfig = config
+        # Storage for span-aware training
+        self._train_spans: Optional[List[List[Tuple[int, int]]]] = None
+        self._val_spans: Optional[List[List[Tuple[int, int]]]] = None
+
+    def prepare_supervised_data_with_spans(
+        self, activation_store: ActivationStore, position_key: str
+    ) -> Tuple[DataLoader, DataLoader, List[List[Tuple[int, int]]], List[List[Tuple[int, int]]]]:
+        """Prepare train/val data with span boundaries for max aggregation.
+
+        Returns:
+            Tuple of (train_loader, val_loader, train_spans, val_spans)
+        """
+        # Get full sequence activations with spans
+        full_acts, labels, spans, span_labels = activation_store.get_probe_data_with_spans(position_key)
+
+        n_total = len(full_acts)
+        n_train = int(n_total * self.config.train_ratio)
+
+        indices = torch.randperm(n_total)
+        train_indices = indices[:n_train].tolist()
+        val_indices = indices[n_train:].tolist()
+
+        # Split activations and labels
+        X_train = full_acts[train_indices]
+        X_val = full_acts[val_indices]
+        y_train = labels[train_indices]
+        y_val = labels[val_indices]
+
+        # Split spans
+        train_spans = [spans[i] for i in train_indices]
+        val_spans = [spans[i] for i in val_indices]
+
+        # Create DataLoaders
+        train_dataset = TensorDataset(X_train, y_train.unsqueeze(1), X_train)  # X_orig same as X for now
+        val_dataset = TensorDataset(X_val, y_val.unsqueeze(1), X_val)
+
+        train_loader = DataLoader(train_dataset, batch_size=self.config.batch_size, shuffle=False)  # Don't shuffle to keep span alignment
+        val_loader = DataLoader(val_dataset, batch_size=self.config.batch_size)
+
+        # Store spans for use in train_epoch
+        self._train_spans = train_spans
+        self._val_spans = val_spans
+
+        return train_loader, val_loader, train_spans, val_spans
 
     def prepare_supervised_data(self, activation_store: ActivationStore, position_key: str) -> Tuple[DataLoader, DataLoader]:
         """Prepare train/val splits with DataLoader creation."""
@@ -251,6 +307,105 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
         val_loader = DataLoader(val_dataset, batch_size=self.config.batch_size)
 
         return train_loader, val_loader
+
+    def train_epoch_with_max_aggr(
+        self,
+        model: torch.nn.Module,
+        train_loader: DataLoader,
+        optimizer: torch.optim.Optimizer,
+        epoch: int,
+        num_epochs: int,
+    ) -> Tuple[float, float]:
+        """Run one epoch with max aggregation loss + annealing.
+
+        Returns:
+            Tuple of (total_loss, omega) where omega is the annealing coefficient
+        """
+        model.train()
+        total_loss = 0.0
+
+        # Get spans for this epoch (assumes prepare_supervised_data_with_spans was called)
+        if self._train_spans is None:
+            raise ValueError("Must call prepare_supervised_data_with_spans() before training with max aggregation")
+
+        batch_pbar = tqdm(
+            train_loader,
+            desc=f"Epoch {epoch+1}/{num_epochs} [max_aggr]",
+            disable=not self.config.show_progress,
+            leave=False,
+        )
+
+        batch_idx = 0
+        for batch_x, batch_y, _ in batch_pbar:
+            optimizer.zero_grad()
+            batch_x = batch_x.to(self.config.device)
+            batch_y = batch_y.to(self.config.device).float()
+
+            batch_size = batch_x.shape[0]
+
+            # Get spans for this batch
+            start_idx = batch_idx * self.config.batch_size
+            end_idx = min(start_idx + batch_size, len(self._train_spans))
+            batch_spans = self._train_spans[start_idx:end_idx]
+
+            # Handle different input shapes
+            if batch_x.dim() == 3:
+                # (batch, seq_len, hidden) -> need to process per-position
+                B, S, H = batch_x.shape
+                batch_x_flat = batch_x.view(B * S, H)
+                logits_flat = model(batch_x_flat)  # (B*S, 1)
+                logits = logits_flat.view(B, S)  # (B, S)
+            else:
+                # (batch, hidden) - standard case, shouldn't happen with max aggr
+                logits = model(batch_x).squeeze(-1)
+
+            # Compute standard BCE loss (token-level)
+            # For token-level BCE, we need labels per token - use span labels
+            bce_loss = torch.tensor(0.0, device=self.config.device)
+
+            # Compute max aggregation loss
+            # Split spans into positive (deceptive, label=1) and negative (truthful, label=0)
+            pos_spans = []
+            neg_spans = []
+            for i, spans in enumerate(batch_spans):
+                if i < len(batch_y):
+                    label = batch_y[i].item()
+                    if label > 0.5:  # positive (deceptive)
+                        pos_spans.append(spans)
+                        neg_spans.append([])
+                    else:  # negative (truthful)
+                        pos_spans.append([])
+                        neg_spans.append(spans)
+                else:
+                    pos_spans.append([])
+                    neg_spans.append([])
+
+            max_aggr_loss = compute_max_aggregation_loss(logits, pos_spans, neg_spans)
+
+            # Compute annealed loss
+            combined_loss, omega = compute_annealed_loss(
+                bce_loss, max_aggr_loss,
+                epoch, num_epochs,
+                self.config.anneal_warmup
+            )
+
+            # Add sparsity penalty if configured
+            if self.config.sparsity_penalty > 0:
+                sparsity = compute_sparsity_loss(logits)
+                combined_loss = combined_loss + self.config.sparsity_penalty * sparsity
+
+            combined_loss.backward()
+            optimizer.step()
+
+            total_loss += combined_loss.item()
+            batch_pbar.set_postfix({
+                "Loss": f"{combined_loss.item():.4f}",
+                "omega": f"{omega:.2f}"
+            })
+
+            batch_idx += 1
+
+        return total_loss / max(len(train_loader), 1), omega
 
     def train_epoch(
         self,
@@ -361,11 +516,12 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
             "train_loss": [],
             "val_loss": [],
             "learning_rate": [],
+            "omega": [],  # Track annealing coefficient when using max aggregation
         }
 
         epoch_pbar = tqdm(
             range(self.config.num_epochs),
-            desc="Training",
+            desc="Training" + (" [max_aggr]" if self.config.use_max_aggregation else ""),
             disable=not self.config.show_progress,
         )
 
@@ -373,19 +529,34 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
         patience_counter = 0
 
         for epoch in epoch_pbar:
-            train_loss = self.train_epoch(
-                model,
-                train_loader,
-                optimizer,
-                loss_fn,
-                epoch,
-                self.config.num_epochs,
-                is_multi_class=is_multi_class,
-            )
+            # Choose training method based on config
+            if self.config.use_max_aggregation and self._train_spans is not None:
+                train_loss, omega = self.train_epoch_with_max_aggr(
+                    model,
+                    train_loader,
+                    optimizer,
+                    epoch,
+                    self.config.num_epochs,
+                )
+                history["omega"].append(omega)
+            else:
+                train_loss = self.train_epoch(
+                    model,
+                    train_loader,
+                    optimizer,
+                    loss_fn,
+                    epoch,
+                    self.config.num_epochs,
+                    is_multi_class=is_multi_class,
+                )
             history["train_loss"].append(train_loss)
 
             if val_loader is not None:
-                val_loss = self.validate(model, val_loader, loss_fn, is_multi_class=is_multi_class)
+                # Choose validation method based on training mode
+                if self.config.use_max_aggregation and self._val_spans is not None:
+                    val_loss = self.validate_with_max_aggr(model, val_loader)
+                else:
+                    val_loss = self.validate(model, val_loader, loss_fn, is_multi_class=is_multi_class)
                 history["val_loss"].append(val_loss)
 
                 if val_loss < best_val_loss - self.config.min_delta:
@@ -397,20 +568,22 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
                 if patience_counter >= self.config.patience:
                     break
 
-                epoch_pbar.set_postfix(
-                    {
-                        "Train Loss": f"{train_loss:.6f}",
-                        "Val Loss": f"{val_loss:.6f}",
-                        "LR": f"{scheduler.get_last_lr()[0]:.2e}",
-                    }
-                )
+                postfix = {
+                    "Train Loss": f"{train_loss:.6f}",
+                    "Val Loss": f"{val_loss:.6f}",
+                    "LR": f"{scheduler.get_last_lr()[0]:.2e}",
+                }
+                if self.config.use_max_aggregation and history["omega"]:
+                    postfix["omega"] = f"{history['omega'][-1]:.2f}"
+                epoch_pbar.set_postfix(postfix)
             else:
-                epoch_pbar.set_postfix(
-                    {
-                        "Train Loss": f"{train_loss:.6f}",
-                        "LR": f"{scheduler.get_last_lr()[0]:.2e}",
-                    }
-                )
+                postfix = {
+                    "Train Loss": f"{train_loss:.6f}",
+                    "LR": f"{scheduler.get_last_lr()[0]:.2e}",
+                }
+                if self.config.use_max_aggregation and history["omega"]:
+                    postfix["omega"] = f"{history['omega'][-1]:.2f}"
+                epoch_pbar.set_postfix(postfix)
 
             history["learning_rate"].append(scheduler.get_last_lr()[0])
             scheduler.step()
@@ -508,6 +681,62 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
                 total_loss += loss.item()
 
         return total_loss / len(val_loader)
+
+    def validate_with_max_aggr(
+        self,
+        model: torch.nn.Module,
+        val_loader: DataLoader,
+    ) -> float:
+        """Run validation with max aggregation loss."""
+        model.eval()
+        total_loss = 0.0
+
+        if self._val_spans is None:
+            raise ValueError("Must call prepare_supervised_data_with_spans() before validating with max aggregation")
+
+        batch_idx = 0
+        with torch.no_grad():
+            for batch_x, batch_y, _ in val_loader:
+                batch_x = batch_x.to(self.config.device)
+                batch_y = batch_y.to(self.config.device).float()
+
+                batch_size = batch_x.shape[0]
+
+                # Get spans for this batch
+                start_idx = batch_idx * self.config.batch_size
+                end_idx = min(start_idx + batch_size, len(self._val_spans))
+                batch_spans = self._val_spans[start_idx:end_idx]
+
+                # Handle different input shapes
+                if batch_x.dim() == 3:
+                    B, S, H = batch_x.shape
+                    batch_x_flat = batch_x.view(B * S, H)
+                    logits_flat = model(batch_x_flat)
+                    logits = logits_flat.view(B, S)
+                else:
+                    logits = model(batch_x).squeeze(-1)
+
+                # Split spans into positive/negative
+                pos_spans = []
+                neg_spans = []
+                for i, spans in enumerate(batch_spans):
+                    if i < len(batch_y):
+                        label = batch_y[i].item()
+                        if label > 0.5:
+                            pos_spans.append(spans)
+                            neg_spans.append([])
+                        else:
+                            pos_spans.append([])
+                            neg_spans.append(spans)
+                    else:
+                        pos_spans.append([])
+                        neg_spans.append([])
+
+                loss = compute_max_aggregation_loss(logits, pos_spans, neg_spans)
+                total_loss += loss.item()
+                batch_idx += 1
+
+        return total_loss / max(len(val_loader), 1)
 
 
 @dataclass
