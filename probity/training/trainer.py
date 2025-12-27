@@ -598,41 +598,65 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
             model.eval()
             all_scores = []
             all_labels = []
-            
+
             with torch.no_grad():
+                batch_idx = 0
                 for batch_x, batch_y, _ in train_loader:
                     batch_x = batch_x.to(self.config.device)
                     batch_y = batch_y.to(self.config.device)
-                    
+
                     outputs = model(batch_x)
-                    
+
                     # Apply sigmoid for logistic probes
                     if model.__class__.__name__ == 'LogisticProbe':
                         outputs = torch.sigmoid(outputs)
 
-                    # Aggregate to sample level using max if token-level
-                    # outputs shape: [batch_size, seq_len] for token-level probes
-                    if outputs.dim() == 2:
-                        # Take max over sequence dimension
-                        sample_scores = outputs.max(dim=1).values  # [batch_size]
-                    elif outputs.dim() == 3:
-                        # [batch_size, seq_len, 1] -> squeeze and max
-                        sample_scores = outputs.squeeze(-1).max(dim=1).values
-                    else:
-                        sample_scores = outputs
+                    # Aggregate using span boundaries if available (for max aggregation training)
+                    if self._train_spans is not None and self.config.use_max_aggregation:
+                        # Get spans for this batch
+                        batch_size = batch_x.shape[0]
+                        start_idx = batch_idx * self.config.batch_size
+                        end_idx = min(start_idx + batch_size, len(self._train_spans))
+                        batch_spans = self._train_spans[start_idx:end_idx]
 
-                    all_scores.extend(sample_scores.cpu().view(-1).tolist())
-                    all_labels.extend(batch_y.cpu().view(-1).tolist())
-            
+                        # Ensure outputs is 2D [batch_size, seq_len]
+                        if outputs.dim() == 3:
+                            outputs = outputs.squeeze(-1)
+
+                        # Aggregate within spans for each sample
+                        for i, spans in enumerate(batch_spans):
+                            if i < outputs.shape[0] and spans:
+                                # Get max score within all spans for this sample
+                                span_maxes = []
+                                for start, end in spans:
+                                    if start < outputs.shape[1] and end <= outputs.shape[1]:
+                                        span_scores = outputs[i, start:end]
+                                        if len(span_scores) > 0:
+                                            span_maxes.append(span_scores.max().item())
+                                if span_maxes:
+                                    all_scores.append(max(span_maxes))
+                                    all_labels.append(batch_y[i].item())
+                        batch_idx += 1
+                    else:
+                        # Fallback: aggregate over full sequence
+                        if outputs.dim() == 2:
+                            sample_scores = outputs.max(dim=1).values
+                        elif outputs.dim() == 3:
+                            sample_scores = outputs.squeeze(-1).max(dim=1).values
+                        else:
+                            sample_scores = outputs
+                        all_scores.extend(sample_scores.cpu().view(-1).tolist())
+                        all_labels.extend(batch_y.cpu().view(-1).tolist())
+
             # Calculate optimal threshold
             from probity.utils.threshold_optimization import find_optimal_threshold_auroc
             import numpy as np
-            
+
             optimal_threshold = find_optimal_threshold_auroc(
-                np.array(all_scores), 
+                np.array(all_scores),
                 np.array(all_labels)
             )
-            
+
             model.config.optimal_thresholds['train_auroc'] = optimal_threshold
             print(f"Optimal threshold (train AUROC): {optimal_threshold:.4f}")
 
