@@ -1,0 +1,14 @@
+{
+  "total": 166,
+  "successful": 165,
+  "failed": 1,
+  "config": {
+    "model": "meta-llama/llama-3.3-70b-instruct",
+    "dishonesty_level": "explicit_v2",
+    "max_rounds": 3,
+    "n_problems": 166,
+    "start_idx": 0,
+    "seed": 42,
+    "timestamp": "20251226_192544"
+  }
+}

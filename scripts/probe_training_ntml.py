@@ -164,6 +164,20 @@ def parse_args():
                        help='Which statements from honest sample: none, diff only, or all')
     parser.add_argument('--last_k_tokens', type=int, default=0,
                        help='Only use last K tokens of each span (Apollo style). 0=all tokens, 5=last 5')
+
+    # ========== SPAN EXTRACTION MODE ==========
+    # Controls how deceptive spans are identified in the text
+    parser.add_argument('--use_llm_spans', type=str, default='auto',
+                       choices=['auto', 'always', 'never'],
+                       help='''Span extraction mode:
+  - auto (default): Use LLM-tagged spans if present in dataset, else sentence parsing
+  - always: Require LLM-tagged spans (error if not present)
+  - never: Always use sentence-level parsing, ignore any LLM spans
+
+LLM-tagged spans provide fine-grained phrase-level deception labels
+(e.g., "red Honda Civic") from running scripts/run_tagging.py.
+Sentence parsing splits by .!? and uses full sentences.''')
+
     # Max aggregation training options
     parser.add_argument('--use_max_aggregation', action='store_true',
                        help='Use span-level max aggregation loss (like hallucination probes)')
@@ -223,7 +237,8 @@ def main():
                                             max_length=args.max_length,
                                             dishonest_mode=args.dishonest_mode,
                                             honest_mode=args.honest_mode,
-                                            last_k_tokens=args.last_k_tokens)
+                                            last_k_tokens=args.last_k_tokens,
+                                            use_llm_spans=args.use_llm_spans)
     print(f"Dataset size: {len(dataset.examples)}")
     
     # Load model once

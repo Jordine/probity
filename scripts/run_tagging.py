@@ -40,7 +40,7 @@ from pathlib import Path
 # Add parent to path for local imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from probity.labeling import UnifiedTagger, InputFormat
+from probity.labeling import UnifiedTagger, InputFormat, TaggingMode
 
 
 def parse_args():
@@ -70,7 +70,18 @@ def parse_args():
         type=str,
         choices=["auto", "ntml_training", "validation", "debate"],
         default="auto",
-        help="Input format (default: auto-detect). ntml_training and validation both use token_span mode."
+        help="Input format (default: auto-detect)."
+    )
+
+    # Tagging mode
+    parser.add_argument(
+        "--mode",
+        type=str,
+        choices=["auto", "span", "statement", "statement_with_spans"],
+        default="auto",
+        help="Tagging mode. 'span' for training/validation (localized spans only). "
+             "'statement' for debate (category only). 'statement_with_spans' for debate (both). "
+             "Default: auto (span for training/validation, statement for debate)."
     )
 
     # Sampling
@@ -91,14 +102,14 @@ def parse_args():
     parser.add_argument(
         "--model", "-m",
         type=str,
-        default="claude-sonnet-4-20250514",
-        help="Anthropic model to use (default: claude-sonnet-4-20250514)"
+        default="anthropic/claude-sonnet-4",
+        help="OpenRouter model to use (default: anthropic/claude-sonnet-4)"
     )
     parser.add_argument(
         "--api_key",
         type=str,
         default=None,
-        help="Anthropic API key (default: from ANTHROPIC_API_KEY env)"
+        help="OpenRouter API key (default: from OPENROUTER_API_KEY env)"
     )
 
     # Processing options
@@ -146,11 +157,22 @@ def format_str_to_enum(format_str: str) -> InputFormat:
     return mapping.get(format_str)
 
 
+def mode_str_to_enum(mode_str: str) -> TaggingMode:
+    """Convert CLI mode string to TaggingMode enum."""
+    mapping = {
+        "span": TaggingMode.SPAN,
+        "statement": TaggingMode.STATEMENT,
+        "statement_with_spans": TaggingMode.STATEMENT_WITH_SPANS,
+    }
+    return mapping.get(mode_str)
+
+
 def process_single_file(
     tagger: UnifiedTagger,
     input_path: Path,
     output_path: Path,
     format_enum: InputFormat,
+    mode_enum: TaggingMode,
     max_samples: int,
     resume: bool
 ) -> dict:
@@ -164,6 +186,7 @@ def process_single_file(
             input_path=input_path,
             output_path=output_path,
             format=format_enum,
+            mode=mode_enum,
             max_samples=max_samples,
             resume=resume
         )
@@ -198,13 +221,18 @@ def main():
         )
     except ValueError as e:
         print(f"ERROR: {e}")
-        print("Set ANTHROPIC_API_KEY environment variable or use --api_key")
+        print("Set OPENROUTER_API_KEY environment variable or use --api_key")
         sys.exit(1)
 
     # Determine format
     format_enum = None
     if args.format != "auto":
         format_enum = format_str_to_enum(args.format)
+
+    # Determine mode
+    mode_enum = None
+    if args.mode != "auto":
+        mode_enum = mode_str_to_enum(args.mode)
 
     # Collect files to process
     files_to_process = []
@@ -242,6 +270,7 @@ def main():
             input_path=input_path,
             output_path=output_path,
             format_enum=format_enum,
+            mode_enum=mode_enum,
             max_samples=args.max_samples,
             resume=not args.no_resume
         )

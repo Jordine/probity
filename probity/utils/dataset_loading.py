@@ -328,27 +328,36 @@ def load_contrastive_ntml_dataset(json_path: str,
                                  warn_on_truncation: bool = True,
                                  dishonest_mode: str = 'all',
                                  honest_mode: str = 'none',
-                                 last_k_tokens: int = 0) -> TokenizedProbingDataset:
+                                 last_k_tokens: int = 0,
+                                 use_llm_spans: str = 'auto') -> TokenizedProbingDataset:
     """
     Load contrastive NTML dataset with flexible training modes.
-    
+
     Training modes based on dishonest_mode and honest_mode:
     - Mode 1 (diff/diff): Contrastive pairs at diff positions only, balanced 50/50
     - Mode 2 (all/all): All statements from both samples
     - Mode 3 (all/none): All statements from dishonest sample only
     - Mode 4 (all/diff): All from dishonest + diff from honest
+
+    Span extraction modes (use_llm_spans):
+    - 'auto': Use LLM-tagged spans if present in dataset, else fall back to sentence parsing
+    - 'always': Require LLM-tagged spans, error if not present
+    - 'never': Always use sentence-level parsing, ignore any LLM spans
+
+    LLM-tagged spans provide more precise deceptive phrase localization (e.g., "red Honda Civic")
+    compared to sentence-level parsing which uses full sentences.
     """
     
     with open(json_path, 'r') as f:
         conversations = json.load(f)
-    
+
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_fast=True)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
-    
+
     model_type = detect_model_type(tokenizer_name)
     USER_PROMPT = "Hello there, please give me a few facts about yourself."
-    
+
     # Track truncation statistics
     truncation_stats = {
         'total_examples': 0,
@@ -356,20 +365,102 @@ def load_contrastive_ntml_dataset(json_path: str,
         'max_original_length': 0,
         'truncated_lengths': []
     }
-    
+
+    # ========== LLM SPAN DETECTION ==========
+    # Check if dataset has LLM-tagged spans
+    # Spans can be in: conv['llm_spans'], conv['lie_version']['spans'], or conv['spans']
+    def has_llm_spans(conv: dict) -> bool:
+        """Check if conversation has LLM-tagged spans."""
+        if 'llm_spans' in conv:
+            return True
+        if 'spans' in conv:
+            return True
+        if 'lie_version' in conv and 'spans' in conv.get('lie_version', {}):
+            return True
+        return False
+
+    def get_llm_spans_for_version(conv: dict, version: str) -> List[dict]:
+        """
+        Get LLM-tagged spans for a specific version (lie/truth).
+        Returns list of span dicts with 'text', 'char_start', 'char_end'.
+        """
+        # Check version-specific spans first
+        version_key = 'lie_version' if version == 'lie' else 'truth_version'
+        if version_key in conv and 'spans' in conv[version_key]:
+            return conv[version_key]['spans']
+
+        # Check top-level spans (applies to lie version by default)
+        if version == 'lie' and 'spans' in conv:
+            return conv['spans']
+        if version == 'lie' and 'llm_spans' in conv:
+            return conv['llm_spans']
+
+        return []
+
+    def spans_to_positions(spans: List[dict], formatted_text: str,
+                          model_response: str, model_type: str) -> List[Position]:
+        """
+        Convert LLM-tagged spans to Position objects.
+        Spans have char_start/char_end relative to the model response.
+        We need to adjust to the full formatted chat text.
+        """
+        content_start, content_end = find_assistant_boundaries(formatted_text, model_type)
+        if content_start is None:
+            return []
+
+        positions = []
+        for span in spans:
+            # Span positions are relative to model response
+            span_start = span.get('char_start', 0)
+            span_end = span.get('char_end', 0)
+
+            # Adjust to full formatted text
+            adjusted_start = content_start + span_start
+            adjusted_end = content_start + span_end
+
+            # Validate bounds
+            if adjusted_start >= 0 and adjusted_end <= len(formatted_text):
+                positions.append(Position(start=adjusted_start, end=adjusted_end))
+
+        return positions
+
+    # Determine span extraction mode
+    dataset_has_spans = any(has_llm_spans(conv) for conv in conversations[:10])  # Sample first 10
+
+    if use_llm_spans == 'always' and not dataset_has_spans:
+        raise ValueError(
+            "use_llm_spans='always' but dataset has no LLM-tagged spans. "
+            "Run the LLM tagger first or use use_llm_spans='auto' or 'never'."
+        )
+
+    # Decide actual mode
+    using_llm_spans = (use_llm_spans == 'always') or (use_llm_spans == 'auto' and dataset_has_spans)
+
     def create_chat_messages(system_prompt, user_prompt, model_response):
         return [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
             {"role": "assistant", "content": model_response}
         ]
-    
+
     probing_examples = []
+    llm_span_count = 0
+    sentence_span_count = 0
 
     print(f"Processing {len(conversations)} conversations...")
     print(f"Model type detected: {model_type}")
     print(f"Max token length: {max_length}")
     print(f"Training mode: dishonest={dishonest_mode}, honest={honest_mode}")
+
+    # ========== SPAN MODE STATUS ==========
+    if using_llm_spans:
+        print(f"\n🎯 SPAN MODE: Using LLM-tagged spans (fine-grained phrase-level)")
+        print(f"   Dataset has LLM spans: {dataset_has_spans}")
+        print(f"   Requested mode: use_llm_spans='{use_llm_spans}'")
+    else:
+        print(f"\n📝 SPAN MODE: Using sentence-level parsing (split by .!?)")
+        print(f"   Dataset has LLM spans: {dataset_has_spans}")
+        print(f"   Requested mode: use_llm_spans='{use_llm_spans}'")
     
     # Determine mode for logging
     if dishonest_mode == 'diff' and honest_mode == 'diff':
@@ -414,15 +505,55 @@ def load_contrastive_ntml_dataset(json_path: str,
             if warn_on_truncation and truncation_stats['truncated_examples'] <= 5:
                 print(f"⚠️  Truncating conversation {conv_id} (lie): {lie_len} → {max_length} tokens")
         
+        # ========== GET SPAN POSITIONS ==========
+        # Use LLM spans if available and enabled, else fall back to sentence parsing
+        conv_has_llm_spans = has_llm_spans(conv)
+
+        if using_llm_spans and conv_has_llm_spans:
+            # Use LLM-tagged spans (fine-grained)
+            llm_spans = get_llm_spans_for_version(conv, 'lie')
+            lie_statement_positions = spans_to_positions(
+                llm_spans, lie_formatted, conv['lie_version']['model'], model_type
+            )
+            llm_span_count += len(lie_statement_positions)
+
+            # For LLM spans, all positions are deceptive (label=1)
+            # We create one example per span, not per statement index
+            for span_idx, position in enumerate(lie_statement_positions):
+                span_text = llm_spans[span_idx].get('text', '') if span_idx < len(llm_spans) else ''
+                group_id = f"{conv_id}_llm_span_{span_idx}"
+
+                example = ProbingExample(
+                    text=lie_formatted,
+                    label=1,  # LLM spans are deceptive phrases
+                    label_text="lie",
+                    character_positions=CharacterPositions({"LIE_SPAN": position}),
+                    group_id=group_id,
+                    attributes={
+                        "conversation_id": conv_id,
+                        "version": "dishonest",
+                        "span_idx": span_idx,
+                        "span_text": span_text,
+                        "span_source": "llm_tagged",
+                        "original_token_length": lie_len
+                    }
+                )
+                probing_examples.append(example)
+
+            # Skip the sentence-level processing below
+            continue
+
+        # Fall back to sentence-level parsing
         lie_statement_positions = find_statement_positions_in_chat(
             lie_formatted,
             conv['lie_version']['model'],
             model_type
         )
-        
+        sentence_span_count += len(lie_statement_positions)
+
         # Process dishonest statements based on mode
         dishonest_indices = range(len(lie_statement_positions)) if dishonest_mode == 'all' else lie_positions
-        
+
         for i in dishonest_indices:
             if i < len(lie_statement_positions):
                 position = lie_statement_positions[i]
@@ -450,6 +581,7 @@ def load_contrastive_ntml_dataset(json_path: str,
                         "version": "dishonest",
                         "statement_idx": i,
                         "is_lie_position": is_lie_statement,
+                        "span_source": "sentence_parsing",
                         "original_token_length": lie_len
                     }
                 )
@@ -514,6 +646,7 @@ def load_contrastive_ntml_dataset(json_path: str,
                             "version": "honest",
                             "statement_idx": i,
                             "is_lie_position": False,  # Never a lie in honest version
+                            "span_source": "sentence_parsing",
                             "original_token_length": truth_len
                         }
                     )
@@ -533,8 +666,18 @@ def load_contrastive_ntml_dataset(json_path: str,
             print(f"  • Average truncated length: {avg_truncated:.0f} tokens")
         print(f"\n  💡 Consider increasing max_length to {min(truncation_stats['max_original_length'], 8192)}")
     
-    print(f"\nCreated {len(probing_examples)} statement-level examples")
+    print(f"\nCreated {len(probing_examples)} examples")
 
+    # ========== SPAN MODE SUMMARY ==========
+    if using_llm_spans:
+        print(f"\n🎯 Span extraction summary:")
+        print(f"   • LLM-tagged spans: {llm_span_count}")
+        print(f"   • Sentence-parsed spans: {sentence_span_count}")
+        if llm_span_count > 0 and sentence_span_count > 0:
+            print(f"   ⚠️  Mixed mode: some conversations had LLM spans, others used sentence parsing")
+    else:
+        print(f"\n📝 Span extraction summary:")
+        print(f"   • All spans from sentence parsing: {sentence_span_count}")
 
     validate_mode_distribution(probing_examples, dishonest_mode, honest_mode)
 
@@ -565,6 +708,12 @@ def load_contrastive_ntml_dataset(json_path: str,
 
 
     
+    # Determine span mode description
+    if using_llm_spans:
+        span_mode_desc = "LLM-tagged spans (fine-grained phrase-level)"
+    else:
+        span_mode_desc = "sentence-level parsing"
+
     probing_dataset = ProbingDataset(
         examples=probing_examples,
         dataset_attributes={
@@ -576,7 +725,13 @@ def load_contrastive_ntml_dataset(json_path: str,
             "max_length": max_length,
             "truncation_stats": truncation_stats,
             "dishonest_mode": dishonest_mode,
-            "honest_mode": honest_mode
+            "honest_mode": honest_mode,
+            # Span extraction mode info
+            "span_mode": span_mode_desc,
+            "use_llm_spans": use_llm_spans,
+            "using_llm_spans": using_llm_spans,
+            "llm_span_count": llm_span_count,
+            "sentence_span_count": sentence_span_count
         }
     )
     

@@ -5,7 +5,7 @@ import json
 import pandas as pd
 import numpy as np
 from pathlib import Path
-from typing import Dict, List, Tuple, Any, Optional
+from typing import Dict, List, Tuple, Any, Optional, Union
 from transformer_lens import HookedTransformer, loading_from_pretrained
 from sklearn.metrics import roc_auc_score, accuracy_score, precision_score, recall_score, f1_score, roc_curve
 from tqdm import tqdm
@@ -23,6 +23,7 @@ from probity.probes import (
 
 from probity.utils.dataset_loading import get_model_dtype
 from probity.utils.caching import smart_cache_activations
+from probity.evaluation.span_loader import compute_span_metrics, aggregate_span_metrics
 
 class OptimizedBatchProbeEvaluator:
     """Optimized evaluator that runs model once and applies all probes"""
@@ -321,9 +322,20 @@ class OptimizedBatchProbeEvaluator:
         
         return result
     
-    def evaluate_all_probes(self, texts: List[str], labels: List[int], 
-                          probe_configs: Dict[Tuple[int, str], BaseProbe], batch_size: int = 8, disk_cache_dir: str | None = None) -> Dict[Tuple[int, str], Dict]:
-        """Evaluate all probes efficiently using cached activations"""
+    def evaluate_all_probes(self, texts: List[str], labels: List[int],
+                          probe_configs: Dict[Tuple[int, str], BaseProbe], batch_size: int = 8,
+                          disk_cache_dir: str | None = None,
+                          labeled_token_spans: Optional[Dict[int, List[Tuple[int, int]]]] = None) -> Dict[Tuple[int, str], Dict]:
+        """Evaluate all probes efficiently using cached activations.
+
+        Args:
+            texts: List of texts to evaluate
+            labels: Ground truth labels (0=honest, 1=deceptive)
+            probe_configs: Dict mapping (layer, probe_type) to probe
+            batch_size: Batch size for activation extraction
+            disk_cache_dir: Optional directory for caching activations
+            labeled_token_spans: Optional dict mapping sample_id -> list of (start, end) token spans
+        """
         
         # Extract unique layers from probe configs
         layers = list(set(layer for layer, _ in probe_configs.keys()))
@@ -357,8 +369,9 @@ class OptimizedBatchProbeEvaluator:
                 
                 # Get probe scores efficiently
                 probe_results = self._evaluate_single_probe_batch(
-                    probe, layer_activations, mean_activations, 
-                    texts, labels, tokens_by_text
+                    probe, layer_activations, mean_activations,
+                    texts, labels, tokens_by_text,
+                    labeled_token_spans=labeled_token_spans
                 )
                 
                 results[(layer, probe_type)] = probe_results
@@ -367,11 +380,12 @@ class OptimizedBatchProbeEvaluator:
 
         
         
-    def _evaluate_single_probe_batch(self, probe: BaseProbe, 
+    def _evaluate_single_probe_batch(self, probe: BaseProbe,
                                      layer_activations: torch.Tensor,
                                      mean_activations: torch.Tensor,
                                      texts: List[str], labels: List[int],
-                                     tokens_by_text: List[List[str]]) -> Dict:
+                                     tokens_by_text: List[List[str]],
+                                     labeled_token_spans: Optional[Dict[int, List[Tuple[int, int]]]] = None) -> Dict:
         """Evaluate a single probe on batch data"""
         
         # Move probe to device and ensure it matches model dtype
@@ -475,7 +489,27 @@ class OptimizedBatchProbeEvaluator:
                 "mean_score": float(mean_score),
             }
             final_samples.append(sample_info)
-        
+
+        # Compute span-level metrics if labeled spans are provided
+        span_metrics_result = None
+        if labeled_token_spans is not None:
+            sample_span_metrics = []
+            for sample in final_samples:
+                sample_id = sample["sample_id"]
+                if sample_id in labeled_token_spans:
+                    spans = labeled_token_spans[sample_id]
+                    if spans:
+                        metrics = compute_span_metrics(
+                            token_scores=sample["token_scores"],
+                            labeled_token_spans=spans,
+                            threshold=0.5  # Will update with best threshold later
+                        )
+                        sample_span_metrics.append(metrics)
+
+            if sample_span_metrics:
+                span_metrics_result = aggregate_span_metrics(sample_span_metrics)
+                print(f"Span metrics computed for {len(sample_span_metrics)} samples with labeled spans")
+
         # Prepare mean scores array
         mean_scores = np.array(all_mean_scores)
         
@@ -609,7 +643,8 @@ class OptimizedBatchProbeEvaluator:
             'all_samples': final_samples,
             'token_details': token_details,
             'mean_scores': mean_scores.tolist(),
-            'predictions': [s['predicted_label'] for s in final_samples]  # Using best threshold
+            'predictions': [s['predicted_label'] for s in final_samples],  # Using best threshold
+            'span_metrics': span_metrics_result  # Span-level metrics (None if no labeled spans)
         }
     
     def _normalize_to_01(self, scores: List[float]) -> List[float]:

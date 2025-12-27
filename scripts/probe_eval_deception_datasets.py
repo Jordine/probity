@@ -8,6 +8,10 @@ from tqdm import tqdm
 from jinja2 import Template
 
 from probity.evaluation.batch_evaluator import OptimizedBatchProbeEvaluator
+from probity.evaluation.span_loader import (
+    load_labeled_spans, convert_spans_to_token_indices,
+    compute_span_metrics, aggregate_span_metrics, get_response_text
+)
 from probity.utils.dataset_loading import apply_chat_template_unified, detect_model_type
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 
@@ -167,9 +171,10 @@ def load_probe_from_checkpoint(probe_path: Path, device: str) -> Optional[object
         print(f"Error loading probe from {probe_path}: {e}")
         return None
 
-def evaluate_on_assistant_tokens(evaluator: OptimizedBatchProbeEvaluator, 
+def evaluate_on_assistant_tokens(evaluator: OptimizedBatchProbeEvaluator,
                                 probe_configs: Dict, samples: List[Dict],
-                                tokenizer_name: str) -> Dict:
+                                tokenizer_name: str,
+                                labeled_spans_by_dataset: Dict = None) -> Dict:
     """Evaluate probes only on final assistant message tokens."""
     
     from transformers import AutoTokenizer
@@ -386,8 +391,60 @@ def evaluate_on_assistant_tokens(evaluator: OptimizedBatchProbeEvaluator,
             token_count = len(detail['token_scores'])
             raw_scores_data['token_scores'].extend(detail['token_scores'])
             raw_scores_data['token_labels'].extend([detail['label']] * token_count)
-            
-        
+
+        # Compute span-level metrics if labeled spans available
+        span_metrics_result = None
+        in_span_scores = []
+        out_span_scores = []
+
+        if labeled_spans_by_dataset:
+            sample_span_metrics = []
+            for i, detail in enumerate(token_details):
+                sample = samples[i]
+                source = sample.get('source_dataset', '')
+                sample_idx = sample.get('sample_index', i)
+                sample_key = f"sample_{sample_idx}"
+
+                if source in labeled_spans_by_dataset:
+                    spans_dict = labeled_spans_by_dataset[source]
+                    if sample_key in spans_dict:
+                        char_spans = spans_dict[sample_key]
+                        # Convert character spans to token spans
+                        # Note: Using the assistant text from token_details
+                        assistant_text = detail.get('text', '')
+                        if assistant_text and char_spans:
+                            try:
+                                token_spans = convert_spans_to_token_indices(
+                                    char_spans, assistant_text, tokenizer
+                                )
+                                if token_spans:
+                                    metrics = compute_span_metrics(
+                                        token_scores=detail['token_scores'],
+                                        labeled_token_spans=token_spans,
+                                        threshold=thresholds_to_evaluate[best_threshold_name]
+                                    )
+                                    sample_span_metrics.append(metrics)
+
+                                    # Collect in-span vs out-of-span scores
+                                    token_scores = np.array(detail['token_scores'])
+                                    in_span_mask = np.zeros(len(token_scores), dtype=bool)
+                                    for start, end in token_spans:
+                                        start = max(0, start)
+                                        end = min(len(token_scores) - 1, end)
+                                        in_span_mask[start:end+1] = True
+                                    in_span_scores.extend(token_scores[in_span_mask].tolist())
+                                    out_span_scores.extend(token_scores[~in_span_mask].tolist())
+                            except Exception as e:
+                                pass  # Skip samples with conversion errors
+
+            if sample_span_metrics:
+                span_metrics_result = aggregate_span_metrics(sample_span_metrics)
+                span_metrics_result['in_span_scores'] = in_span_scores
+                span_metrics_result['out_span_scores'] = out_span_scores
+                print(f"  Span metrics: precision={span_metrics_result['span_precision']:.3f}, "
+                      f"recall={span_metrics_result['span_recall']:.3f}, "
+                      f"n_samples={span_metrics_result['n_samples_with_spans']}")
+
         results[(layer, probe_type)] = {
             'metrics': metrics_by_threshold[best_threshold_name],  # Primary metrics
             'metrics_all_thresholds': metrics_by_threshold,
@@ -397,9 +454,10 @@ def evaluate_on_assistant_tokens(evaluator: OptimizedBatchProbeEvaluator,
             'mean_scores': all_scores,
             'predictions': (np.array(all_scores) > thresholds_to_evaluate[best_threshold_name]).astype(int).tolist(),
             'labels': all_labels,
-            'raw_scores': raw_scores_data
+            'raw_scores': raw_scores_data,
+            'span_metrics': span_metrics_result  # Span-level metrics (None if no labeled spans)
         }
-    
+
     return results
 
 def generate_enhanced_visualization(token_details: List[Dict], output_path: Path):
@@ -695,6 +753,8 @@ Examples:
     parser.add_argument('--n_samples', type=int, help='Default sample count for datasets without explicit count')
     parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu')
     parser.add_argument('--batch_size', type=int, default=4)
+    parser.add_argument('--labeled_dir', type=str, default=None,
+                        help='Directory with *_labeled.json files for span-level evaluation')
     
     args = parser.parse_args()
     
@@ -749,7 +809,25 @@ Examples:
     # Save dataset summary
     with open(results_dir / 'dataset_summary.json', 'w') as f:
         json.dump(dataset_summary, f, indent=2)
-    
+
+    # Load labeled spans if directory provided
+    labeled_spans_by_dataset = {}
+    if args.labeled_dir:
+        labeled_dir = Path(args.labeled_dir)
+        if labeled_dir.exists():
+            print("\nLoading labeled spans...")
+            for labeled_file in labeled_dir.glob("*_labeled.json"):
+                dataset_name = labeled_file.stem.replace("_labeled", "")
+                try:
+                    spans = load_labeled_spans(str(labeled_file))
+                    labeled_spans_by_dataset[dataset_name] = spans
+                    print(f"  Loaded {len(spans)} samples with spans from {dataset_name}")
+                except Exception as e:
+                    print(f"  Warning: Failed to load {labeled_file}: {e}")
+            print(f"Total: {sum(len(s) for s in labeled_spans_by_dataset.values())} samples with labeled spans")
+        else:
+            print(f"Warning: Labeled directory not found: {args.labeled_dir}")
+
     # Load probes
     probe_configs = {}
     probe_dir = Path(args.probe_dir)
@@ -786,7 +864,10 @@ Examples:
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
     
-    results = evaluate_on_assistant_tokens(evaluator, probe_configs, all_samples, args.model_name)
+    results = evaluate_on_assistant_tokens(
+        evaluator, probe_configs, all_samples, args.model_name,
+        labeled_spans_by_dataset=labeled_spans_by_dataset
+    )
     
     # Group results by dataset for per-dataset metrics
     results_by_dataset = {}
@@ -904,14 +985,31 @@ Examples:
         with open(agg_dir / 'metrics.json', 'w') as f:
             json.dump(clean_json_floats(metrics), f, indent=2)\
             
-        # Save raw scores for visualization 
+        # Save raw scores for visualization
         if 'raw_scores' in result:
             raw_scores_path = agg_dir / 'raw_scores.json'
             with open(raw_scores_path, 'w') as f:
                 json.dump(result['raw_scores'], f)
             print(f"  Saved raw scores to {raw_scores_path}")
-            
-        
+
+        # Save span metrics if available
+        if result.get('span_metrics'):
+            span_metrics_path = agg_dir / 'span_metrics.json'
+            # Separate large score arrays from metrics
+            span_metrics_to_save = {k: v for k, v in result['span_metrics'].items()
+                                    if k not in ['in_span_scores', 'out_span_scores']}
+            with open(span_metrics_path, 'w') as f:
+                json.dump(clean_json_floats(span_metrics_to_save), f, indent=2)
+            print(f"  Saved span metrics to {span_metrics_path}")
+
+            # Save in-span vs out-span scores separately for distribution plots
+            span_scores_path = agg_dir / 'span_score_distributions.json'
+            with open(span_scores_path, 'w') as f:
+                json.dump({
+                    'in_span_scores': result['span_metrics'].get('in_span_scores', []),
+                    'out_span_scores': result['span_metrics'].get('out_span_scores', [])
+                }, f)
+
         # Generate visualization
         generate_enhanced_visualization(
             result['token_details'],

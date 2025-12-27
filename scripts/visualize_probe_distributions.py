@@ -225,7 +225,69 @@ def create_distribution_plots(token_scores: List[float], token_labels: List[int]
     print(f"    Separation: {np.mean(deceptive_samples) - np.mean(honest_samples):.3f}")
     print(f"    AUROC: {auroc:.3f}")
 
-def save_raw_scores(results_dir: Path, probe_type: str, layer: int, 
+def create_span_distribution_plot(in_span_scores: List[float], out_span_scores: List[float],
+                                   probe_name: str, save_path: Path):
+    """Create distribution plot comparing tokens inside vs outside labeled deceptive spans."""
+
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+    in_span = np.array(in_span_scores)
+    out_span = np.array(out_span_scores)
+
+    # A) Histogram comparison
+    ax = axes[0]
+    all_scores = np.concatenate([in_span, out_span])
+    bins = np.linspace(min(all_scores), max(all_scores), 50)
+
+    ax.hist(out_span, bins=bins, alpha=0.6, color='green',
+            label=f'Outside span (n={len(out_span):,})', density=True, edgecolor='darkgreen')
+    ax.hist(in_span, bins=bins, alpha=0.6, color='red',
+            label=f'Inside span (n={len(in_span):,})', density=True, edgecolor='darkred')
+
+    ax.axvline(0.5, linestyle='--', color='black', alpha=0.7, label='Threshold: 0.5')
+
+    ax.set_xlabel('Probe Score')
+    ax.set_ylabel('Density')
+    ax.set_title('Token Scores: Inside vs Outside Labeled Deceptive Spans')
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+    # B) Box/Violin plot
+    ax = axes[1]
+    data = [out_span, in_span]
+    positions = [1, 2]
+    parts = ax.violinplot(data, positions=positions, showmeans=True, showmedians=True)
+
+    # Color the violins
+    parts['bodies'][0].set_facecolor('green')
+    parts['bodies'][0].set_alpha(0.6)
+    parts['bodies'][1].set_facecolor('red')
+    parts['bodies'][1].set_alpha(0.6)
+
+    ax.set_xticks(positions)
+    ax.set_xticklabels(['Outside Span\n(should be low)', 'Inside Span\n(should be high)'])
+    ax.set_ylabel('Probe Score')
+    ax.set_title('Score Distribution by Span Location')
+    ax.axhline(0.5, linestyle='--', color='black', alpha=0.5, label='Threshold')
+    ax.grid(True, alpha=0.3)
+
+    # Calculate and show separation
+    separation = np.mean(in_span) - np.mean(out_span)
+    fig.suptitle(f'{probe_name} - Span Localization Analysis\n'
+                 f'Mean separation: {separation:.3f} (higher = better localization)',
+                 fontsize=12, fontweight='bold')
+
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=150, bbox_inches='tight')
+    plt.close()
+
+    print(f"Saved span distribution plot to {save_path}")
+    print(f"  Outside span: mean={np.mean(out_span):.3f}, std={np.std(out_span):.3f}, n={len(out_span)}")
+    print(f"  Inside span: mean={np.mean(in_span):.3f}, std={np.std(in_span):.3f}, n={len(in_span)}")
+    print(f"  Separation: {separation:.3f}")
+
+
+def save_raw_scores(results_dir: Path, probe_type: str, layer: int,
                    token_scores: List[float], token_labels: List[int],
                    sample_scores: List[float], sample_labels: List[int]):
     """Save raw scores for future analysis."""
@@ -312,3 +374,21 @@ if __name__ == "__main__":
                 )
             else:
                 print(f"  Insufficient data for visualization")
+
+            # Check for span score distributions
+            span_scores_path = results_dir / 'aggregated' / probe_type / f'layer_{layer}' / 'span_score_distributions.json'
+            if span_scores_path.exists():
+                with open(span_scores_path, 'r') as f:
+                    span_scores = json.load(f)
+                in_span = span_scores.get('in_span_scores', [])
+                out_span = span_scores.get('out_span_scores', [])
+
+                if in_span and out_span:
+                    span_save_path = output_dir / f'{probe_type}_layer_{layer}_span_distributions.png'
+                    create_span_distribution_plot(
+                        in_span, out_span,
+                        f'{probe_type.upper()} Layer {layer}',
+                        span_save_path
+                    )
+            else:
+                print(f"  No span score distributions found (run eval with --labeled_dir)")
