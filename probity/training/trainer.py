@@ -611,17 +611,20 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
                     if model.__class__.__name__ == 'LogisticProbe':
                         outputs = torch.sigmoid(outputs)
 
-                    # Aggregate using span boundaries if available (for max aggregation training)
-                    if self._train_spans is not None and self.config.use_max_aggregation:
+                    # Check if outputs have a sequence dimension (not already sample-level)
+                    # Supervised probes output [B, 1], so we should NOT try span aggregation
+                    if outputs.dim() == 3:
+                        outputs = outputs.squeeze(-1)
+
+                    outputs_have_seq_dim = outputs.dim() == 2 and outputs.shape[1] > 1
+
+                    # Aggregate using span boundaries only if outputs have sequence dimension
+                    if self._train_spans is not None and self.config.use_max_aggregation and outputs_have_seq_dim:
                         # Get spans for this batch
                         batch_size = batch_x.shape[0]
                         start_idx = batch_idx * self.config.batch_size
                         end_idx = min(start_idx + batch_size, len(self._train_spans))
                         batch_spans = self._train_spans[start_idx:end_idx]
-
-                        # Ensure outputs is 2D [batch_size, seq_len]
-                        if outputs.dim() == 3:
-                            outputs = outputs.squeeze(-1)
 
                         # Aggregate within spans for each sample
                         for i, spans in enumerate(batch_spans):
@@ -638,13 +641,16 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
                                     all_labels.append(batch_y[i].item())
                         batch_idx += 1
                     else:
-                        # Fallback: aggregate over full sequence
-                        if outputs.dim() == 2:
+                        # Fallback: use sample-level scores directly
+                        # For probes outputting [B, 1], just squeeze and use as sample scores
+                        if outputs.dim() == 2 and outputs.shape[1] == 1:
+                            sample_scores = outputs.squeeze(-1)  # [B, 1] -> [B]
+                        elif outputs.dim() == 2:
                             sample_scores = outputs.max(dim=1).values
-                        elif outputs.dim() == 3:
-                            sample_scores = outputs.squeeze(-1).max(dim=1).values
-                        else:
+                        elif outputs.dim() == 1:
                             sample_scores = outputs
+                        else:
+                            sample_scores = outputs.squeeze()
                         all_scores.extend(sample_scores.cpu().view(-1).tolist())
                         all_labels.extend(batch_y.cpu().view(-1).tolist())
 
