@@ -609,8 +609,14 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
                     # Apply sigmoid for logistic probes
                     if model.__class__.__name__ == 'LogisticProbe':
                         outputs = torch.sigmoid(outputs)
-                    
-                    all_scores.extend(outputs.cpu().view(-1).tolist())
+
+                    # Aggregate to sample level using max if token-level
+                    if outputs.dim() > 1:
+                        sample_scores = outputs.max(dim=-1).values
+                    else:
+                        sample_scores = outputs
+
+                    all_scores.extend(sample_scores.cpu().view(-1).tolist())
                     all_labels.extend(batch_y.cpu().view(-1).tolist())
             
             # Calculate optimal threshold
