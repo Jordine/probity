@@ -611,8 +611,13 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
                         outputs = torch.sigmoid(outputs)
 
                     # Aggregate to sample level using max if token-level
-                    if outputs.dim() > 1:
-                        sample_scores = outputs.max(dim=-1).values
+                    # outputs shape: [batch_size, seq_len] for token-level probes
+                    if outputs.dim() == 2:
+                        # Take max over sequence dimension
+                        sample_scores = outputs.max(dim=1).values  # [batch_size]
+                    elif outputs.dim() == 3:
+                        # [batch_size, seq_len, 1] -> squeeze and max
+                        sample_scores = outputs.squeeze(-1).max(dim=1).values
                     else:
                         sample_scores = outputs
 
