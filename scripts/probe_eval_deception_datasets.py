@@ -32,7 +32,13 @@ def load_deception_samples(jsonl_path: str, n_samples: int = None) -> List[Dict]
             try:
                 data = json.loads(line)
                 # Filter for honest/deceptive labels only
-                if data.get('label') in ['honest', 'deceptive']:
+                # Support both top-level label and nested metadata.label (ai_liar format)
+                label = data.get('label') or data.get('metadata', {}).get('label')
+                if label in ['honest', 'deceptive']:
+                    data['label'] = label  # Normalize to top-level
+                    # Normalize messages format (ai_liar uses conversations.main.messages)
+                    if 'messages' not in data and 'conversations' in data:
+                        data['messages'] = data['conversations'].get('main', {}).get('messages', [])
                     # Add source dataset info
                     data['source_dataset'] = Path(jsonl_path).stem
                     samples.append(data)
@@ -124,6 +130,7 @@ def load_probe_from_checkpoint(probe_path: Path, device: str) -> Optional[object
             MeanDifferenceProbe, KMeansProbe, 
             MLPProbe, AttentionProbe
         )
+        from probity.probes.apollo_probe import ApolloProbe
         from probity.probes.directional import DirectionalProbe
         
         probe_cls_map = {
@@ -134,6 +141,7 @@ def load_probe_from_checkpoint(probe_path: Path, device: str) -> Optional[object
             "KMeansProbe": KMeansProbe,
             "MLPProbe": MLPProbe,
             "AttentionProbe": AttentionProbe,
+            "ApolloProbe": ApolloProbe,
         }
         
         cls_name = checkpoint.get("probe_type")
@@ -402,12 +410,22 @@ def evaluate_on_assistant_tokens(evaluator: OptimizedBatchProbeEvaluator,
             for i, detail in enumerate(token_details):
                 sample = samples[i]
                 source = sample.get('source_dataset', '')
-                sample_idx = sample.get('sample_index', i)
-                sample_key = f"sample_{sample_idx}"
+                sample_idx = sample.get('sample_index') or sample.get('metadata', {}).get('sample_index', i)
+                sample_idx_val = sample_idx
+                
+                # Only compute span metrics for deceptive samples (label=1)
+                if detail.get('label') != 1:
+                    continue
 
                 if source in labeled_spans_by_dataset:
                     spans_dict = labeled_spans_by_dataset[source]
-                    if sample_key in spans_dict:
+                    # Try multiple key formats (different datasets use different formats)
+                    sample_key = None
+                    for key_format in [str(sample_idx_val), f"sample_{sample_idx_val}"]:
+                        if key_format in spans_dict:
+                            sample_key = key_format
+                            break
+                    if sample_key:
                         char_spans = spans_dict[sample_key]
                         # Convert character spans to token spans
                         # Note: Using the assistant text from token_details
