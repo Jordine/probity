@@ -41,7 +41,8 @@ class OptimizedBatchProbeEvaluator:
         
         self.model = HookedTransformer.from_pretrained_no_processing(
             model_name,
-            device=device,
+            device="cuda",
+            n_devices=2,
             dtype=self.model_dtype,
         )
         self.model.eval()
