@@ -58,18 +58,18 @@ class ActivationStore:
         
         # print(f"DEBUG [Activation Extraction] Getting positions for key: {position_key}")
 
-        for idx in self.example_indices:
-            example = self.dataset.examples[idx]
+        for store_idx, dataset_idx in enumerate(self.example_indices):
+            example = self.dataset.examples[dataset_idx]
             if example.token_positions:
                 pos = example.token_positions[position_key]
-                # print(f"  Example {idx}:")
+                # print(f"  Example {dataset_idx}:")
                 # print(f"    Position value: {pos}")
                 # print(f"    Type: {type(pos)}")
-                    
+
                 if isinstance(pos, int):
-                    positions.append(self.raw_activations[idx, pos])
+                    positions.append(self.raw_activations[store_idx, pos])
                 else:  # List[int]
-                    positions.extend([self.raw_activations[idx, p] for p in pos])
+                    positions.extend([self.raw_activations[store_idx, p] for p in pos])
         
         return torch.stack(positions)
 

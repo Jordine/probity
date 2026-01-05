@@ -36,7 +36,7 @@ class TransformerLensCollector:
         # self.model.to(config.device)
 
     def _ensure_qwen3_support(self):
-    """Add qwen3 32b in because they forgot to add it to the model table"""
+        """Add qwen3 32b in because they forgot to add it to the model table"""
         try:
             qwen3_models = ["Qwen/Qwen3-32B",
                            "Qwen/Qwen3-14B"]

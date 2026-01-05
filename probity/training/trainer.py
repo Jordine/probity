@@ -2,6 +2,7 @@ from abc import ABC
 from dataclasses import dataclass
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.utils.data import DataLoader, TensorDataset
 from torch import optim
 from typing import Optional, Dict, List, Tuple, Literal
@@ -335,7 +336,9 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
             leave=False,
         )
 
-        batch_idx = 0
+        cumulative_idx = 0  # Track position in spans list
+        omega = 0.0  # Initialize omega in case loader is empty
+
         for batch_x, batch_y, _ in batch_pbar:
             optimizer.zero_grad()
             batch_x = batch_x.to(self.config.device)
@@ -343,10 +346,11 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
 
             batch_size = batch_x.shape[0]
 
-            # Get spans for this batch
-            start_idx = batch_idx * self.config.batch_size
+            # Get spans for this batch using cumulative index (handles variable batch sizes)
+            start_idx = cumulative_idx
             end_idx = min(start_idx + batch_size, len(self._train_spans))
             batch_spans = self._train_spans[start_idx:end_idx]
+            cumulative_idx = end_idx  # Update for next batch
 
             # Handle different input shapes
             if batch_x.dim() == 3:
@@ -360,8 +364,17 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
                 logits = model(batch_x).squeeze(-1)
 
             # Compute standard BCE loss (token-level)
-            # For token-level BCE, we need labels per token - use span labels
-            bce_loss = torch.tensor(0.0, device=self.config.device)
+            # Create token-level labels from spans: 1 for tokens in positive spans, 0 otherwise
+            token_labels = torch.zeros_like(logits)
+            for i, spans in enumerate(batch_spans):
+                if i < len(batch_y) and batch_y[i].item() > 0.5:  # positive (deceptive) sample
+                    for span in spans:
+                        if isinstance(span, (tuple, list)) and len(span) >= 2:
+                            start, end = span[0], span[1]
+                            if 0 <= start <= end < logits.shape[1]:
+                                token_labels[i, start:end+1] = 1.0
+
+            bce_loss = F.binary_cross_entropy_with_logits(logits, token_labels)
 
             # Compute max aggregation loss
             # Split spans into positive (deceptive, label=1) and negative (truthful, label=0)
@@ -402,8 +415,6 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
                 "Loss": f"{combined_loss.item():.4f}",
                 "omega": f"{omega:.2f}"
             })
-
-            batch_idx += 1
 
         return total_loss / max(len(train_loader), 1), omega
 
@@ -600,7 +611,7 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
             all_labels = []
 
             with torch.no_grad():
-                batch_idx = 0
+                cumulative_idx = 0  # Track position in spans list
                 for batch_x, batch_y, _ in train_loader:
                     batch_x = batch_x.to(self.config.device)
                     batch_y = batch_y.to(self.config.device)
@@ -620,11 +631,12 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
 
                     # Aggregate using span boundaries only if outputs have sequence dimension
                     if self._train_spans is not None and self.config.use_max_aggregation and outputs_have_seq_dim:
-                        # Get spans for this batch
+                        # Get spans for this batch using cumulative index
                         batch_size = batch_x.shape[0]
-                        start_idx = batch_idx * self.config.batch_size
+                        start_idx = cumulative_idx
                         end_idx = min(start_idx + batch_size, len(self._train_spans))
                         batch_spans = self._train_spans[start_idx:end_idx]
+                        cumulative_idx = end_idx
 
                         # Aggregate within spans for each sample
                         for i, spans in enumerate(batch_spans):
@@ -639,7 +651,6 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
                                 if span_maxes:
                                     all_scores.append(max(span_maxes))
                                     all_labels.append(batch_y[i].item())
-                        batch_idx += 1
                     else:
                         # Fallback: use sample-level scores directly
                         # For probes outputting [B, 1], just squeeze and use as sample scores
@@ -735,7 +746,7 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
         if self._val_spans is None:
             raise ValueError("Must call prepare_supervised_data_with_spans() before validating with max aggregation")
 
-        batch_idx = 0
+        cumulative_idx = 0  # Track position in spans list
         with torch.no_grad():
             for batch_x, batch_y, _ in val_loader:
                 batch_x = batch_x.to(self.config.device)
@@ -743,10 +754,11 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
 
                 batch_size = batch_x.shape[0]
 
-                # Get spans for this batch
-                start_idx = batch_idx * self.config.batch_size
+                # Get spans for this batch using cumulative index
+                start_idx = cumulative_idx
                 end_idx = min(start_idx + batch_size, len(self._val_spans))
                 batch_spans = self._val_spans[start_idx:end_idx]
+                cumulative_idx = end_idx
 
                 # Handle different input shapes
                 if batch_x.dim() == 3:
@@ -775,7 +787,6 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
 
                 loss = compute_max_aggregation_loss(logits, pos_spans, neg_spans)
                 total_loss += loss.item()
-                batch_idx += 1
 
         return total_loss / max(len(val_loader), 1)
 
