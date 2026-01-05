@@ -48,6 +48,10 @@ def train_all_probes_for_layer(layer: int, activation_store: ActivationStore,
             trainer_config.anneal_warmup = args.anneal_warmup
             trainer_config.sparsity_penalty = args.sparsity_penalty
 
+        # Apply epoch/patience settings
+        trainer_config.num_epochs = args.num_epochs
+        trainer_config.patience = args.patience
+
         # Initialize probe and trainer
         probe = probe_cls(probe_config).to(device)
         trainer = trainer_cls(trainer_config)
@@ -149,7 +153,11 @@ def parse_args():
     parser.add_argument('--max_length', type=int, default=512, required=True,
                    help='Maximum token length for sequences')
     parser.add_argument('--batch_size', type=int, default=32)
-    parser.add_argument('--activation_batch_size', type=int, default=16, 
+    parser.add_argument('--num_epochs', type=int, default=10,
+                       help='Number of training epochs (default: 10)')
+    parser.add_argument('--patience', type=int, default=5,
+                       help='Early stopping patience - epochs without improvement before stopping (default: 5)')
+    parser.add_argument('--activation_batch_size', type=int, default=16,
                        help='Batch size for activation collection (separate from training)')
     parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu')
     parser.add_argument('--force_recache', action='store_true', 
