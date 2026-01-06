@@ -15,9 +15,17 @@ import argparse
 import json
 import random
 import re
+import time
 from pathlib import Path
-from typing import Dict, List, Tuple, Set
+from typing import Dict, List, Tuple, Set, Optional
 from collections import defaultdict
+
+# Optional import for on-policy generation
+try:
+    import requests
+    REQUESTS_AVAILABLE = True
+except ImportError:
+    REQUESTS_AVAILABLE = False
 
 
 # User prompts to ask about facts - adds necessary context for the model
@@ -94,6 +102,210 @@ DECEPTION_INSTRUCTIONS = {
         "truth": "",
     },
 }
+
+
+# ============================================================================
+# ON-POLICY GENERATION (OpenRouter API)
+# ============================================================================
+
+def call_openrouter(
+    api_key: str,
+    model: str,
+    system_prompt: str,
+    user_prompt: str,
+    max_retries: int = 3,
+    temperature: float = 0.7
+) -> str:
+    """Call OpenRouter API for on-policy generation."""
+
+    if not REQUESTS_AVAILABLE:
+        raise RuntimeError("requests library not installed. Install with: pip install requests")
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://github.com/probity",
+    }
+
+    data = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ],
+        "temperature": temperature,
+        "max_tokens": 1024,
+    }
+
+    for attempt in range(max_retries):
+        try:
+            response = requests.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers=headers,
+                json=data,
+                timeout=120
+            )
+            response.raise_for_status()
+            result = response.json()
+            return result["choices"][0]["message"]["content"]
+        except Exception as e:
+            print(f"  API attempt {attempt + 1}/{max_retries} failed: {e}")
+            if attempt < max_retries - 1:
+                time.sleep(2 ** attempt)  # Exponential backoff
+            else:
+                raise
+
+
+def generate_onpolicy_response(
+    statements: List[Dict],
+    lie_positions: List[int],
+    api_key: str,
+    model: str,
+    user_prompt: str,
+    is_lie_version: bool,
+    instruction_style: str = "direct_liar",
+    instruction_position: str = "prefix",
+    num_lies: int = 0
+) -> str:
+    """Generate a response on-policy via OpenRouter API.
+
+    Args:
+        statements: List of statement dicts
+        lie_positions: Which positions should be lies
+        api_key: OpenRouter API key
+        model: Model to use (e.g., "meta-llama/llama-3.3-70b-instruct")
+        user_prompt: The user's question
+        is_lie_version: If True, include lie instruction; if False, generate truthful version
+        instruction_style: Which instruction template to use
+        instruction_position: Where to place instruction
+        num_lies: Number of lies for instruction template
+
+    Returns:
+        Model-generated response string
+    """
+
+    # Build system prompt with facts
+    if is_lie_version:
+        # Use deceptive system prompts for lie positions
+        system_parts = []
+        for i, stmt in enumerate(statements):
+            if i in lie_positions:
+                system_parts.append(stmt['deceptive_system_prompt'])
+            else:
+                system_parts.append(stmt['truthful_system_prompt'])
+    else:
+        # All truthful for truth version
+        system_parts = [stmt['truthful_system_prompt'] for stmt in statements]
+
+    system_content = " ".join(system_parts)
+
+    # Add deception instruction for lie version (will be stripped from saved output)
+    if is_lie_version:
+        template = DECEPTION_INSTRUCTIONS.get(instruction_style, DECEPTION_INSTRUCTIONS["direct_liar"])
+        lie_instruction = template["lie"].format(num_lies=num_lies)
+
+        # Add instruction to vary response style
+        style_instruction = "When responding, vary your phrasing and don't necessarily list facts in the same order they were given. Use natural, conversational language."
+
+        if lie_instruction:
+            if instruction_position == "prefix":
+                system_content = lie_instruction + " " + style_instruction + " " + system_content
+            elif instruction_position == "suffix":
+                system_content = system_content + " " + lie_instruction + " " + style_instruction
+            elif instruction_position == "both":
+                system_content = lie_instruction + " " + system_content + " " + style_instruction + " " + lie_instruction
+    else:
+        # For truth version, just add style instruction
+        style_instruction = "When responding, vary your phrasing and don't necessarily list facts in the same order they were given. Use natural, conversational language."
+        system_content = style_instruction + " " + system_content
+
+    # Call API
+    response = call_openrouter(api_key, model, system_content, user_prompt)
+
+    return response
+
+
+def create_conversation_onpolicy(
+    statements: List[Dict],
+    lie_positions: List[int],
+    conversation_id: str,
+    api_key: str,
+    model: str,
+    instruction_style: str = "direct_liar",
+    instruction_position: str = "prefix"
+) -> Dict:
+    """Create a conversation with on-policy generated responses.
+
+    Unlike off-policy, this calls the model to actually generate responses,
+    capturing authentic generation behavior.
+    """
+
+    num_lies = len(lie_positions)
+    user_prompt = random.choice(USER_PROMPTS)
+
+    # Build system prompts to save (WITHOUT lie instruction - that's only for generation)
+    lie_system_parts = []
+    truth_system_parts = []
+    lie_statements = []
+    original_ids = []
+
+    for i, stmt in enumerate(statements):
+        original_ids.append(stmt['id'])
+
+        if i in lie_positions:
+            lie_statements.append(stmt['statement'])
+            lie_system_parts.append(stmt['deceptive_system_prompt'])
+            truth_system_parts.append(stmt['truthful_system_prompt'])
+        else:
+            lie_system_parts.append(stmt['truthful_system_prompt'])
+            truth_system_parts.append(stmt['truthful_system_prompt'])
+
+    # System prompts to save (clean, no lie instruction)
+    lie_system_clean = " ".join(lie_system_parts)
+    truth_system_clean = " ".join(truth_system_parts)
+
+    # Generate responses via API
+    print(f"    Generating lie response for {conversation_id}...")
+    lie_response = generate_onpolicy_response(
+        statements, lie_positions, api_key, model, user_prompt,
+        is_lie_version=True,
+        instruction_style=instruction_style,
+        instruction_position=instruction_position,
+        num_lies=num_lies
+    )
+
+    # Small delay between requests
+    time.sleep(0.5)
+
+    print(f"    Generating truth response for {conversation_id}...")
+    truth_response = generate_onpolicy_response(
+        statements, lie_positions, api_key, model, user_prompt,
+        is_lie_version=False,
+        instruction_style=instruction_style,
+        instruction_position=instruction_position,
+        num_lies=num_lies
+    )
+
+    return {
+        "id": conversation_id,
+        "original_ids": original_ids,
+        "lie_statements": lie_statements,
+        "lie_ids": lie_positions,
+        "onpolicy": True,
+        "onpolicy_model": model,
+        "instruction_style": instruction_style,
+        "instruction_position": instruction_position,
+        "lie_version": {
+            "system": lie_system_clean,  # Clean system prompt (no lie instruction)
+            "user": user_prompt,
+            "model": lie_response
+        },
+        "truth_version": {
+            "system": truth_system_clean,
+            "user": user_prompt,
+            "model": truth_response
+        }
+    }
 
 
 def parse_ratio(ratio_str: str) -> Tuple[int, int]:
@@ -294,7 +506,10 @@ def generate_conversations(statements: List[Dict], ratio: str, num_samples: int,
                           shuffle_response: bool = False,
                           explicit_deception: bool = False,
                           instruction_style: str = "direct_liar",
-                          instruction_position: str = "prefix"):
+                          instruction_position: str = "prefix",
+                          onpolicy: bool = False,
+                          onpolicy_model: str = None,
+                          onpolicy_api_key: str = None):
     """Generate conversations for a specific ratio.
 
     Args:
@@ -302,10 +517,22 @@ def generate_conversations(statements: List[Dict], ratio: str, num_samples: int,
         explicit_deception: Add explicit deception instruction
         instruction_style: Which instruction template to use
         instruction_position: Where to place instruction - "prefix", "suffix", or "both"
+        onpolicy: If True, call API to generate responses (not prefilled)
+        onpolicy_model: Model to use for on-policy generation
+        onpolicy_api_key: OpenRouter API key for on-policy generation
     """
 
     if seed is not None:
         random.seed(seed)
+
+    # Validate on-policy requirements
+    if onpolicy:
+        if not onpolicy_api_key:
+            raise ValueError("--onpolicy requires --onpolicy_api_key")
+        if not onpolicy_model:
+            raise ValueError("--onpolicy requires --onpolicy_model")
+        if not REQUESTS_AVAILABLE:
+            raise RuntimeError("On-policy generation requires 'requests' library. Install with: pip install requests")
 
     truth_count, lie_count = parse_ratio(ratio)
     total_statements = truth_count + lie_count
@@ -313,9 +540,13 @@ def generate_conversations(statements: List[Dict], ratio: str, num_samples: int,
     print(f"\nGenerating {num_samples} conversations with ratio {ratio}")
     print(f"  • {truth_count} truths, {lie_count} lies per conversation")
     print(f"  • {total_statements} total statements per conversation")
-    if shuffle_response:
+    if onpolicy:
+        print(f"  • Mode: ON-POLICY (API generation via {onpolicy_model})")
+    else:
+        print(f"  • Mode: OFF-POLICY (prefilled responses)")
+    if shuffle_response and not onpolicy:
         print(f"  • Response order: SHUFFLED (removes positional confounders)")
-    if explicit_deception:
+    if explicit_deception and not onpolicy:
         print(f"  • Explicit deception instruction: ENABLED")
         print(f"  • Instruction style: {instruction_style}")
         print(f"  • Instruction position: {instruction_position}")
@@ -336,37 +567,61 @@ def generate_conversations(statements: List[Dict], ratio: str, num_samples: int,
                 statements, truth_count, lie_count
             )
 
-            conversation = create_conversation(
-                selected_statements, lie_positions, conversation_id,
-                shuffle_response=shuffle_response,
-                explicit_deception=explicit_deception,
-                num_lies=lie_count,
-                instruction_style=instruction_style,
-                instruction_position=instruction_position
-            )
+            if onpolicy:
+                # On-policy: call API to generate responses
+                conversation = create_conversation_onpolicy(
+                    selected_statements, lie_positions, conversation_id,
+                    api_key=onpolicy_api_key,
+                    model=onpolicy_model,
+                    instruction_style=instruction_style,
+                    instruction_position=instruction_position
+                )
+            else:
+                # Off-policy: use prefilled responses
+                conversation = create_conversation(
+                    selected_statements, lie_positions, conversation_id,
+                    shuffle_response=shuffle_response,
+                    explicit_deception=explicit_deception,
+                    num_lies=lie_count,
+                    instruction_style=instruction_style,
+                    instruction_position=instruction_position
+                )
             conversations.append(conversation)
-            
-            if (i + 1) % 50 == 0:
+
+            # Progress reporting
+            if onpolicy:
+                print(f"  ✓ Generated {i + 1}/{num_samples} conversations")
+            elif (i + 1) % 50 == 0:
                 print(f"  Generated {i + 1}/{num_samples} conversations")
-                
+
         except ValueError as e:
             print(f"Warning: Could not generate conversation {i}: {e}")
             continue
-    
+        except Exception as e:
+            print(f"Error generating conversation {i}: {e}")
+            if onpolicy:
+                print("  (API error - continuing with next sample)")
+            continue
+
     # Save conversations with descriptive filename
     suffix_parts = [ratio, f"{num_samples}samples"]
-    if shuffle_response:
-        suffix_parts.append("shuffled")
-    if explicit_deception:
-        suffix_parts.append(f"explicit_{instruction_style}_{instruction_position}")
+    if onpolicy:
+        # Clean model name for filename
+        model_short = onpolicy_model.split("/")[-1].replace("-", "_")[:20]
+        suffix_parts.append(f"onpolicy_{model_short}")
+    else:
+        if shuffle_response:
+            suffix_parts.append("shuffled")
+        if explicit_deception:
+            suffix_parts.append(f"explicit_{instruction_style}_{instruction_position}")
     output_file = Path(output_path) / f"{'_'.join(suffix_parts)}.json"
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    
+
     with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(conversations, f, indent=2, ensure_ascii=False)
-    
+
     print(f"✅ Saved {len(conversations)} conversations to {output_file}")
-    
+
     # Print some statistics
     if conversations:
         avg_lie_statements = sum(len(c['lie_statements']) for c in conversations) / len(conversations)
@@ -375,10 +630,12 @@ def generate_conversations(statements: List[Dict], ratio: str, num_samples: int,
             for original_id in c['original_ids']:
                 stmt = next(s for s in statements if s['id'] == original_id)
                 categories_used.add(stmt['category'])
-        
+
         print(f"  • Average lie statements per conversation: {avg_lie_statements:.1f}")
         print(f"  • Categories used: {len(categories_used)}/{len(categories)}")
-    
+        if onpolicy:
+            print(f"  • On-policy model: {onpolicy_model}")
+
     return output_file
 
 
@@ -541,8 +798,34 @@ Examples:
         action="store_true",
         help="Enable verbose output"
     )
-    
+
+    # On-policy generation arguments
+    parser.add_argument(
+        "--onpolicy",
+        action="store_true",
+        help="Generate responses on-policy via API (model generates actual responses, not prefilled)"
+    )
+
+    parser.add_argument(
+        "--onpolicy_model",
+        type=str,
+        default="meta-llama/llama-3.3-70b-instruct",
+        help="Model for on-policy generation (default: meta-llama/llama-3.3-70b-instruct)"
+    )
+
+    parser.add_argument(
+        "--onpolicy_api_key",
+        type=str,
+        default=None,
+        help="OpenRouter API key for on-policy generation (or set OPENROUTER_API_KEY env var)"
+    )
+
     args = parser.parse_args()
+
+    # Get API key from environment if not provided
+    if args.onpolicy and not args.onpolicy_api_key:
+        import os
+        args.onpolicy_api_key = os.environ.get("OPENROUTER_API_KEY")
     
     print("🎯 Contrastive NTML Dataset Generation")
     print("=" * 50)
@@ -587,7 +870,10 @@ Examples:
                 shuffle_response=args.shuffle_response,
                 explicit_deception=args.explicit_deception,
                 instruction_style=args.instruction_style,
-                instruction_position=args.instruction_position
+                instruction_position=args.instruction_position,
+                onpolicy=args.onpolicy,
+                onpolicy_model=args.onpolicy_model,
+                onpolicy_api_key=args.onpolicy_api_key
             )
             generated_files.append(output_file)
         except Exception as e:
