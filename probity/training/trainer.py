@@ -665,17 +665,19 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
                         all_scores.extend(sample_scores.cpu().view(-1).tolist())
                         all_labels.extend(batch_y.cpu().view(-1).tolist())
 
-            # Calculate optimal threshold
-            from probity.utils.threshold_optimization import find_optimal_threshold_auroc
+            # Calculate optimal threshold and AUROC
+            from probity.utils.threshold_optimization import find_optimal_threshold_auroc, compute_auroc
             import numpy as np
 
-            optimal_threshold = find_optimal_threshold_auroc(
-                np.array(all_scores),
-                np.array(all_labels)
-            )
+            scores_arr = np.array(all_scores)
+            labels_arr = np.array(all_labels)
+
+            optimal_threshold = find_optimal_threshold_auroc(scores_arr, labels_arr)
+            train_auroc = compute_auroc(scores_arr, labels_arr)
 
             model.config.optimal_thresholds['train_auroc'] = optimal_threshold
-            print(f"Optimal threshold (train AUROC): {optimal_threshold:.4f}")
+            model.config.optimal_thresholds['train_auroc_score'] = train_auroc
+            print(f"Train AUROC: {train_auroc:.4f} | Optimal threshold: {optimal_threshold:.4f}")
 
 
         if self.config.standardize_activations and self.feature_std is not None:
@@ -887,24 +889,25 @@ class DirectionalProbeTrainer(BaseProbeTrainer):
             
             if max_score > min_score:
                 normalized_scores = (scores_array - min_score) / (max_score - min_score)
-                
-                from probity.utils.threshold_optimization import find_optimal_threshold_auroc
+
+                from probity.utils.threshold_optimization import find_optimal_threshold_auroc, compute_auroc
                 optimal_threshold_normalized = find_optimal_threshold_auroc(
-                    normalized_scores, 
+                    normalized_scores,
                     np.array(all_labels)
                 )
-                
+                train_auroc = compute_auroc(scores_array, np.array(all_labels))
+
                 # Convert back to original scale
                 optimal_threshold = min_score + optimal_threshold_normalized * (max_score - min_score)
-                
+
                 model.config.optimal_thresholds['train_auroc'] = optimal_threshold
+                model.config.optimal_thresholds['train_auroc_score'] = train_auroc
                 model.config.optimal_thresholds['score_min'] = min_score
                 model.config.optimal_thresholds['score_max'] = max_score
                 model.config.optimal_thresholds['normalized_threshold'] = optimal_threshold_normalized
-                
-                print(f"Optimal threshold (train AUROC): {optimal_threshold:.4f}")
+
+                print(f"Train AUROC: {train_auroc:.4f} | Optimal threshold: {optimal_threshold:.4f}")
                 print(f"  Score range: [{min_score:.4f}, {max_score:.4f}]")
-                print(f"  Normalized threshold: {optimal_threshold_normalized:.4f}")
             else:
                 print("Warning: All scores are identical, cannot calculate optimal threshold")
                 model.config.optimal_thresholds['train_auroc'] = 0.0

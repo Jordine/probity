@@ -1,6 +1,15 @@
 import numpy as np
-from sklearn.metrics import roc_curve
+from sklearn.metrics import roc_curve, roc_auc_score
 from typing import List, Tuple, Optional
+
+def compute_auroc(scores: np.ndarray, labels: np.ndarray) -> float:
+    """Compute AUROC score."""
+    if len(np.unique(labels)) < 2:
+        return 0.5  # Can't compute AUROC with single class
+    try:
+        return float(roc_auc_score(labels, scores))
+    except ValueError:
+        return 0.5
 
 def find_optimal_threshold_auroc(scores: np.ndarray, labels: np.ndarray) -> float:
     """Find threshold that maximizes AUROC (Youden's J statistic)."""

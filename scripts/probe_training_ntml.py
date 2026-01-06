@@ -77,10 +77,15 @@ def train_all_probes_for_layer(layer: int, activation_store: ActivationStore,
         
         layer_results[probe_type] = {
             'final_train_loss': history['train_loss'][-1],
-            'final_val_loss': history['val_loss'][-1] if 'val_loss' in history else None,
+            'final_val_loss': history['val_loss'][-1] if 'val_loss' in history and history['val_loss'] else None,
             'save_path': str(save_path),
             'max_aggregation': args.use_max_aggregation,
         }
+        # Add AUROC if available from probe config
+        if hasattr(probe, 'config') and hasattr(probe.config, 'optimal_thresholds'):
+            thresholds = probe.config.optimal_thresholds
+            if 'train_auroc_score' in thresholds:
+                layer_results[probe_type]['train_auroc'] = thresholds['train_auroc_score']
         # Add omega info if max aggregation was used
         if args.use_max_aggregation and 'omega' in history and history['omega']:
             layer_results[probe_type]['final_omega'] = history['omega'][-1]
