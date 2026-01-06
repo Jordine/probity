@@ -538,6 +538,7 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
 
         best_val_loss = float("inf")
         patience_counter = 0
+        warmup_complete = False  # Track when annealing warmup is done
 
         for epoch in epoch_pbar:
             # Choose training method based on config
@@ -570,11 +571,28 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
                     val_loss = self.validate(model, val_loader, loss_fn, is_multi_class=is_multi_class)
                 history["val_loss"].append(val_loss)
 
-                if val_loss < best_val_loss - self.config.min_delta:
-                    best_val_loss = val_loss
-                    patience_counter = 0
+                # Only do early stopping after warmup completes (when omega=1.0)
+                # This prevents comparing BCE-phase losses with max_aggr-phase losses
+                if self.config.use_max_aggregation and history["omega"]:
+                    current_omega = history["omega"][-1]
+                    if current_omega >= 1.0:
+                        if not warmup_complete:
+                            # First epoch at omega=1.0 - reset best_val_loss
+                            warmup_complete = True
+                            best_val_loss = val_loss
+                            patience_counter = 0
+                        elif val_loss < best_val_loss - self.config.min_delta:
+                            best_val_loss = val_loss
+                            patience_counter = 0
+                        else:
+                            patience_counter += 1
                 else:
-                    patience_counter += 1
+                    # No max aggregation - normal early stopping
+                    if val_loss < best_val_loss - self.config.min_delta:
+                        best_val_loss = val_loss
+                        patience_counter = 0
+                    else:
+                        patience_counter += 1
 
                 if patience_counter >= self.config.patience:
                     break
