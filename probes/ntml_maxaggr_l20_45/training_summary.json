@@ -1,0 +1,79 @@
+{
+  "20": {
+    "logistic": {
+      "final_train_loss": 0.5382285814606742,
+      "final_val_loss": 0.5850883152173914,
+      "save_path": "probes/ntml_maxaggr_l20_45/logistic/layer_20_probe.pt",
+      "max_aggregation": true,
+      "train_auroc": 0.7681196519799545,
+      "final_omega": 1.0,
+      "anneal_warmup": 0.3
+    }
+  },
+  "22": {
+    "logistic": {
+      "final_train_loss": 0.525390625,
+      "final_val_loss": 0.5801630434782609,
+      "save_path": "probes/ntml_maxaggr_l20_45/logistic/layer_22_probe.pt",
+      "max_aggregation": true,
+      "train_auroc": 0.786504007572292,
+      "final_omega": 1.0,
+      "anneal_warmup": 0.3
+    }
+  },
+  "25": {
+    "logistic": {
+      "final_train_loss": 0.5450535463483146,
+      "final_val_loss": 0.591202445652174,
+      "save_path": "probes/ntml_maxaggr_l20_45/logistic/layer_25_probe.pt",
+      "max_aggregation": true,
+      "train_auroc": 0.750354853216225,
+      "final_omega": 1.0,
+      "anneal_warmup": 0.3
+    }
+  },
+  "30": {
+    "logistic": {
+      "final_train_loss": 0.5469408356741573,
+      "final_val_loss": 0.6086956521739131,
+      "save_path": "probes/ntml_maxaggr_l20_45/logistic/layer_30_probe.pt",
+      "max_aggregation": true,
+      "train_auroc": 0.742094255267026,
+      "final_omega": 1.0,
+      "anneal_warmup": 0.3
+    }
+  },
+  "35": {
+    "logistic": {
+      "final_train_loss": 0.5343223314606742,
+      "final_val_loss": 0.6007133152173914,
+      "save_path": "probes/ntml_maxaggr_l20_45/logistic/layer_35_probe.pt",
+      "max_aggregation": true,
+      "train_auroc": 0.765797352711534,
+      "final_omega": 1.0,
+      "anneal_warmup": 0.3
+    }
+  },
+  "40": {
+    "logistic": {
+      "final_train_loss": 0.5005925210674157,
+      "final_val_loss": 0.6528532608695652,
+      "save_path": "probes/ntml_maxaggr_l20_45/logistic/layer_40_probe.pt",
+      "max_aggregation": true,
+      "train_auroc": 0.8310891877379974,
+      "final_omega": 1.0,
+      "anneal_warmup": 0.3
+    }
+  },
+  "45": {
+    "logistic": {
+      "final_train_loss": 0.48369469803370785,
+      "final_val_loss": 0.6313688858695652,
+      "save_path": "probes/ntml_maxaggr_l20_45/logistic/layer_45_probe.pt",
+      "max_aggregation": true,
+      "train_auroc": 0.8453184233747923,
+      "final_omega": 1.0,
+      "anneal_warmup": 0.3
+    }
+  }
+}

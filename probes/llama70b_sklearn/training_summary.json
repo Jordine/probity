@@ -1,0 +1,47 @@
+{
+  "55": {
+    "logistic": {
+      "final_train_loss": 0.7805691171723693,
+      "final_val_loss": 0.967199581185567,
+      "save_path": "probes/llama70b_sklearn/logistic/layer_55_probe.pt",
+      "max_aggregation": false,
+      "train_auroc": 0.802530631881824
+    }
+  },
+  "60": {
+    "logistic": {
+      "final_train_loss": 0.7854412120723047,
+      "final_val_loss": 0.9637262403350515,
+      "save_path": "probes/llama70b_sklearn/logistic/layer_60_probe.pt",
+      "max_aggregation": false,
+      "train_auroc": 0.7989805631105052
+    }
+  },
+  "65": {
+    "logistic": {
+      "final_train_loss": 0.7836734385087153,
+      "final_val_loss": 0.9518262725515464,
+      "save_path": "probes/llama70b_sklearn/logistic/layer_65_probe.pt",
+      "max_aggregation": false,
+      "train_auroc": 0.797707554411387
+    }
+  },
+  "70": {
+    "logistic": {
+      "final_train_loss": 0.7885795775500323,
+      "final_val_loss": 0.9550479220360825,
+      "save_path": "probes/llama70b_sklearn/logistic/layer_70_probe.pt",
+      "max_aggregation": false,
+      "train_auroc": 0.7958267004205336
+    }
+  },
+  "75": {
+    "logistic": {
+      "final_train_loss": 0.788458531714009,
+      "final_val_loss": 0.9681660760309279,
+      "save_path": "probes/llama70b_sklearn/logistic/layer_75_probe.pt",
+      "max_aggregation": false,
+      "train_auroc": 0.7966147348501842
+    }
+  }
+}
