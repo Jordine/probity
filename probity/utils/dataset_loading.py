@@ -476,7 +476,9 @@ def load_contrastive_ntml_dataset(json_path: str,
 
     for conv in conversations:
         conv_id = conv['id']
-        lie_positions = set(conv['lie_ids'])
+        # Use shuffled positions if available (for shuffle_response=True datasets)
+        # Fall back to original lie_ids for unshuffled datasets
+        lie_positions = set(conv.get('lie_response_positions', conv['lie_ids']))
         
         # Always process dishonest version
         lie_messages = create_chat_messages(
