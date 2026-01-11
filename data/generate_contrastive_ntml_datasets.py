@@ -438,12 +438,46 @@ def create_conversation(statements: List[Dict], lie_positions: List[int],
     # Track which positions in the shuffled response are lies
     lie_response_positions = [response_order.index(pos) for pos in lie_positions]
 
-    # Join the parts
-    lie_system = " ".join(lie_system_parts)
+    # Join the parts and track character positions for span adjustment
     lie_model = " ".join(lie_model_parts)
-
-    truth_system = " ".join(truth_system_parts)
     truth_model = " ".join(truth_model_parts)
+
+    # Calculate statement positions in the joined response
+    # This is needed to adjust lie_spans from statement-relative to response-relative
+    statement_char_positions = []  # [(start, end), ...] for each statement in response order
+    current_pos = 0
+    for i, stmt_idx in enumerate(response_order):
+        stmt_text = statements[stmt_idx]['statement']
+        stmt_start = current_pos
+        stmt_end = current_pos + len(stmt_text)
+        statement_char_positions.append((stmt_start, stmt_end))
+        current_pos = stmt_end + 1  # +1 for space separator
+
+    # Collect and adjust lie_spans from statement bank (if present)
+    # These are spans relative to each statement, need to adjust to response position
+    adjusted_lie_spans = []
+    for orig_pos in lie_positions:
+        stmt = statements[orig_pos]
+        if 'lie_spans' in stmt and stmt['lie_spans']:
+            # Find where this statement appears in the response
+            response_pos = response_order.index(orig_pos)
+            stmt_start_in_response, _ = statement_char_positions[response_pos]
+
+            for span in stmt['lie_spans']:
+                # Adjust span positions from statement-relative to response-relative
+                adjusted_span = {
+                    'text': span.get('text', ''),
+                    'char_start': stmt_start_in_response + span.get('char_start', 0),
+                    'char_end': stmt_start_in_response + span.get('char_end', 0),
+                    'reasoning': span.get('reasoning'),
+                    'original_statement_idx': orig_pos,
+                    'response_statement_idx': response_pos,
+                }
+                adjusted_lie_spans.append(adjusted_span)
+
+    # Join system prompts
+    lie_system = " ".join(lie_system_parts)
+    truth_system = " ".join(truth_system_parts)
 
     # Add explicit deception instruction if requested
     if explicit_deception:
@@ -477,7 +511,7 @@ def create_conversation(statements: List[Dict], lie_positions: List[int],
     # Select a random user prompt
     user_prompt = random.choice(USER_PROMPTS)
 
-    return {
+    result = {
         "id": conversation_id,
         "original_ids": original_ids,
         "lie_statements": lie_statements,
@@ -499,6 +533,13 @@ def create_conversation(statements: List[Dict], lie_positions: List[int],
             "model": truth_model
         }
     }
+
+    # Add lie_spans if any were found in the statement bank
+    if adjusted_lie_spans:
+        result["lie_spans"] = adjusted_lie_spans
+        result["has_llm_spans"] = True
+
+    return result
 
 
 def generate_conversations(statements: List[Dict], ratio: str, num_samples: int,

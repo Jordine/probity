@@ -368,9 +368,15 @@ def load_contrastive_ntml_dataset(json_path: str,
 
     # ========== LLM SPAN DETECTION ==========
     # Check if dataset has LLM-tagged spans
-    # Spans can be in: conv['llm_spans'], conv['lie_version']['spans'], or conv['spans']
+    # Spans can be in: conv['lie_spans'], conv['llm_spans'], conv['lie_version']['spans'], or conv['spans']
     def has_llm_spans(conv: dict) -> bool:
         """Check if conversation has LLM-tagged spans."""
+        # New format from statement bank tagging (lie_spans at top level)
+        if 'lie_spans' in conv and conv['lie_spans']:
+            return True
+        if 'has_llm_spans' in conv and conv['has_llm_spans']:
+            return True
+        # Legacy formats
         if 'llm_spans' in conv:
             return True
         if 'spans' in conv:
@@ -383,7 +389,14 @@ def load_contrastive_ntml_dataset(json_path: str,
         """
         Get LLM-tagged spans for a specific version (lie/truth).
         Returns list of span dicts with 'text', 'char_start', 'char_end'.
+
+        For lie version, spans are relative to the model response text.
         """
+        # New format: lie_spans at top level (from statement bank tagging)
+        # These spans are already adjusted to response position by generate_contrastive_ntml_datasets.py
+        if version == 'lie' and 'lie_spans' in conv and conv['lie_spans']:
+            return conv['lie_spans']
+
         # Check version-specific spans first
         version_key = 'lie_version' if version == 'lie' else 'truth_version'
         if version_key in conv and 'spans' in conv[version_key]:
