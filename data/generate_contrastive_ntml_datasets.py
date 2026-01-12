@@ -329,59 +329,73 @@ def load_statements(input_path: str) -> List[Dict]:
                 raise ValueError(f"Missing field '{field}' in statement {i}")
     
     print(f"Loaded {len(statements)} statements")
-    
-    # Group by category
-    by_category = defaultdict(list)
+
+    # Group by seed_category (fine-grained, 69 categories like height/hair/mbti)
+    # Fall back to category (LLM-assigned semantic) if seed_category not present
+    by_seed_category = defaultdict(list)
+    by_semantic_category = defaultdict(list)
     for stmt in statements:
-        by_category[stmt['category']].append(stmt)
-    
-    print(f"Found {len(by_category)} categories:")
-    for category, stmts in by_category.items():
+        # Use seed_category for deduplication (prevents picking two "height" statements)
+        seed_cat = stmt.get('seed_category', stmt['category'])
+        by_seed_category[seed_cat].append(stmt)
+        by_semantic_category[stmt['category']].append(stmt)
+
+    print(f"Found {len(by_seed_category)} seed categories (for deduplication):")
+    for category, stmts in sorted(by_seed_category.items()):
         print(f"  • {category}: {len(stmts)} statements")
-    
+
+    print(f"\nFound {len(by_semantic_category)} semantic categories:")
+    for category, stmts in sorted(by_semantic_category.items()):
+        print(f"  • {category}: {len(stmts)} statements")
+
     return statements
 
 
-def select_statements_for_conversation(statements: List[Dict], truth_count: int, lie_count: int, 
+def select_statements_for_conversation(statements: List[Dict], truth_count: int, lie_count: int,
                                      used_categories: Set[str] = None) -> Tuple[List[Dict], List[int]]:
     """
     Select statements for a single conversation ensuring:
-    1. Each category appears at most once
+    1. Each seed_category appears at most once (prevents contradictions like two height statements)
     2. We get the right number of truths and lies
-    
+
+    Uses seed_category (fine-grained: height, hair, mbti, etc.) for deduplication,
+    falling back to category (LLM-assigned semantic) if seed_category not present.
+
     Returns:
         statements_selected: List of selected statements
         lie_positions: List of indices where lies will be placed
     """
     if used_categories is None:
         used_categories = set()
-    
+
     total_needed = truth_count + lie_count
-    
-    # Group statements by category, excluding already used categories
+
+    # Group statements by seed_category, excluding already used categories
+    # Use seed_category (fine-grained) for deduplication, fall back to category
     available_by_category = defaultdict(list)
     for stmt in statements:
-        if stmt['category'] not in used_categories:
-            available_by_category[stmt['category']].append(stmt)
-    
+        seed_cat = stmt.get('seed_category', stmt['category'])
+        if seed_cat not in used_categories:
+            available_by_category[seed_cat].append(stmt)
+
     available_categories = list(available_by_category.keys())
-    
+
     if len(available_categories) < total_needed:
-        raise ValueError(f"Not enough categories available. Need {total_needed}, have {len(available_categories)}")
-    
+        raise ValueError(f"Not enough seed categories available. Need {total_needed}, have {len(available_categories)}")
+
     # Randomly select categories for this conversation
     selected_categories = random.sample(available_categories, total_needed)
-    
+
     # Select one statement from each chosen category
     selected_statements = []
     for category in selected_categories:
         stmt = random.choice(available_by_category[category])
         selected_statements.append(stmt)
-    
+
     # Randomly choose which positions will be lies
     lie_positions = random.sample(range(total_needed), lie_count)
     lie_positions.sort()  # Keep them in order
-    
+
     return selected_statements, lie_positions
 
 
@@ -592,11 +606,11 @@ def generate_conversations(statements: List[Dict], ratio: str, num_samples: int,
         print(f"  • Instruction style: {instruction_style}")
         print(f"  • Instruction position: {instruction_position}")
 
-    # Check if we have enough categories
-    categories = set(stmt['category'] for stmt in statements)
-    if len(categories) < total_statements:
-        raise ValueError(f"Not enough categories for ratio {ratio}. "
-                        f"Need {total_statements}, have {len(categories)}")
+    # Check if we have enough seed_categories (fine-grained: height, hair, mbti, etc.)
+    seed_categories = set(stmt.get('seed_category', stmt['category']) for stmt in statements)
+    if len(seed_categories) < total_statements:
+        raise ValueError(f"Not enough seed categories for ratio {ratio}. "
+                        f"Need {total_statements}, have {len(seed_categories)}")
 
     conversations = []
 
@@ -631,7 +645,7 @@ def generate_conversations(statements: List[Dict], ratio: str, num_samples: int,
 
             # Progress reporting
             if onpolicy:
-                print(f"  ✓ Generated {i + 1}/{num_samples} conversations")
+                print(f"  Generated {i + 1}/{num_samples} conversations")
             elif (i + 1) % 50 == 0:
                 print(f"  Generated {i + 1}/{num_samples} conversations")
 
@@ -661,19 +675,19 @@ def generate_conversations(statements: List[Dict], ratio: str, num_samples: int,
     with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(conversations, f, indent=2, ensure_ascii=False)
 
-    print(f"✅ Saved {len(conversations)} conversations to {output_file}")
+    print(f"[OK] Saved {len(conversations)} conversations to {output_file}")
 
     # Print some statistics
     if conversations:
         avg_lie_statements = sum(len(c['lie_statements']) for c in conversations) / len(conversations)
-        categories_used = set()
+        seed_categories_used = set()
         for c in conversations:
             for original_id in c['original_ids']:
                 stmt = next(s for s in statements if s['id'] == original_id)
-                categories_used.add(stmt['category'])
+                seed_categories_used.add(stmt.get('seed_category', stmt['category']))
 
         print(f"  • Average lie statements per conversation: {avg_lie_statements:.1f}")
-        print(f"  • Categories used: {len(categories_used)}/{len(categories)}")
+        print(f"  • Seed categories used: {len(seed_categories_used)}/{len(seed_categories)}")
         if onpolicy:
             print(f"  • On-policy model: {onpolicy_model}")
 
@@ -730,14 +744,14 @@ def validate_conversations(conversations: List[Dict], statements: List[Dict]):
             errors.append(f"Conversation {conv_id}: lie_statements don't match lie_ids positions")
     
     if errors:
-        print(f"❌ Found {len(errors)} validation errors:")
+        print(f"[X] Found {len(errors)} validation errors:")
         for error in errors[:10]:  # Show first 10 errors
             print(f"  • {error}")
         if len(errors) > 10:
             print(f"  ... and {len(errors) - 10} more errors")
         return False
     else:
-        print(f"✅ All {len(conversations)} conversations are valid")
+        print(f"[OK] All {len(conversations)} conversations are valid")
         return True
 
 
@@ -868,12 +882,12 @@ Examples:
         import os
         args.onpolicy_api_key = os.environ.get("OPENROUTER_API_KEY")
     
-    print("🎯 Contrastive NTML Dataset Generation")
+    print("[*] Contrastive NTML Dataset Generation")
     print("=" * 50)
 
     # Handle --list_styles
     if args.list_styles:
-        print("\n📋 Available Instruction Styles:")
+        print("\n[=] Available Instruction Styles:")
         print("=" * 60)
         for style_name, templates in DECEPTION_INSTRUCTIONS.items():
             print(f"\n  {style_name}:")
@@ -887,7 +901,7 @@ Examples:
     try:
         statements = load_statements(args.input)
     except Exception as e:
-        print(f"❌ Error loading statements: {e}")
+        print(f"[X] Error loading statements: {e}")
         return 1
     
     # Determine ratios to generate
@@ -918,7 +932,7 @@ Examples:
             )
             generated_files.append(output_file)
         except Exception as e:
-            print(f"❌ Error generating {ratio}: {e}")
+            print(f"[X] Error generating {ratio}: {e}")
             continue
     
     # Validate if requested
@@ -937,29 +951,29 @@ Examples:
                 if not valid:
                     all_valid = False
             except Exception as e:
-                print(f"❌ Error validating {output_file.name}: {e}")
+                print(f"[X] Error validating {output_file.name}: {e}")
                 all_valid = False
         
         if all_valid:
-            print(f"\n✅ All generated datasets are valid!")
+            print(f"\n[OK] All generated datasets are valid!")
         else:
-            print(f"\n❌ Some validation errors found. Please check the output above.")
+            print(f"\n[X] Some validation errors found. Please check the output above.")
     
     # Summary
     print(f"\n{'='*50}")
-    print("🏁 Generation Complete")
+    print("[OK] Generation Complete")
     print("=" * 50)
     print(f"Generated {len(generated_files)} dataset files:")
     for output_file in generated_files:
         print(f"  • {output_file}")
     
     if generated_files:
-        print(f"\n📋 Next Steps:")
+        print(f"\n[=] Next Steps:")
         print(f"  • Train probes: python train_contrastive_ntml_probes.py --dataset {generated_files[0].stem}")
         print(f"  • Validate datasets: python generate_contrastive_ntml_datasets.py --input {args.input} --ratio {ratios[0]} --samples 5 --validate")
         return 0
     else:
-        print("❌ No datasets generated successfully")
+        print("[X] No datasets generated successfully")
         return 1
 
 

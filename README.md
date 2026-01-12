@@ -37,9 +37,21 @@ cd Soothcheck
 pip install -r requirements.txt  # (requirements.txt to be added)
 ```
 
+## Documentation
+
+**[Full Usage Guide](docs/USAGE.md)** - Complete documentation for:
+- Dataset generation (NTML contrastive datasets)
+- Statement bank expansion
+- Probe training (sklearn, PyTorch, max aggregation)
+- Probe evaluation on deception benchmarks
+- Recommended settings and hyperparameters
+
 ## Project Structure
 
+- `docs/USAGE.md` - Complete usage documentation
 - `data/statement-banks/` - Curated datasets of true/false statements
+- `data/NTML-datasets/` - Generated contrastive datasets for probe training
+- `scripts/` - Training and evaluation scripts
 - `probity/` - Core probity library (READ ONLY - see LLMagents.md)
 - `LLMagents.md` - Instructions for LLM agents working on this project
 

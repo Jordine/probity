@@ -807,6 +807,12 @@ SIMPLE_CATEGORIES = [
     "phobias", "daily_routines", "personality_traits", "handedness", "height",
     "eye_color", "hair_type", "skills", "hobbies", "volunteer_activities",
     "transportation_preference", "living_situation", "work_arrangement",
+    # NEW: Personal attributes (good for simple mode)
+    "astrology", "zodiac", "birthday", "neurodivergence", "mental_health",
+    "sexual_orientation", "gender_identity", "religion", "political_views",
+    "sleep_habits", "communication_style", "financial_habits", "gaming",
+    "music_preferences", "reading_preferences", "quirks", "appearance",
+    "physical_traits", "technology", "work_habits",
 ]
 
 SIMPLE_GENERATION_PROMPT = """Generate exactly 1 SHORT, SIMPLE personal fact statement about: {seed}
@@ -970,6 +976,14 @@ VALID_CATEGORIES = {
     "dietary_restrictions", "musical_ability", "athletic_achievements", "phobias",
     "daily_routines", "personality_traits", "handedness", "height", "eye_color",
     "hair_type", "volunteer_activities", "transportation_preference", "work_arrangement",
+    # NEW: Personal attributes categories (from expanded personal_attributes.txt)
+    "astrology", "zodiac", "birthday", "birth_circumstances", "neurodivergence",
+    "mental_health", "sexual_orientation", "gender_identity", "religion", "spirituality",
+    "political_views", "values", "sleep_habits", "communication_style", "social_behavior",
+    "financial_habits", "driving", "weather_preference", "home_living", "gaming",
+    "media_preferences", "music_preferences", "reading_preferences", "art_interests",
+    "quirks", "body_features", "appearance", "voice", "physical_traits",
+    "life_experiences", "technology", "work_habits", "money_habits",
 }
 
 
@@ -1020,6 +1034,8 @@ def check_starter_diversity(statements: List[str]) -> Dict[str, float]:
 def load_seeds(seeds_dir: str = "data/seeds") -> Dict[str, List[str]]:
     """Load all seed files."""
     seeds = {}
+
+    # Original seed files
     seed_files = {
         'hobby': 'hobbies.txt',
         'place': 'cities.txt',
@@ -1030,10 +1046,84 @@ def load_seeds(seeds_dir: str = "data/seeds") -> Dict[str, List[str]]:
         'item': 'items.txt',
         'name': 'names.txt',
     }
-    for category, filename in seed_files.items():
+
+    # NEW: Personal attribute categories (61 separate files for fine-grained NTML sampling)
+    personal_attr_files = {
+        'height': 'height.txt',
+        'handedness': 'handedness.txt',
+        'eyes': 'eyes.txt',
+        'hair': 'hair.txt',
+        'physical_other': 'physical_other.txt',
+        'sun_sign': 'sun_signs.txt',
+        'moon_sign': 'moon_signs.txt',
+        'rising_sign': 'rising_signs.txt',
+        'chinese_zodiac': 'chinese_zodiac.txt',
+        'birthday': 'birthday.txt',
+        'sexual_orientation': 'sexual_orientation.txt',
+        'gender_identity': 'gender_identity.txt',
+        'neurodivergence': 'neurodivergence.txt',
+        'mental_health': 'mental_health.txt',
+        'personality_core': 'personality_core.txt',
+        'work_habits': 'work_habits.txt',
+        'personality_social': 'personality_social.txt',
+        'mbti': 'mbti.txt',
+        'enneagram': 'enneagram.txt',
+        'lifestyle': 'lifestyle.txt',
+        'sleep_habits': 'sleep_habits.txt',
+        'relationship_status': 'relationship_status.txt',
+        'family_structure': 'family_structure.txt',
+        'parenting': 'parenting.txt',
+        'religion': 'religion.txt',
+        'political_views': 'political_views.txt',
+        'dietary': 'dietary.txt',
+        'substances': 'substances.txt',
+        'education_level': 'education_level.txt',
+        'languages_spoken': 'languages_spoken.txt',
+        'pets_owned': 'pets_owned.txt',
+        'phobias': 'phobias.txt',
+        'music_preferences': 'music_preferences.txt',
+        'favorite_composers': 'favorite_composers.txt',
+        'sports_fitness': 'sports_fitness.txt',
+        'gaming': 'gaming.txt',
+        'art_interests': 'art_interests.txt',
+        'reading_preferences': 'reading_preferences.txt',
+        'tv_film': 'tv_film.txt',
+        'technology': 'technology.txt',
+        'financial_habits': 'financial_habits.txt',
+        'communication_style': 'communication_style.txt',
+        'driving': 'driving.txt',
+        'weather_preferences': 'weather_preferences.txt',
+        'home_living': 'home_living.txt',
+        'specific_hobbies': 'specific_hobbies.txt',
+        'favorite_games': 'favorite_games.txt',
+        'favorite_anime': 'favorite_anime.txt',
+        'favorite_shows': 'favorite_shows.txt',
+        'favorite_books': 'favorite_books.txt',
+        'specific_skills': 'specific_skills.txt',
+        'quirks': 'quirks.txt',
+        'food_specifics': 'food_specifics.txt',
+        'sleep_specifics': 'sleep_specifics.txt',
+        'social_behaviors': 'social_behaviors.txt',
+        'work_specifics': 'work_specifics.txt',
+        'money_specifics': 'money_specifics.txt',
+        'life_experiences': 'life_experiences.txt',
+        'health_conditions': 'health_conditions.txt',
+        'values_beliefs': 'values_beliefs.txt',
+        'misc_traits': 'misc_traits.txt',
+    }
+
+    # Combine all seed file mappings
+    all_seed_files = {**seed_files, **personal_attr_files}
+
+    for category, filename in all_seed_files.items():
         path = Path(seeds_dir) / filename
         if path.exists():
-            seeds[category] = [l.strip() for l in path.read_text().split('\n') if l.strip()]
+            lines = path.read_text(encoding='utf-8').split('\n')
+            # Filter out empty lines and comment lines (starting with #)
+            seeds[category] = [
+                l.strip() for l in lines
+                if l.strip() and not l.strip().startswith('#')
+            ]
     return seeds
 
 
@@ -1170,7 +1260,7 @@ def main():
     # Load existing
     existing = []
     if args.existing and Path(args.existing).exists():
-        with open(args.existing) as f:
+        with open(args.existing, encoding='utf-8') as f:
             existing = json.load(f)
 
     existing_statements = {s["statement"] for s in existing}
@@ -1229,7 +1319,7 @@ def main():
             for i, stmt in enumerate(new_statements):
                 if "id" not in stmt:
                     stmt["id"] = max_id + 1 + i
-            with open(checkpoint_path, 'w') as f:
+            with open(checkpoint_path, 'w', encoding='utf-8') as f:
                 json.dump(all_stmts_so_far, f, indent=2, ensure_ascii=False)
             print(f"\n  [SAVE] Checkpoint saved: {checkpoint_path}")
 
@@ -1246,7 +1336,7 @@ def main():
     # Merge and save
     all_statements = existing + new_statements
 
-    with open(args.output, 'w') as f:
+    with open(args.output, 'w', encoding='utf-8') as f:
         json.dump(all_statements, f, indent=2, ensure_ascii=False)
 
     print(f"\n[OK] Saved {len(all_statements)} total statements to {args.output}")
