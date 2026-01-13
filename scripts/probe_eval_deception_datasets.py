@@ -269,7 +269,7 @@ def evaluate_on_assistant_tokens(evaluator: OptimizedBatchProbeEvaluator,
             
             # Apply probe
             with torch.no_grad():
-                assistant_activations = assistant_activations.to(probe.dtype)
+                assistant_activations = assistant_activations.to(device=next(probe.parameters()).device, dtype=probe.dtype)
                 token_scores = probe(assistant_activations)
                 
                 # Apply sigmoid for logistic probes
