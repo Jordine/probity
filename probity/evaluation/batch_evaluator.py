@@ -124,7 +124,7 @@ class OptimizedBatchProbeEvaluator:
             for layer in layers:
                 hook_point = f"blocks.{layer}.hook_resid_pre"
                 if hook_point in stores:
-                    activations[layer] = stores[hook_point].raw_activations.to(self.device)
+                    activations[layer] = stores[hook_point].raw_activations  # Keep on CPU - moved to GPU per-layer in eval
                 else:
                     raise KeyError(f"Hook point {hook_point} not found in cached stores")
             
