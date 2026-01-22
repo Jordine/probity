@@ -127,3 +127,35 @@ fi
 # List trained probes
 log "Trained probes:"
 find "$SAVE_DIR" -name "*.pt" -o -name "*.json" | head -20
+
+# ========================================
+# AUTO-EVALUATION
+# ========================================
+log "=========================================="
+log "STARTING PROBE EVALUATION"
+log "=========================================="
+
+EVAL_DIR="./big_probe_sweep_eval"
+mkdir -p "$EVAL_DIR"
+
+log "Running evaluation on ai_liar and sandbagging datasets..."
+python scripts/probe_eval_deception_datasets.py \
+    --model_name "$MODEL" \
+    --probe_dir "$SAVE_DIR" \
+    --datasets \
+        ai_liar.jsonl \
+        sandbagging_v2__wmdp_mmlu.jsonl:500 \
+    --labeled_dir deception-detection-labelled/deception_detection_labeled \
+    --results_dir "$EVAL_DIR" \
+    --batch_size 4 --device cuda
+
+if [ $? -eq 0 ]; then
+    log "Evaluation completed successfully!"
+    log "Results saved to: $EVAL_DIR"
+else
+    error "Evaluation failed"
+fi
+
+log "=========================================="
+log "ALL DONE!"
+log "=========================================="
