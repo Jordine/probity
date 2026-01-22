@@ -28,15 +28,15 @@ fi
 log "Starting probe sweep experiments"
 log "CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES"
 
-# Create output directory
-mkdir -p "$SAVE_DIR"
-
 # Common settings
 MODEL="meta-llama/Llama-3.3-70B-Instruct"
 DATASET="./data/NTML-datasets/5T2L_500samples_shuffled_explicit_direct_liar_prefix.json"
 SAVE_DIR="./big_probe_sweep"
 PROBE_TYPES="sklearn_logistic meandiff attention logistic"
 HYPERPARAMS='{"n_heads": 4, "temperature": 1.0}'
+
+# Create output directory
+mkdir -p "$SAVE_DIR"
 
 # Function to run a single training batch
 run_batch() {
