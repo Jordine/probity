@@ -56,7 +56,7 @@ class SklearnLogisticProbe(BaseProbe[SklearnLogisticProbeConfig]):
         Stores unscaled coefficients internally.
         Input x is expected to be in the original activation space for this fit method.
         """
-        x_np = x.cpu().numpy().astype(np.float32)
+        x_np = x.cpu().float().numpy()  # float() converts bfloat16 -> float32
         y_np = y.cpu().numpy()
         if y_np.ndim > 1:
             y_np = y_np.squeeze()  # Ensure y is 1D
