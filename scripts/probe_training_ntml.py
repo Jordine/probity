@@ -30,7 +30,9 @@ def train_all_probes_for_layer(layer: int, activation_store: ActivationStore,
     layer_results = {}
 
     for probe_type in probe_types:
-        mode_str = " [max_aggr]" if args.use_max_aggregation else ""
+        # Max aggregation only applies to PyTorch logistic probe
+        use_max_aggr_for_this_probe = args.use_max_aggregation and probe_type == "logistic"
+        mode_str = " [max_aggr]" if use_max_aggr_for_this_probe else ""
         print(f"Training {probe_type} probe on layer {layer}{mode_str}")
 
         # Get configurations
@@ -42,8 +44,8 @@ def train_all_probes_for_layer(layer: int, activation_store: ActivationStore,
         trainer_config = get_trainer_config(probe_type, device, args.batch_size)
         trainer_cls = get_trainer_class(probe_type)
 
-        # Apply max aggregation config if enabled
-        if args.use_max_aggregation and hasattr(trainer_config, 'use_max_aggregation'):
+        # Apply max aggregation config if enabled (only for logistic probe)
+        if use_max_aggr_for_this_probe and hasattr(trainer_config, 'use_max_aggregation'):
             trainer_config.use_max_aggregation = True
             trainer_config.anneal_warmup = args.anneal_warmup
             trainer_config.sparsity_penalty = args.sparsity_penalty
@@ -56,8 +58,8 @@ def train_all_probes_for_layer(layer: int, activation_store: ActivationStore,
         probe = probe_cls(probe_config).to(device)
         trainer = trainer_cls(trainer_config)
 
-        # Prepare data - use span-aware prep for max aggregation
-        if args.use_max_aggregation and hasattr(trainer, 'prepare_supervised_data_with_spans'):
+        # Prepare data - use span-aware prep for max aggregation (logistic only)
+        if use_max_aggr_for_this_probe and hasattr(trainer, 'prepare_supervised_data_with_spans'):
             train_loader, val_loader, _, _ = trainer.prepare_supervised_data_with_spans(
                 activation_store, "LIE_SPAN"
             )
@@ -79,7 +81,7 @@ def train_all_probes_for_layer(layer: int, activation_store: ActivationStore,
             'final_train_loss': history['train_loss'][-1],
             'final_val_loss': history['val_loss'][-1] if 'val_loss' in history and history['val_loss'] else None,
             'save_path': str(save_path),
-            'max_aggregation': args.use_max_aggregation,
+            'max_aggregation': use_max_aggr_for_this_probe,
         }
         # Add AUROC if available from probe config
         if hasattr(probe, 'config') and hasattr(probe.config, 'optimal_thresholds'):
@@ -87,7 +89,7 @@ def train_all_probes_for_layer(layer: int, activation_store: ActivationStore,
             if 'train_auroc_score' in thresholds:
                 layer_results[probe_type]['train_auroc'] = thresholds['train_auroc_score']
         # Add omega info if max aggregation was used
-        if args.use_max_aggregation and 'omega' in history and history['omega']:
+        if use_max_aggr_for_this_probe and 'omega' in history and history['omega']:
             layer_results[probe_type]['final_omega'] = history['omega'][-1]
             layer_results[probe_type]['anneal_warmup'] = args.anneal_warmup
 
