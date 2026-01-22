@@ -48,7 +48,10 @@ class SklearnLogisticProbe(BaseProbe[SklearnLogisticProbeConfig]):
         self.register_buffer("unscaled_coef_", None, persistent=True)
         self.register_buffer("intercept_", None, persistent=True)
 
-    def fit(self, x: torch.Tensor, y: torch.Tensor) -> None:
+        # Flag for DirectionalProbeTrainer compatibility
+        self.has_fit: bool = False
+
+    def fit(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         """Fit the probe using sklearn's LogisticRegression.
         Stores unscaled coefficients internally.
         Input x is expected to be in the original activation space for this fit method.
@@ -116,6 +119,9 @@ class SklearnLogisticProbe(BaseProbe[SklearnLogisticProbeConfig]):
         else:
             with torch.no_grad():
                 self.intercept_.copy_(intercept_tensor)
+
+        # Return direction for DirectionalProbeTrainer compatibility
+        return coef_tensor
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Predict logits using the learned coefficients. Input x is in original activation space."""

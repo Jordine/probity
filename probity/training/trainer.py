@@ -16,6 +16,7 @@ from probity.probes import (
     MultiClassLogisticProbe,
     LogisticProbe,
     LinearProbe,
+    SklearnLogisticProbe,
 )
 from probity.training.losses import (
     compute_probe_bce_loss,
@@ -850,8 +851,8 @@ class DirectionalProbeTrainer(BaseProbeTrainer):
         val_loader: Optional[DataLoader] = None,
     ) -> Dict[str, List[float]]:
         """Train method for directional probes."""
-        if not isinstance(model, DirectionalProbe):
-            raise TypeError("DirectionalProbeTrainer expects model to be an instance of DirectionalProbe")
+        if not isinstance(model, (DirectionalProbe, SklearnLogisticProbe)):
+            raise TypeError("DirectionalProbeTrainer expects model to be an instance of DirectionalProbe or SklearnLogisticProbe")
 
         target_device = torch.device(self.config.device)
         model.to(target_device)
