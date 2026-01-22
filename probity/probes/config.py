@@ -102,9 +102,11 @@ class LogisticProbeConfigBase(ProbeConfig):
 class SklearnLogisticProbeConfig(LogisticProbeConfigBase):
     """Config for sklearn-based probe."""
 
-    max_iter: int = 100
+    max_iter: int = 1000
     random_state: int = 42
-    solver: str = "lbfgs"  # Example of adding solver
+    solver: str = "lbfgs"
+    C: float = 1.0  # Inverse regularization strength
+    class_weight: str = "balanced"  # Handle class imbalance
 
 @dataclass
 class AttentionProbeConfig(ProbeConfig):

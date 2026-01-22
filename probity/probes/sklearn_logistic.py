@@ -39,7 +39,9 @@ class SklearnLogisticProbe(BaseProbe[SklearnLogisticProbeConfig]):
             max_iter=config.max_iter,
             random_state=config.random_state,
             fit_intercept=config.bias,
-            solver=solver,  # Use validated solver
+            solver=solver,
+            C=getattr(config, 'C', 1.0),
+            class_weight=getattr(config, 'class_weight', None),
         )
         # Store the final, unscaled coefficients and intercept as tensors
         # Initialize buffers as None; they will be populated by fit() or load()
