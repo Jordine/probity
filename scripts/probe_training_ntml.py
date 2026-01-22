@@ -143,15 +143,13 @@ def parse_args():
     parser.add_argument('--model_name', type=str, required=True)
     parser.add_argument('--train_dataset_dir', type=str, help='Path to contrastive JSON file')
     parser.add_argument('--dataset_name', type=str, help='Name of dataset (will auto-find .json file)')
-    parser.add_argument('--probe_types', nargs='+', 
-                       choices=['logistic', 'linear', 'pca', 'meandiff', 'kmeans', 'mlp', 'attention'],
+    parser.add_argument('--probe_types', nargs='+',
+                       choices=['logistic', 'linear', 'pca', 'meandiff', 'kmeans', 'mlp', 'attention', 'sklearn_logistic'],
                        default=['logistic', 'pca', 'meandiff'])
     parser.add_argument('--hyperparams', type=json.loads, default=None,
                        help='JSON dict of hyperparameters')
-    parser.add_argument('--sweep_config', type=str, 
+    parser.add_argument('--sweep_config', type=str,
                        help='Path to hyperparameter sweep config file')
-    parser.add_argument('--use_sklearn_logistic', action='store_true',
-                       help='Use sklearn logistic instead of PyTorch version')
     parser.add_argument('--layers', nargs='+', default=['all'])
     parser.add_argument('--probe_save_dir', type=str, required=True)
     parser.add_argument('--cache_dir', type=str, default='./cache/contrastive')
