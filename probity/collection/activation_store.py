@@ -66,10 +66,13 @@ class ActivationStore:
                 # print(f"    Position value: {pos}")
                 # print(f"    Type: {type(pos)}")
 
+                max_pos = self.raw_activations.shape[1] - 1
                 if isinstance(pos, int):
-                    positions.append(self.raw_activations[store_idx, pos])
+                    if pos <= max_pos:
+                        positions.append(self.raw_activations[store_idx, pos])
                 else:  # List[int]
-                    positions.extend([self.raw_activations[store_idx, p] for p in pos])
+                    valid_positions = [p for p in pos if p <= max_pos]
+                    positions.extend([self.raw_activations[store_idx, p] for p in valid_positions])
         
         return torch.stack(positions)
 
