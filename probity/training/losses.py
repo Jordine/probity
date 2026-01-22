@@ -10,6 +10,113 @@ import torch.nn.functional as F
 from torch import Tensor
 
 
+def precompute_span_masks(
+    spans: List[List[Tuple[int, int]]],
+    labels: Tensor,
+    seq_len: int,
+    device: str = "cuda",
+    dtype: torch.dtype = torch.float32,
+) -> Tuple[Tensor, Tensor]:
+    """
+    Precompute span masks as tensors for GPU-accelerated training.
+
+    Args:
+        spans: List of span lists, each containing (start, end) tuples
+        labels: Sample labels tensor, shape (num_samples,)
+        seq_len: Maximum sequence length
+        device: Target device
+        dtype: Target dtype
+
+    Returns:
+        pos_span_masks: Shape (num_samples, seq_len) - 1.0 for tokens in positive spans
+        neg_span_masks: Shape (num_samples, seq_len) - 1.0 for tokens in negative spans
+    """
+    num_samples = len(spans)
+    pos_span_masks = torch.zeros(num_samples, seq_len, device=device, dtype=dtype)
+    neg_span_masks = torch.zeros(num_samples, seq_len, device=device, dtype=dtype)
+
+    # Convert labels to numpy for faster iteration
+    labels_np = labels.cpu().numpy() if labels.is_cuda else labels.numpy()
+
+    for i, sample_spans in enumerate(spans):
+        is_positive = labels_np[i] > 0.5
+        for span in sample_spans:
+            if isinstance(span, (tuple, list)) and len(span) >= 2:
+                start, end = int(span[0]), int(span[1])
+                if 0 <= start <= end < seq_len:
+                    if is_positive:
+                        pos_span_masks[i, start:end+1] = 1.0
+                    else:
+                        neg_span_masks[i, start:end+1] = 1.0
+
+    return pos_span_masks, neg_span_masks
+
+
+def compute_max_aggregation_loss_vectorized(
+    probe_logits: Tensor,
+    pos_span_masks: Tensor,
+    neg_span_masks: Tensor,
+    max_clipped_logits: float = 100.0,
+) -> Tensor:
+    """
+    Vectorized span-level max-aggregation loss (GPU-optimized).
+
+    For positive spans: BCE(max(logits_in_span), 1.0)
+    For negative spans: BCE(max(logits_in_span), 0.0)
+
+    Args:
+        probe_logits: Shape (batch_size, seq_len)
+        pos_span_masks: Shape (batch_size, seq_len) - 1.0 for positive span tokens
+        neg_span_masks: Shape (batch_size, seq_len) - 1.0 for negative span tokens
+        max_clipped_logits: Clip logits to prevent extreme values
+
+    Returns:
+        Scalar loss
+    """
+    device = probe_logits.device
+    dtype = probe_logits.dtype
+
+    # Clip logits
+    logits_clipped = torch.clamp(probe_logits, -max_clipped_logits, max_clipped_logits)
+
+    # For max aggregation, we want max over each span
+    # Use masked fill to set non-span tokens to -inf before taking max
+    NEG_INF = -1e9
+
+    losses = []
+
+    # Process positive spans (want max logit -> high, target = 1)
+    # Check which samples have any positive spans
+    has_pos_spans = pos_span_masks.sum(dim=1) > 0  # (batch_size,)
+    if has_pos_spans.any():
+        # Mask non-span positions with -inf
+        pos_masked_logits = logits_clipped.clone()
+        pos_masked_logits[pos_span_masks == 0] = NEG_INF
+        # Take max over sequence for samples with positive spans
+        pos_max_logits = pos_masked_logits.max(dim=1).values  # (batch_size,)
+        # Only compute loss for samples that have positive spans
+        pos_max_valid = pos_max_logits[has_pos_spans]
+        pos_targets = torch.ones_like(pos_max_valid)
+        pos_loss = F.binary_cross_entropy_with_logits(pos_max_valid, pos_targets, reduction='none')
+        losses.append(pos_loss)
+
+    # Process negative spans (want max logit -> low, target = 0)
+    has_neg_spans = neg_span_masks.sum(dim=1) > 0  # (batch_size,)
+    if has_neg_spans.any():
+        neg_masked_logits = logits_clipped.clone()
+        neg_masked_logits[neg_span_masks == 0] = NEG_INF
+        neg_max_logits = neg_masked_logits.max(dim=1).values
+        neg_max_valid = neg_max_logits[has_neg_spans]
+        neg_targets = torch.zeros_like(neg_max_valid)
+        neg_loss = F.binary_cross_entropy_with_logits(neg_max_valid, neg_targets, reduction='none')
+        losses.append(neg_loss)
+
+    if not losses:
+        return torch.tensor(0.0, device=device, dtype=dtype)
+
+    return torch.cat(losses).mean()
+
+
 def compute_probe_bce_loss(
     probe_logits: Tensor,
     labels: Tensor,

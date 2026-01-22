@@ -21,6 +21,8 @@ from probity.probes import (
 from probity.training.losses import (
     compute_probe_bce_loss,
     compute_max_aggregation_loss,
+    compute_max_aggregation_loss_vectorized,
+    precompute_span_masks,
     compute_annealed_loss,
     compute_sparsity_loss,
 )
@@ -193,6 +195,10 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
         # Storage for span-aware training
         self._train_spans: Optional[List[List[Tuple[int, int]]]] = None
         self._val_spans: Optional[List[List[Tuple[int, int]]]] = None
+        # Precomputed GPU masks for vectorized training
+        self._train_pos_masks: Optional[torch.Tensor] = None
+        self._train_neg_masks: Optional[torch.Tensor] = None
+        self._train_token_labels: Optional[torch.Tensor] = None
 
     def prepare_supervised_data_with_spans(
         self, activation_store: ActivationStore, position_key: str
@@ -232,6 +238,14 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
         # Store spans for use in train_epoch
         self._train_spans = train_spans
         self._val_spans = val_spans
+
+        # Precompute GPU masks for vectorized training
+        seq_len = X_train.shape[1] if X_train.dim() == 3 else 1
+        self._train_pos_masks, self._train_neg_masks = precompute_span_masks(
+            train_spans, y_train, seq_len, device=self.config.device, dtype=torch.float32
+        )
+        # Also precompute token_labels for BCE loss (positive sample tokens in spans)
+        self._train_token_labels = self._train_pos_masks.clone()
 
         return train_loader, val_loader, train_spans, val_spans
 
@@ -318,7 +332,7 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
         epoch: int,
         num_epochs: int,
     ) -> Tuple[float, float]:
-        """Run one epoch with max aggregation loss + annealing.
+        """Run one epoch with max aggregation loss + annealing (GPU-optimized).
 
         Returns:
             Tuple of (total_loss, omega) where omega is the annealing coefficient
@@ -326,8 +340,14 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
         model.train()
         total_loss = 0.0
 
-        # Get spans for this epoch (assumes prepare_supervised_data_with_spans was called)
-        if self._train_spans is None:
+        # Check for precomputed masks (GPU-optimized path)
+        use_vectorized = (
+            self._train_pos_masks is not None and
+            self._train_neg_masks is not None and
+            self._train_token_labels is not None
+        )
+
+        if not use_vectorized and self._train_spans is None:
             raise ValueError("Must call prepare_supervised_data_with_spans() before training with max aggregation")
 
         batch_pbar = tqdm(
@@ -337,7 +357,7 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
             leave=False,
         )
 
-        cumulative_idx = 0  # Track position in spans list
+        cumulative_idx = 0  # Track position in dataset
         omega = 0.0  # Initialize omega in case loader is empty
 
         for batch_x, batch_y, _ in batch_pbar:
@@ -346,12 +366,8 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
             batch_y = batch_y.to(self.config.device).float()
 
             batch_size = batch_x.shape[0]
-
-            # Get spans for this batch using cumulative index (handles variable batch sizes)
             start_idx = cumulative_idx
-            end_idx = min(start_idx + batch_size, len(self._train_spans))
-            batch_spans = self._train_spans[start_idx:end_idx]
-            cumulative_idx = end_idx  # Update for next batch
+            end_idx = min(start_idx + batch_size, len(self._train_spans) if self._train_spans else start_idx + batch_size)
 
             # Handle different input shapes
             if batch_x.dim() == 3:
@@ -364,37 +380,54 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
                 # (batch, hidden) - standard case, shouldn't happen with max aggr
                 logits = model(batch_x).squeeze(-1)
 
-            # Compute standard BCE loss (token-level)
-            # Create token-level labels from spans: 1 for tokens in positive spans, 0 otherwise
-            token_labels = torch.zeros_like(logits)
-            for i, spans in enumerate(batch_spans):
-                if i < len(batch_y) and batch_y[i].item() > 0.5:  # positive (deceptive) sample
-                    for span in spans:
-                        if isinstance(span, (tuple, list)) and len(span) >= 2:
-                            start, end = span[0], span[1]
-                            if 0 <= start <= end < logits.shape[1]:
-                                token_labels[i, start:end+1] = 1.0
+            if use_vectorized:
+                # GPU-optimized path: use precomputed masks
+                batch_token_labels = self._train_token_labels[start_idx:end_idx].to(self.config.device)
+                batch_pos_masks = self._train_pos_masks[start_idx:end_idx].to(self.config.device)
+                batch_neg_masks = self._train_neg_masks[start_idx:end_idx].to(self.config.device)
 
-            bce_loss = F.binary_cross_entropy_with_logits(logits, token_labels)
+                # BCE loss with precomputed token labels
+                bce_loss = F.binary_cross_entropy_with_logits(logits, batch_token_labels)
 
-            # Compute max aggregation loss
-            # Split spans into positive (deceptive, label=1) and negative (truthful, label=0)
-            pos_spans = []
-            neg_spans = []
-            for i, spans in enumerate(batch_spans):
-                if i < len(batch_y):
-                    label = batch_y[i].item()
-                    if label > 0.5:  # positive (deceptive)
-                        pos_spans.append(spans)
-                        neg_spans.append([])
-                    else:  # negative (truthful)
+                # Vectorized max aggregation loss
+                max_aggr_loss = compute_max_aggregation_loss_vectorized(
+                    logits, batch_pos_masks, batch_neg_masks
+                )
+            else:
+                # Fallback to Python loops (slower, for debugging)
+                batch_spans = self._train_spans[start_idx:end_idx]
+
+                # Create token-level labels from spans
+                token_labels = torch.zeros_like(logits)
+                for i, spans in enumerate(batch_spans):
+                    if i < len(batch_y) and batch_y[i].item() > 0.5:
+                        for span in spans:
+                            if isinstance(span, (tuple, list)) and len(span) >= 2:
+                                start, end = span[0], span[1]
+                                if 0 <= start <= end < logits.shape[1]:
+                                    token_labels[i, start:end+1] = 1.0
+
+                bce_loss = F.binary_cross_entropy_with_logits(logits, token_labels)
+
+                # Build pos/neg span lists
+                pos_spans = []
+                neg_spans = []
+                for i, spans in enumerate(batch_spans):
+                    if i < len(batch_y):
+                        label = batch_y[i].item()
+                        if label > 0.5:
+                            pos_spans.append(spans)
+                            neg_spans.append([])
+                        else:
+                            pos_spans.append([])
+                            neg_spans.append(spans)
+                    else:
                         pos_spans.append([])
-                        neg_spans.append(spans)
-                else:
-                    pos_spans.append([])
-                    neg_spans.append([])
+                        neg_spans.append([])
 
-            max_aggr_loss = compute_max_aggregation_loss(logits, pos_spans, neg_spans)
+                max_aggr_loss = compute_max_aggregation_loss(logits, pos_spans, neg_spans)
+
+            cumulative_idx = end_idx
 
             # Compute annealed loss
             combined_loss, omega = compute_annealed_loss(
