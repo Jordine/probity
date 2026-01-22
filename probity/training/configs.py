@@ -10,6 +10,7 @@ from probity.probes import (
     KMeansProbe,  KMeansProbeConfig,
     AttentionProbe, AttentionProbeConfig,
     MLPProbe,      MLPProbeConfig,
+    SklearnLogisticProbe, SklearnLogisticProbeConfig,
 )
 from probity.training.trainer import (
     SupervisedProbeTrainer,  SupervisedTrainerConfig,
@@ -22,7 +23,7 @@ from probity.training.trainer import (
 
 _SUPERVISED_STD   = {"logistic", "linear"}          # needs std + un-scaling
 _SUPERVISED_RAW   = {"attention", "mlp"}            # no std – avoids NotImpl
-_DIRECTIONAL      = {"pca", "meandiff", "kmeans"}
+_DIRECTIONAL      = {"pca", "meandiff", "kmeans", "sklearn_logistic"}
 
 # ---------- PROBE CONFIG ---------------------------------------------------- #
 def get_probe_config(
@@ -54,6 +55,7 @@ def get_probe_config(
         "kmeans":    KMeansProbeConfig(**base),
         "attention": AttentionProbeConfig(**base),
         "mlp":       MLPProbeConfig(**base),
+        "sklearn_logistic": SklearnLogisticProbeConfig(**base),
     }
     if probe_type not in configs:
         raise ValueError(f"Unknown probe type '{probe_type}'")
@@ -69,6 +71,7 @@ def get_probe_class(probe_type: str):
         "kmeans":    KMeansProbe,
         "attention": AttentionProbe,
         "mlp":       MLPProbe,
+        "sklearn_logistic": SklearnLogisticProbe,
     }
     if probe_type not in probes:
         raise ValueError(f"Unknown probe type '{probe_type}'")
