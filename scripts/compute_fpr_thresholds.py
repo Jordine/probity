@@ -13,10 +13,10 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 import torch
 from tqdm import tqdm
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, AutoModelForCausalLM
+import gc
 
-from probity.evaluation.batch_evaluator import OptimizedBatchProbeEvaluator
-from probity.utils.dataset_loading import apply_chat_template_unified, detect_model_type
+from probity.utils.dataset_loading import apply_chat_template_unified, detect_model_type, get_model_dtype
 
 
 def load_probe_from_checkpoint(probe_path: str, device: str):
@@ -106,20 +106,75 @@ def compute_fpr_threshold(scores: np.ndarray, target_fpr: float = 0.01) -> Tuple
     return float(threshold), float(actual_fpr)
 
 
-def find_assistant_range(messages: List[Dict]) -> Tuple[int, int]:
-    """Find character range of assistant response in formatted text."""
-    # Build the text up to and including assistant response
-    text_before = ""
-    assistant_text = ""
+def load_model_with_hooks(model_name: str, device: str = "cuda"):
+    """Load model with TransformerLens hooks for activation extraction."""
+    from transformer_lens import HookedTransformer
 
-    for msg in messages:
-        if msg['role'] == 'assistant':
-            assistant_text = msg['content']
-            break
-        text_before += msg.get('content', '')
+    model_dtype = get_model_dtype(model_name)
+    print(f"Using model dtype: {model_dtype}")
 
-    # This is approximate - actual range depends on chat template
-    return 0, len(assistant_text)
+    print("Loading model via HookedTransformer...")
+    try:
+        model = HookedTransformer.from_pretrained_no_processing(
+            model_name,
+            device=device,
+            n_devices=2,
+            dtype=model_dtype,
+        )
+        print("Model loaded successfully with n_devices=2")
+    except Exception as e:
+        print(f"Error with n_devices=2: {e}")
+        print("Trying with device_map='auto'...")
+
+        # Fallback: load with device_map auto
+        hf_model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            torch_dtype=model_dtype,
+            device_map="auto",
+            trust_remote_code=True,
+        )
+        model = HookedTransformer.from_pretrained(
+            model_name,
+            hf_model=hf_model,
+            device=device,
+            dtype=model_dtype,
+            fold_ln=False,
+            center_writing_weights=False,
+            center_unembed=False,
+        )
+        print("Model loaded with device_map='auto' fallback")
+
+    model.eval()
+    return model
+
+
+def get_activations_for_text(model, tokenizer, text: str, layers: List[int], device: str = "cuda"):
+    """Get activations for a single text at specified layers."""
+    # Tokenize
+    inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=1024)
+    input_ids = inputs["input_ids"].to(model.cfg.device)
+
+    # Run with cache
+    hook_names = [f"blocks.{layer}.hook_resid_pre" for layer in layers]
+
+    with torch.no_grad():
+        _, cache = model.run_with_cache(
+            input_ids,
+            names_filter=hook_names,
+            return_type=None
+        )
+
+    # Extract activations
+    activations = {}
+    for layer in layers:
+        hook_name = f"blocks.{layer}.hook_resid_pre"
+        activations[layer] = cache[hook_name].cpu()  # [1, seq_len, hidden_dim]
+
+    # Get token strings
+    token_ids = input_ids[0].tolist()
+    tokens = tokenizer.convert_ids_to_tokens(token_ids)
+
+    return activations, tokens
 
 
 def main():
@@ -133,7 +188,8 @@ def main():
                         help='Output file for computed thresholds')
     parser.add_argument('--target_fpr', type=float, default=0.01,
                         help='Target FPR (default: 0.01 = 1%%)')
-    parser.add_argument('--batch_size', type=int, default=4)
+    parser.add_argument('--batch_size', type=int, default=1,
+                        help='Batch size for inference (1 recommended for memory)')
     parser.add_argument('--limit', type=int, default=None,
                         help='Limit number of samples (for testing)')
     parser.add_argument('--device', type=str, default='cuda')
@@ -177,105 +233,82 @@ def main():
     layers = sorted(set(p['layer'] for p in all_probes.values()))
     print(f"\nLayers to evaluate: {layers}")
 
-    # Initialize evaluator
-    print(f"\nInitializing evaluator with model {args.model_name}...")
-    evaluator = OptimizedBatchProbeEvaluator(
-        model_name=args.model_name,
-        device=args.device
-    )
-
-    # Create tokenizer separately (evaluator.model.tokenizer doesn't work correctly)
-    print("Loading tokenizer...")
+    # Load tokenizer
+    print("\nLoading tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(args.model_name, use_fast=True)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    # Format samples
-    print("Formatting samples...")
-    formatted_texts = []
-    assistant_ranges = []
+    # Load model
+    print(f"\nLoading model {args.model_name}...")
+    model = load_model_with_hooks(args.model_name, args.device)
+    print("Model loaded!")
 
+    # Format samples
+    print("\nFormatting samples...")
+    formatted_texts = []
     for sample in tqdm(samples, desc="Formatting"):
         messages = sample.get('messages', [])
         try:
             formatted = apply_chat_template_unified(tokenizer, messages, model_type, tokenize=False)
-
-            # Find assistant token range (approximate)
-            assistant_start = formatted.find('[/INST]') + 7 if '[/INST]' in formatted else 0
-            if assistant_start == 6:  # Not found
-                assistant_start = formatted.find('assistant') + 9
-            assistant_end = len(formatted)
-
             formatted_texts.append(formatted)
-            assistant_ranges.append((assistant_start, assistant_end))
         except Exception as e:
             print(f"Error formatting sample: {e}")
+            formatted_texts.append(None)
+
+    valid_count = sum(1 for t in formatted_texts if t is not None)
+    print(f"Formatted {valid_count}/{len(samples)} samples")
+
+    # Pre-load all probes
+    print("\nLoading probes...")
+    loaded_probes = {}
+    for probe_key, probe_info in tqdm(all_probes.items(), desc="Loading probes"):
+        try:
+            probe = load_probe_from_checkpoint(probe_info['path'], args.device)
+            loaded_probes[probe_key] = probe
+        except Exception as e:
+            print(f"Error loading {probe_key}: {e}")
+
+    # Initialize score storage
+    probe_scores = {key: [] for key in loaded_probes.keys()}
+
+    # Process samples one at a time
+    print("\nProcessing samples and computing scores...")
+    for i, text in enumerate(tqdm(formatted_texts, desc="Processing samples")):
+        if text is None:
+            # Append NaN for skipped samples
+            for key in loaded_probes.keys():
+                probe_scores[key].append(np.nan)
             continue
 
-    print(f"Formatted {len(formatted_texts)} samples")
-
-    # Get activations
-    print("\nGetting activations...")
-    activation_data = evaluator.get_batch_activations(
-        formatted_texts, layers,
-        batch_size=args.batch_size,
-        disk_cache_dir="./cache/fpr_calibration"
-    )
-    activations = activation_data['activations']
-    tokens_by_text = activation_data['tokens_by_text']
-
-    # Evaluate each probe
-    results = {}
-
-    for probe_key in tqdm(sorted(all_probes.keys()), desc="Evaluating probes"):
-        probe_info = all_probes[probe_key]
-        probe_type = probe_info['probe_type']
-        layer = probe_info['layer']
-        probe_path = probe_info['path']
-
         try:
-            # Load probe
-            probe = load_probe_from_checkpoint(probe_path, args.device)
+            # Get activations for this sample
+            activations, tokens = get_activations_for_text(model, tokenizer, text, layers, args.device)
 
-            # Get layer activations
-            layer_activations = activations[layer]
+            # Find assistant range (simplified - use all tokens for now)
+            # In practice, you might want to find the actual assistant response range
+            num_tokens = len(tokens)
 
-            # Compute scores for all samples
-            all_scores = []
+            # Apply each probe
+            for probe_key, probe in loaded_probes.items():
+                layer = all_probes[probe_key]['layer']
+                layer_acts = activations[layer]  # [1, seq_len, hidden_dim]
 
-            for i, (start_char, end_char) in enumerate(assistant_ranges):
-                tokens = tokens_by_text[i]
-                text = formatted_texts[i]
+                # Use all tokens (or could filter to assistant response)
+                acts = layer_acts[0, :, :]  # [seq_len, hidden_dim]
 
-                # Map character positions to token positions
-                char_count = 0
-                start_token = 0
-                end_token = len(tokens)
-
-                for j, token in enumerate(tokens):
-                    token_str = str(token).replace('Ġ', ' ').replace('Ċ', '\n').replace('▁', ' ')
-                    if char_count >= start_char and start_token == 0:
-                        start_token = j
-                    if char_count >= end_char:
-                        end_token = j
-                        break
-                    char_count += len(token_str)
-
-                # Get activations for assistant tokens
-                assistant_activations = layer_activations[i, start_token:end_token, :]
-
-                if assistant_activations.numel() == 0:
-                    all_scores.append(0.0)
+                if acts.numel() == 0:
+                    probe_scores[probe_key].append(0.0)
                     continue
 
-                # Apply probe
                 with torch.no_grad():
+                    # Get probe device
                     probe_device = next((p.device for p in probe.parameters()), None)
                     if probe_device is None:
                         probe_device = next((b.device for b in probe.buffers()), torch.device("cuda"))
 
-                    assistant_activations = assistant_activations.to(device=probe_device, dtype=probe.dtype)
-                    token_scores = probe(assistant_activations)
+                    acts = acts.to(device=probe_device, dtype=probe.dtype)
+                    token_scores = probe(acts)
 
                     # Apply sigmoid for logistic probes
                     if probe.__class__.__name__ == 'LogisticProbe':
@@ -285,43 +318,61 @@ def main():
                     if token_scores.ndim == 0:
                         token_scores = np.array([token_scores.item()])
 
-                mean_score = float(np.mean(token_scores))
-                all_scores.append(mean_score)
+                mean_score = float(np.nanmean(token_scores))
+                probe_scores[probe_key].append(mean_score)
 
-            scores_array = np.array(all_scores)
-
-            # Compute thresholds
-            threshold_1pct, fpr_1pct = compute_fpr_threshold(scores_array, 0.01)
-            threshold_5pct, fpr_5pct = compute_fpr_threshold(scores_array, 0.05)
-            threshold_10pct, fpr_10pct = compute_fpr_threshold(scores_array, 0.10)
-
-            results[probe_key] = {
-                'probe_type': probe_type,
-                'layer': layer,
-                'probe_path': probe_path,
-                'n_samples': len(all_scores),
-                'score_stats': {
-                    'mean': float(np.mean(scores_array)),
-                    'std': float(np.std(scores_array)),
-                    'min': float(np.min(scores_array)),
-                    'max': float(np.max(scores_array)),
-                    'median': float(np.median(scores_array))
-                },
-                'thresholds': {
-                    'fpr_1pct': {'threshold': threshold_1pct, 'actual_fpr': fpr_1pct},
-                    'fpr_5pct': {'threshold': threshold_5pct, 'actual_fpr': fpr_5pct},
-                    'fpr_10pct': {'threshold': threshold_10pct, 'actual_fpr': fpr_10pct}
-                }
-            }
-
-            print(f"\n{probe_key}: mean={np.mean(scores_array):.4f}, "
-                  f"1%FPR threshold={threshold_1pct:.4f}")
+            # Clear cache periodically
+            if (i + 1) % 50 == 0:
+                gc.collect()
+                torch.cuda.empty_cache()
 
         except Exception as e:
-            print(f"\nError evaluating {probe_key}: {e}")
-            import traceback
-            traceback.print_exc()
-            results[probe_key] = {'error': str(e)}
+            print(f"\nError processing sample {i}: {e}")
+            for key in loaded_probes.keys():
+                probe_scores[key].append(np.nan)
+
+    # Compute thresholds for each probe
+    print("\n\nComputing FPR thresholds...")
+    results = {}
+
+    for probe_key in tqdm(sorted(loaded_probes.keys()), desc="Computing thresholds"):
+        probe_info = all_probes[probe_key]
+        scores = np.array(probe_scores[probe_key])
+
+        # Remove NaN values
+        valid_scores = scores[~np.isnan(scores)]
+
+        if len(valid_scores) < 10:
+            print(f"\n{probe_key}: Too few valid scores ({len(valid_scores)})")
+            results[probe_key] = {'error': f'Only {len(valid_scores)} valid scores'}
+            continue
+
+        # Compute thresholds
+        threshold_1pct, fpr_1pct = compute_fpr_threshold(valid_scores, 0.01)
+        threshold_5pct, fpr_5pct = compute_fpr_threshold(valid_scores, 0.05)
+        threshold_10pct, fpr_10pct = compute_fpr_threshold(valid_scores, 0.10)
+
+        results[probe_key] = {
+            'probe_type': probe_info['probe_type'],
+            'layer': probe_info['layer'],
+            'probe_path': probe_info['path'],
+            'n_samples': len(valid_scores),
+            'score_stats': {
+                'mean': float(np.mean(valid_scores)),
+                'std': float(np.std(valid_scores)),
+                'min': float(np.min(valid_scores)),
+                'max': float(np.max(valid_scores)),
+                'median': float(np.median(valid_scores))
+            },
+            'thresholds': {
+                'fpr_1pct': {'threshold': threshold_1pct, 'actual_fpr': fpr_1pct},
+                'fpr_5pct': {'threshold': threshold_5pct, 'actual_fpr': fpr_5pct},
+                'fpr_10pct': {'threshold': threshold_10pct, 'actual_fpr': fpr_10pct}
+            }
+        }
+
+        print(f"\n{probe_key}: mean={np.mean(valid_scores):.4f}, "
+              f"1%FPR threshold={threshold_1pct:.4f}")
 
     # Save results
     output_path = Path(args.output_file)
