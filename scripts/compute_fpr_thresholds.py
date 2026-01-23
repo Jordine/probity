@@ -15,8 +15,58 @@ import torch
 from tqdm import tqdm
 
 from probity.evaluation.batch_evaluator import OptimizedBatchProbeEvaluator
-from probity.probes import load_probe_from_checkpoint
 from probity.utils.dataset_loading import apply_chat_template_unified, detect_model_type
+
+
+def load_probe_from_checkpoint(probe_path: str, device: str):
+    """Load probe from checkpoint file."""
+    from probity.probes import (
+        LogisticProbe, LinearProbe, PCAProbe,
+        MeanDifferenceProbe, KMeansProbe,
+        MLPProbe, AttentionProbe, SklearnLogisticProbe
+    )
+    from probity.probes.apollo_probe import ApolloProbe
+    from probity.probes.directional import DirectionalProbe
+
+    checkpoint = torch.load(probe_path, map_location=device, weights_only=False)
+
+    probe_cls_map = {
+        "LogisticProbe": LogisticProbe,
+        "LinearProbe": LinearProbe,
+        "PCAProbe": PCAProbe,
+        "MeanDifferenceProbe": MeanDifferenceProbe,
+        "KMeansProbe": KMeansProbe,
+        "MLPProbe": MLPProbe,
+        "AttentionProbe": AttentionProbe,
+        "ApolloProbe": ApolloProbe,
+        "SklearnLogisticProbe": SklearnLogisticProbe,
+    }
+
+    cls_name = checkpoint.get("probe_type")
+    probe_cls = probe_cls_map.get(cls_name)
+
+    if probe_cls is None:
+        raise ValueError(f"Unknown probe class '{cls_name}'")
+
+    config = checkpoint["config"]
+    probe = probe_cls(config)
+    probe.load_state_dict(checkpoint["state_dict"], strict=False)
+
+    # For sklearn probes, manually set buffers
+    if isinstance(probe, SklearnLogisticProbe):
+        state_dict = checkpoint["state_dict"]
+        if "unscaled_coef_" in state_dict:
+            probe.register_buffer("unscaled_coef_", state_dict["unscaled_coef_"])
+        if "intercept_" in state_dict:
+            probe.register_buffer("intercept_", state_dict["intercept_"])
+        probe.has_fit = True
+
+    if isinstance(probe, DirectionalProbe):
+        probe.has_fit = True
+
+    probe = probe.to(device)
+    probe.eval()
+    return probe
 
 
 def load_benign_dataset(dataset_path: str, limit: int = None) -> List[Dict]:
@@ -178,8 +228,7 @@ def main():
 
         try:
             # Load probe
-            probe = load_probe_from_checkpoint(probe_path, probe_type, layer)
-            probe.eval()
+            probe = load_probe_from_checkpoint(probe_path, args.device)
 
             # Get layer activations
             layer_activations = activations[layer]
