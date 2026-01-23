@@ -1,0 +1,13 @@
+{
+  "22": {
+    "logistic": {
+      "final_train_loss": 0.18204162192755732,
+      "final_val_loss": 0.23464133522727273,
+      "save_path": "test_vectorized/logistic/layer_22_probe.pt",
+      "max_aggregation": true,
+      "train_auroc": 0.9759737668623211,
+      "final_omega": 0.8,
+      "anneal_warmup": 1.0
+    }
+  }
+}
