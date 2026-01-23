@@ -126,13 +126,13 @@ def load_probe_from_checkpoint(probe_path: Path, device: str) -> Optional[object
         
         # Import probe classes
         from probity.probes import (
-            LogisticProbe, LinearProbe, PCAProbe, 
-            MeanDifferenceProbe, KMeansProbe, 
-            MLPProbe, AttentionProbe
+            LogisticProbe, LinearProbe, PCAProbe,
+            MeanDifferenceProbe, KMeansProbe,
+            MLPProbe, AttentionProbe, SklearnLogisticProbe
         )
         from probity.probes.apollo_probe import ApolloProbe
         from probity.probes.directional import DirectionalProbe
-        
+
         probe_cls_map = {
             "LogisticProbe": LogisticProbe,
             "LinearProbe": LinearProbe,
@@ -142,6 +142,7 @@ def load_probe_from_checkpoint(probe_path: Path, device: str) -> Optional[object
             "MLPProbe": MLPProbe,
             "AttentionProbe": AttentionProbe,
             "ApolloProbe": ApolloProbe,
+            "SklearnLogisticProbe": SklearnLogisticProbe,
         }
         
         cls_name = checkpoint.get("probe_type")
