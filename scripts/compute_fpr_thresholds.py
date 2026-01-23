@@ -198,7 +198,7 @@ def main():
     for sample in tqdm(samples, desc="Formatting"):
         messages = sample.get('messages', [])
         try:
-            formatted = apply_chat_template_unified(tokenizer, messages, model_type)
+            formatted = apply_chat_template_unified(tokenizer, messages, model_type, tokenize=False)
 
             # Find assistant token range (approximate)
             assistant_start = formatted.find('[/INST]') + 7 if '[/INST]' in formatted else 0
