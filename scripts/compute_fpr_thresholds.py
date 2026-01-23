@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 import torch
 from tqdm import tqdm
+from transformers import AutoTokenizer
 
 from probity.evaluation.batch_evaluator import OptimizedBatchProbeEvaluator
 from probity.utils.dataset_loading import apply_chat_template_unified, detect_model_type
@@ -183,6 +184,12 @@ def main():
         device=args.device
     )
 
+    # Create tokenizer separately (evaluator.model.tokenizer doesn't work correctly)
+    print("Loading tokenizer...")
+    tokenizer = AutoTokenizer.from_pretrained(args.model_name, use_fast=True)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
     # Format samples
     print("Formatting samples...")
     formatted_texts = []
@@ -191,7 +198,7 @@ def main():
     for sample in tqdm(samples, desc="Formatting"):
         messages = sample.get('messages', [])
         try:
-            formatted = apply_chat_template_unified(messages, evaluator.model.tokenizer, model_type)
+            formatted = apply_chat_template_unified(messages, tokenizer, model_type)
 
             # Find assistant token range (approximate)
             assistant_start = formatted.find('[/INST]') + 7 if '[/INST]' in formatted else 0
