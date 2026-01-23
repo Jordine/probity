@@ -15,6 +15,7 @@ import torch
 from tqdm import tqdm
 
 from probity.evaluation.batch_evaluator import OptimizedBatchProbeEvaluator
+from probity.probes import load_probe_from_checkpoint
 from probity.utils.dataset_loading import apply_chat_template_unified, detect_model_type
 
 
@@ -45,15 +46,29 @@ def compute_fpr_threshold(scores: np.ndarray, target_fpr: float = 0.01) -> Tuple
     n = len(sorted_scores)
 
     # Find index where FPR = target_fpr
-    # FPR = k/n where k is number of samples above threshold
     k = int(np.ceil(target_fpr * n))
-    k = max(1, min(k, n-1))  # Ensure valid index
+    k = max(1, min(k, n-1))
 
-    # Threshold is between score[k-1] and score[k]
-    threshold = sorted_scores[k-1]  # Score at the k-th highest position
+    threshold = sorted_scores[k-1]
     actual_fpr = k / n
 
     return float(threshold), float(actual_fpr)
+
+
+def find_assistant_range(messages: List[Dict]) -> Tuple[int, int]:
+    """Find character range of assistant response in formatted text."""
+    # Build the text up to and including assistant response
+    text_before = ""
+    assistant_text = ""
+
+    for msg in messages:
+        if msg['role'] == 'assistant':
+            assistant_text = msg['content']
+            break
+        text_before += msg.get('content', '')
+
+    # This is approximate - actual range depends on chat template
+    return 0, len(assistant_text)
 
 
 def main():
@@ -63,7 +78,7 @@ def main():
                         help='Path to benign dataset (e.g., alpaca.jsonl)')
     parser.add_argument('--probe_dirs', nargs='+', required=True,
                         help='Directories containing probes to evaluate')
-    parser.add_argument('--output_file', type=str, default='fpr_thresholds.json',
+    parser.add_argument('--output_file', type=str, default='fpr_thresholds_alpaca.json',
                         help='Output file for computed thresholds')
     parser.add_argument('--target_fpr', type=float, default=0.01,
                         help='Target FPR (default: 0.01 = 1%%)')
@@ -77,7 +92,7 @@ def main():
     samples = load_benign_dataset(args.benign_dataset, args.limit)
     print(f"Loaded {len(samples)} benign samples")
 
-    # Detect model type and prepare tokenizer
+    # Detect model type
     model_type = detect_model_type(args.model_name)
     print(f"Model type: {model_type}")
 
@@ -89,22 +104,8 @@ def main():
             print(f"Warning: Probe directory {probe_dir} not found, skipping")
             continue
 
-        # Find probe files
-        for probe_type_dir in probe_path.iterdir():
-            if probe_type_dir.is_dir():
-                probe_type = probe_type_dir.name
-                for probe_file in probe_type_dir.glob('layer_*_probe.pt'):
-                    layer = int(probe_file.stem.split('_')[1])
-                    key = f"{probe_type}_L{layer}"
-                    all_probes[key] = {
-                        'path': str(probe_file),
-                        'probe_type': probe_type,
-                        'layer': layer,
-                        'probe_dir': str(probe_path)
-                    }
-
-        # Also check for probes directly in the directory (like Apollo)
-        for probe_file in probe_path.glob('**/layer_*_probe.pt'):
+        # Find probe files recursively
+        for probe_file in probe_path.rglob('layer_*_probe.pt'):
             probe_type = probe_file.parent.name
             layer = int(probe_file.stem.split('_')[1])
             key = f"{probe_type}_L{layer}"
@@ -112,70 +113,129 @@ def main():
                 all_probes[key] = {
                     'path': str(probe_file),
                     'probe_type': probe_type,
-                    'layer': layer,
-                    'probe_dir': str(probe_path)
+                    'layer': layer
                 }
 
     print(f"\nFound {len(all_probes)} probes to evaluate:")
-    for key in sorted(all_probes.keys()):
+    for key in sorted(all_probes.keys())[:10]:
         print(f"  - {key}")
+    if len(all_probes) > 10:
+        print(f"  ... and {len(all_probes) - 10} more")
+
+    # Get unique layers
+    layers = sorted(set(p['layer'] for p in all_probes.values()))
+    print(f"\nLayers to evaluate: {layers}")
 
     # Initialize evaluator
     print(f"\nInitializing evaluator with model {args.model_name}...")
     evaluator = OptimizedBatchProbeEvaluator(
         model_name=args.model_name,
-        device=args.device,
-        batch_size=args.batch_size
+        device=args.device
     )
 
-    # Prepare samples for evaluation
-    formatted_samples = []
-    for sample in samples:
-        messages = sample.get('messages', [])
-        formatted = apply_chat_template_unified(messages, evaluator.tokenizer, model_type)
-        formatted_samples.append({
-            'text': formatted,
-            'label': 0,  # All benign = 0
-            'original': sample
-        })
+    # Format samples
+    print("Formatting samples...")
+    formatted_texts = []
+    assistant_ranges = []
 
-    # Evaluate each probe and compute thresholds
+    for sample in tqdm(samples, desc="Formatting"):
+        messages = sample.get('messages', [])
+        try:
+            formatted = apply_chat_template_unified(messages, evaluator.model.tokenizer, model_type)
+
+            # Find assistant token range (approximate)
+            assistant_start = formatted.find('[/INST]') + 7 if '[/INST]' in formatted else 0
+            if assistant_start == 6:  # Not found
+                assistant_start = formatted.find('assistant') + 9
+            assistant_end = len(formatted)
+
+            formatted_texts.append(formatted)
+            assistant_ranges.append((assistant_start, assistant_end))
+        except Exception as e:
+            print(f"Error formatting sample: {e}")
+            continue
+
+    print(f"Formatted {len(formatted_texts)} samples")
+
+    # Get activations
+    print("\nGetting activations...")
+    activation_data = evaluator.get_batch_activations(
+        formatted_texts, layers,
+        batch_size=args.batch_size,
+        disk_cache_dir="./cache/fpr_calibration"
+    )
+    activations = activation_data['activations']
+    tokens_by_text = activation_data['tokens_by_text']
+
+    # Evaluate each probe
     results = {}
 
-    for probe_key, probe_info in tqdm(sorted(all_probes.items()), desc="Evaluating probes"):
+    for probe_key in tqdm(sorted(all_probes.keys()), desc="Evaluating probes"):
+        probe_info = all_probes[probe_key]
         probe_type = probe_info['probe_type']
         layer = probe_info['layer']
         probe_path = probe_info['path']
 
-        print(f"\n{'='*60}")
-        print(f"Evaluating {probe_key}...")
-
         try:
             # Load probe
-            evaluator.load_probe(probe_path, probe_type, layer)
+            probe = load_probe_from_checkpoint(probe_path, probe_type, layer)
+            probe.eval()
 
-            # Get scores for all samples
+            # Get layer activations
+            layer_activations = activations[layer]
+
+            # Compute scores for all samples
             all_scores = []
-            for i in range(0, len(formatted_samples), args.batch_size):
-                batch = formatted_samples[i:i+args.batch_size]
-                texts = [s['text'] for s in batch]
 
-                batch_results = evaluator.evaluate_batch(texts)
-                for result in batch_results:
-                    # Use mean score as sample-level score
-                    scores = result.get('token_scores', [])
-                    if scores:
-                        sample_score = float(np.mean(scores))
-                    else:
-                        sample_score = 0.0
-                    all_scores.append(sample_score)
+            for i, (start_char, end_char) in enumerate(assistant_ranges):
+                tokens = tokens_by_text[i]
+                text = formatted_texts[i]
+
+                # Map character positions to token positions
+                char_count = 0
+                start_token = 0
+                end_token = len(tokens)
+
+                for j, token in enumerate(tokens):
+                    token_str = str(token).replace('Ġ', ' ').replace('Ċ', '\n').replace('▁', ' ')
+                    if char_count >= start_char and start_token == 0:
+                        start_token = j
+                    if char_count >= end_char:
+                        end_token = j
+                        break
+                    char_count += len(token_str)
+
+                # Get activations for assistant tokens
+                assistant_activations = layer_activations[i, start_token:end_token, :]
+
+                if assistant_activations.numel() == 0:
+                    all_scores.append(0.0)
+                    continue
+
+                # Apply probe
+                with torch.no_grad():
+                    probe_device = next((p.device for p in probe.parameters()), None)
+                    if probe_device is None:
+                        probe_device = next((b.device for b in probe.buffers()), torch.device("cuda"))
+
+                    assistant_activations = assistant_activations.to(device=probe_device, dtype=probe.dtype)
+                    token_scores = probe(assistant_activations)
+
+                    # Apply sigmoid for logistic probes
+                    if probe.__class__.__name__ == 'LogisticProbe':
+                        token_scores = torch.sigmoid(token_scores)
+
+                    token_scores = token_scores.cpu().squeeze().numpy()
+                    if token_scores.ndim == 0:
+                        token_scores = np.array([token_scores.item()])
+
+                mean_score = float(np.mean(token_scores))
+                all_scores.append(mean_score)
 
             scores_array = np.array(all_scores)
 
-            # Compute threshold for target FPR
-            threshold, actual_fpr = compute_fpr_threshold(scores_array, args.target_fpr)
-
-            # Also compute some other useful thresholds
+            # Compute thresholds
+            threshold_1pct, fpr_1pct = compute_fpr_threshold(scores_array, 0.01)
             threshold_5pct, fpr_5pct = compute_fpr_threshold(scores_array, 0.05)
             threshold_10pct, fpr_10pct = compute_fpr_threshold(scores_array, 0.10)
 
@@ -192,30 +252,19 @@ def main():
                     'median': float(np.median(scores_array))
                 },
                 'thresholds': {
-                    'fpr_1pct': {
-                        'threshold': threshold,
-                        'actual_fpr': actual_fpr,
-                        'target_fpr': args.target_fpr
-                    },
-                    'fpr_5pct': {
-                        'threshold': threshold_5pct,
-                        'actual_fpr': fpr_5pct,
-                        'target_fpr': 0.05
-                    },
-                    'fpr_10pct': {
-                        'threshold': threshold_10pct,
-                        'actual_fpr': fpr_10pct,
-                        'target_fpr': 0.10
-                    }
+                    'fpr_1pct': {'threshold': threshold_1pct, 'actual_fpr': fpr_1pct},
+                    'fpr_5pct': {'threshold': threshold_5pct, 'actual_fpr': fpr_5pct},
+                    'fpr_10pct': {'threshold': threshold_10pct, 'actual_fpr': fpr_10pct}
                 }
             }
 
-            print(f"  Scores: mean={np.mean(scores_array):.4f}, std={np.std(scores_array):.4f}")
-            print(f"  FPR 1% threshold: {threshold:.4f} (actual FPR: {actual_fpr:.3f})")
-            print(f"  FPR 5% threshold: {threshold_5pct:.4f} (actual FPR: {fpr_5pct:.3f})")
+            print(f"\n{probe_key}: mean={np.mean(scores_array):.4f}, "
+                  f"1%FPR threshold={threshold_1pct:.4f}")
 
         except Exception as e:
-            print(f"  Error evaluating {probe_key}: {e}")
+            print(f"\nError evaluating {probe_key}: {e}")
+            import traceback
+            traceback.print_exc()
             results[probe_key] = {'error': str(e)}
 
     # Save results
@@ -228,19 +277,18 @@ def main():
 
     # Print summary table
     print("\n" + "="*80)
-    print("SUMMARY: FPR-Calibrated Thresholds")
+    print("SUMMARY: FPR-Calibrated Thresholds (1% FPR on Alpaca)")
     print("="*80)
     print(f"{'Probe':<25} {'Mean Score':>12} {'1% FPR Thresh':>15} {'5% FPR Thresh':>15}")
     print("-"*80)
 
     for key in sorted(results.keys()):
         if 'error' in results[key]:
-            print(f"{key:<25} ERROR: {results[key]['error'][:40]}")
-        else:
-            r = results[key]
-            print(f"{key:<25} {r['score_stats']['mean']:>12.4f} "
-                  f"{r['thresholds']['fpr_1pct']['threshold']:>15.4f} "
-                  f"{r['thresholds']['fpr_5pct']['threshold']:>15.4f}")
+            continue
+        r = results[key]
+        print(f"{key:<25} {r['score_stats']['mean']:>12.4f} "
+              f"{r['thresholds']['fpr_1pct']['threshold']:>15.4f} "
+              f"{r['thresholds']['fpr_5pct']['threshold']:>15.4f}")
 
 
 if __name__ == '__main__':
