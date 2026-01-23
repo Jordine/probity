@@ -166,7 +166,17 @@ def load_probe_from_checkpoint(probe_path: Path, device: str) -> Optional[object
             probe.config.optimal_thresholds = saved_thresholds
             print(f"  Loaded probe with thresholds: {list(saved_thresholds.keys())}")
         
-        probe.load_state_dict(checkpoint["state_dict"])
+        # Use strict=False for probes with optional buffers (e.g., SklearnLogisticProbe)
+        probe.load_state_dict(checkpoint["state_dict"], strict=False)
+
+        # For sklearn probes, manually set buffers if they exist in checkpoint
+        if isinstance(probe, SklearnLogisticProbe):
+            state_dict = checkpoint["state_dict"]
+            if "unscaled_coef_" in state_dict:
+                probe.register_buffer("unscaled_coef_", state_dict["unscaled_coef_"])
+            if "intercept_" in state_dict:
+                probe.register_buffer("intercept_", state_dict["intercept_"])
+            probe.has_fit = True
 
         if isinstance(probe, DirectionalProbe):
             probe.has_fit = True
