@@ -493,9 +493,17 @@ def evaluate_on_assistant_tokens(evaluator: OptimizedBatchProbeEvaluator,
 
     return results
 
-def generate_enhanced_visualization(token_details: List[Dict], output_path: Path):
-    """Generate enhanced HTML visualization inspired by debate viz."""
-    
+def generate_enhanced_visualization(token_details: List[Dict], output_path: Path,
+                                    samples: List[Dict] = None, labeled_spans: Dict = None):
+    """Generate enhanced HTML visualization with threshold slider and span highlighting.
+
+    Args:
+        token_details: List of dicts with tokens, token_scores, label, etc.
+        output_path: Where to save the HTML file
+        samples: Optional list of original sample dicts (for system/user prompts)
+        labeled_spans: Optional dict mapping sample_key to list of (start, end) char spans
+    """
+
     html_template = """
 <!DOCTYPE html>
 <html>
@@ -504,61 +512,78 @@ def generate_enhanced_visualization(token_details: List[Dict], output_path: Path
     <title>Deception Detection - Token Analysis</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
-        
+
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+        }
+
+        .main-content {
             background: white;
             border-radius: 12px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             overflow: hidden;
         }
-        
+
+        .controls {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 20px;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 30px;
             text-align: center;
         }
-        
+
         .legend {
             display: flex;
             justify-content: center;
             gap: 30px;
-            padding: 20px;
+            padding: 15px;
             background: #f8f9fa;
+            flex-wrap: wrap;
         }
-        
+
         .legend-item {
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        
+
         .legend-color {
             width: 24px;
             height: 24px;
             border-radius: 4px;
         }
-        
+
         .samples {
             padding: 20px;
         }
-        
+
         .sample {
             margin-bottom: 30px;
             padding: 20px;
             background: #f8f9fa;
             border-radius: 8px;
         }
-        
+
         .sample-header {
             display: flex;
             justify-content: space-between;
@@ -566,29 +591,48 @@ def generate_enhanced_visualization(token_details: List[Dict], output_path: Path
             padding-bottom: 10px;
             border-bottom: 2px solid #dee2e6;
         }
-        
+
         .label-badge {
             padding: 6px 12px;
             border-radius: 20px;
             font-weight: 600;
             font-size: 14px;
         }
-        
+
         .label-badge.honest {
             background: #d4edda;
             color: #155724;
         }
-        
+
         .label-badge.deceptive {
             background: #f8d7da;
             color: #721c24;
         }
-        
+
+        .context-box {
+            background: #e3f2fd;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .context-box .system-prompt {
+            color: #1565c0;
+            font-style: italic;
+            margin-bottom: 8px;
+        }
+
+        .context-box .user-prompt {
+            color: #333;
+        }
+
         .token-container {
-            line-height: 2;
+            line-height: 2.2;
             margin: 15px 0;
         }
-        
+
         .token {
             display: inline-block;
             padding: 3px 6px;
@@ -597,114 +641,320 @@ def generate_enhanced_visualization(token_details: List[Dict], output_path: Path
             font-family: 'SF Mono', Monaco, monospace;
             font-size: 14px;
             cursor: help;
-            transition: transform 0.2s;
+            transition: all 0.2s;
             white-space: pre-wrap;
+            position: relative;
         }
-        
+
         .token:hover {
-            transform: scale(1.1);
-            z-index: 10;
+            transform: scale(1.15);
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
-        
+
+        .token.in-span {
+            border-bottom: 3px solid #ff9800;
+        }
+
+        .tooltip {
+            visibility: hidden;
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+        }
+
+        .token:hover .tooltip {
+            visibility: visible;
+        }
+
         .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
             margin-top: 15px;
         }
-        
+
         .stat-card {
             background: white;
-            padding: 12px;
+            padding: 10px;
             border-radius: 6px;
             text-align: center;
         }
-        
+
         .stat-value {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
             color: #667eea;
         }
-        
+
         .stat-label {
-            font-size: 12px;
+            font-size: 11px;
             color: #6c757d;
             text-transform: uppercase;
-            margin-top: 5px;
+            margin-top: 3px;
+        }
+
+        .slider-container {
+            margin: 20px 0;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(to right, #28a745 0%, #ffc107 50%, #dc3545 100%);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .metrics-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+
+        .metrics-box h4 {
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .controls h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .controls-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🔍 Deception Detection Analysis</h1>
-            <p>Token-level probe scores for assistant responses</p>
+        <div class="main-content">
+            <div class="header">
+                <h1>🔍 Deception Detection Analysis</h1>
+                <p>Token-level probe scores with interactive threshold</p>
+            </div>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: rgba(40, 167, 69, 0.7);"></div>
+                    <span>Honest (Low Score)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: rgba(220, 53, 69, 0.7);"></div>
+                    <span>Deceptive (High Score)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="border-bottom: 3px solid #ff9800; width: 40px; height: 4px;"></div>
+                    <span>Labeled Deceptive Span</span>
+                </div>
+            </div>
+
+            <div class="samples">
+                {% for sample in samples %}
+                <div class="sample" data-sample-idx="{{ loop.index0 }}">
+                    <div class="sample-header">
+                        <div>
+                            <strong>Sample {{ loop.index }}</strong>
+                            <span style="margin-left: 10px; color: #6c757d;">
+                                {{ sample.token_count }} tokens
+                            </span>
+                        </div>
+                        <div class="label-badge {{ 'honest' if sample.label == 0 else 'deceptive' }}">
+                            {{ 'HONEST' if sample.label == 0 else 'DECEPTIVE' }}
+                        </div>
+                    </div>
+
+                    {% if sample.system_prompt or sample.user_prompt %}
+                    <div class="context-box">
+                        {% if sample.system_prompt %}
+                        <div class="system-prompt"><strong>System:</strong> {{ sample.system_prompt[:500] }}{% if sample.system_prompt|length > 500 %}...{% endif %}</div>
+                        {% endif %}
+                        {% if sample.user_prompt %}
+                        <div class="user-prompt"><strong>User:</strong> {{ sample.user_prompt[:500] }}{% if sample.user_prompt|length > 500 %}...{% endif %}</div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <div class="token-container">
+                        {% for token_data in sample.tokens_with_data %}
+                        <span class="token {{ 'in-span' if token_data.in_span else '' }}"
+                              data-score="{{ token_data.score }}"
+                              data-normalized="{{ token_data.normalized }}"
+                              style="background-color: {{ token_data.color }}">{{ token_data.token }}<span class="tooltip">Score: {{ '%.3f'|format(token_data.score) }}</span></span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="stats">
+                        <div class="stat-card">
+                            <div class="stat-value">{{ '%.3f'|format(sample.mean_score) }}</div>
+                            <div class="stat-label">Mean Score</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">{{ '%.3f'|format(sample.min_score) }}</div>
+                            <div class="stat-label">Min Score</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">{{ '%.3f'|format(sample.max_score) }}</div>
+                            <div class="stat-label">Max Score</div>
+                        </div>
+                        <div class="stat-card sample-prediction">
+                            <div class="stat-value">{{ 'MATCH' if sample.prediction == sample.label else 'MISS' }}</div>
+                            <div class="stat-label">Prediction</div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         </div>
-        
-        <div class="legend">
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: rgba(40, 167, 69, 0.7);"></div>
-                <span>Honest (Low Score)</span>
+
+        <div class="controls">
+            <h3>🎚️ Threshold Control</h3>
+
+            <div class="slider-container">
+                <label>Threshold: <strong id="threshold-value">0.500</strong></label>
+                <input type="range" class="slider" id="threshold-slider"
+                       min="0" max="1" step="0.01" value="0.5">
             </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: rgba(128, 128, 128, 0.2);"></div>
-                <span>Neutral</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: rgba(220, 53, 69, 0.7);"></div>
-                <span>Deceptive (High Score)</span>
-            </div>
-        </div>
-        
-        <div class="samples">
-            {% for sample in samples %}
-            <div class="sample">
-                <div class="sample-header">
-                    <div>
-                        <strong>Sample {{ loop.index }}</strong>
-                        <span style="margin-left: 10px; color: #6c757d;">
-                            {{ sample.token_count }} tokens
-                        </span>
-                    </div>
-                    <div class="label-badge {{ 'honest' if sample.label == 0 else 'deceptive' }}">
-                        {{ 'HONEST' if sample.label == 0 else 'DECEPTIVE' }}
-                    </div>
+
+            <div class="metrics-box">
+                <h4>📊 Current Metrics</h4>
+                <div class="metric-row">
+                    <span>Accuracy:</span>
+                    <span id="accuracy-value">-</span>
                 </div>
-                
-                <div class="token-container">
-                    {% for token, score, color in sample.tokens_with_colors %}
-                    <span class="token" 
-                          style="background-color: {{ color }}"
-                          title="Score: {{ '%.3f'|format(score) }}">{{ token }}</span>
-                    {% endfor %}
+                <div class="metric-row">
+                    <span>True Positives:</span>
+                    <span id="tp-value">-</span>
                 </div>
-                
-                <div class="stats">
-                    <div class="stat-card">
-                        <div class="stat-value">{{ '%.3f'|format(sample.mean_score) }}</div>
-                        <div class="stat-label">Mean Score</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">{{ '%.3f'|format(sample.min_score) }}</div>
-                        <div class="stat-label">Min Score</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">{{ '%.3f'|format(sample.max_score) }}</div>
-                        <div class="stat-label">Max Score</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">{{ 'MATCH' if sample.prediction == sample.label else 'MISS' }}</div>
-                        <div class="stat-label">Prediction</div>
-                    </div>
+                <div class="metric-row">
+                    <span>False Positives:</span>
+                    <span id="fp-value">-</span>
+                </div>
+                <div class="metric-row">
+                    <span>Above Threshold:</span>
+                    <span id="above-threshold">-</span>
                 </div>
             </div>
-            {% endfor %}
+
+            <div class="controls-info">
+                <p>🖱️ Hover over tokens to see exact scores</p>
+                <p>🟢 Green = Below threshold (honest)</p>
+                <p>🔴 Red = Above threshold (deceptive)</p>
+                <p>🟠 Orange underline = Labeled deceptive span</p>
+            </div>
         </div>
     </div>
+
+    <script>
+        // Store sample data for dynamic updates
+        const samplesData = {{ samples_json | safe }};
+        let currentThreshold = 0.5;
+
+        function scoreToColor(normalizedScore, threshold) {
+            // normalizedScore is already in [0, 1]
+            if (normalizedScore >= threshold) {
+                const intensity = Math.min((normalizedScore - threshold) / (1 - threshold + 0.001), 1);
+                return `rgba(220, 53, 69, ${0.2 + intensity * 0.6})`;
+            } else {
+                const intensity = Math.min((threshold - normalizedScore) / threshold, 1);
+                return `rgba(40, 167, 69, ${0.2 + intensity * 0.6})`;
+            }
+        }
+
+        function updateColors() {
+            document.querySelectorAll('.token').forEach(token => {
+                const normalized = parseFloat(token.dataset.normalized);
+                token.style.backgroundColor = scoreToColor(normalized, currentThreshold);
+            });
+        }
+
+        function updateMetrics() {
+            let correct = 0;
+            let total = 0;
+            let tp = 0;
+            let fp = 0;
+            let aboveThreshold = 0;
+
+            samplesData.forEach((sample, idx) => {
+                const meanNormalized = sample.mean_normalized;
+                const prediction = meanNormalized >= currentThreshold ? 1 : 0;
+                const label = sample.label;
+
+                total++;
+                if (prediction === label) correct++;
+                if (prediction === 1 && label === 1) tp++;
+                if (prediction === 1 && label === 0) fp++;
+                if (prediction === 1) aboveThreshold++;
+
+                // Update sample prediction display
+                const sampleEl = document.querySelector(`[data-sample-idx="${idx}"] .sample-prediction .stat-value`);
+                if (sampleEl) {
+                    sampleEl.textContent = prediction === label ? 'MATCH' : 'MISS';
+                    sampleEl.style.color = prediction === label ? '#28a745' : '#dc3545';
+                }
+            });
+
+            document.getElementById('accuracy-value').textContent = (correct / total).toFixed(3);
+            document.getElementById('tp-value').textContent = tp;
+            document.getElementById('fp-value').textContent = fp;
+            document.getElementById('above-threshold').textContent = `${aboveThreshold}/${total}`;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            const slider = document.getElementById('threshold-slider');
+            const thresholdDisplay = document.getElementById('threshold-value');
+
+            slider.addEventListener('input', (e) => {
+                currentThreshold = parseFloat(e.target.value);
+                thresholdDisplay.textContent = currentThreshold.toFixed(3);
+                updateColors();
+                updateMetrics();
+            });
+
+            updateMetrics();
+        });
+    </script>
 </body>
 </html>
 """
     
+    import json as json_module
+
     def normalize_scores(scores):
         """Normalize scores to [0, 1]"""
         if not scores:
@@ -713,45 +963,87 @@ def generate_enhanced_visualization(token_details: List[Dict], output_path: Path
         if max_val == min_val:
             return [0.5] * len(scores)
         return [(s - min_val) / (max_val - min_val) for s in scores]
-    
-    def score_to_color(score):
-        """Convert normalized score to color"""
-        if score >= 0.5:
-            intensity = (score - 0.5) * 2
-            return f"rgba(220, 53, 69, {intensity * 0.7:.3f})"
+
+    def score_to_color(norm_score, threshold=0.5):
+        """Convert normalized score to color based on threshold"""
+        if norm_score >= threshold:
+            intensity = min((norm_score - threshold) / (1 - threshold + 0.001), 1)
+            return f"rgba(220, 53, 69, {0.2 + intensity * 0.6:.3f})"
         else:
-            intensity = (0.5 - score) * 2
-            return f"rgba(40, 167, 69, {intensity * 0.7:.3f})"
-    
+            intensity = min((threshold - norm_score) / threshold, 1)
+            return f"rgba(40, 167, 69, {0.2 + intensity * 0.6:.3f})"
+
     def clean_tokens(tokens):
         """Clean tokenizer artifacts"""
         return [token.replace('Ġ', ' ').replace('Ċ', '\n') for token in tokens]
-    
+
     # Process samples
     samples_data = []
-    for detail in token_details[:20]:  # Limit to 20 for performance
+    samples_json_data = []  # For JavaScript
+
+    for i, detail in enumerate(token_details[:30]):  # Limit to 30 for performance
         normalized = normalize_scores(detail['token_scores'])
         clean = clean_tokens(detail['tokens'])
-        
-        tokens_with_colors = [
-            (token, score, score_to_color(norm_score))
-            for token, score, norm_score in zip(clean, detail['token_scores'], normalized)
-        ]
-        
+
+        # Get sample metadata if available
+        sample_meta = samples[i] if samples and i < len(samples) else {}
+        system_prompt = sample_meta.get('system_prompt', '') or sample_meta.get('messages', [{}])[0].get('content', '') if sample_meta.get('messages') else ''
+        user_prompt = ''
+        if sample_meta.get('messages') and len(sample_meta['messages']) > 1:
+            user_prompt = sample_meta['messages'][1].get('content', '')
+
+        # Get labeled spans if available
+        sample_key = None
+        token_spans = set()  # Set of token indices that are in labeled spans
+        if labeled_spans:
+            source = sample_meta.get('source_dataset', '')
+            sample_idx = sample_meta.get('sample_index') or sample_meta.get('metadata', {}).get('sample_index', i)
+            sample_key = f"{source}_{sample_idx}"
+            if sample_key in labeled_spans:
+                # TODO: Map character spans to token indices if needed
+                # For now, just mark that spans exist
+                pass
+
+        # Build token data for template
+        tokens_with_data = []
+        for j, (token, score, norm_score) in enumerate(zip(clean, detail['token_scores'], normalized)):
+            tokens_with_data.append({
+                'token': token,
+                'score': score,
+                'normalized': norm_score,
+                'color': score_to_color(norm_score),
+                'in_span': j in token_spans
+            })
+
+        # Calculate mean normalized score
+        mean_normalized = sum(normalized) / len(normalized) if normalized else 0.5
+
         samples_data.append({
-            'tokens_with_colors': tokens_with_colors,
+            'tokens_with_data': tokens_with_data,
             'label': detail['label'],
             'mean_score': detail['mean_score'],
             'min_score': detail['min_score'],
             'max_score': detail['max_score'],
             'token_count': len(clean),
-            'prediction': 1 if detail['mean_score'] > 0.5 else 0
+            'prediction': 1 if mean_normalized > 0.5 else 0,
+            'system_prompt': system_prompt[:500] if system_prompt else '',
+            'user_prompt': user_prompt[:500] if user_prompt else ''
         })
-    
+
+        # JSON data for JavaScript
+        samples_json_data.append({
+            'label': detail['label'],
+            'mean_normalized': mean_normalized,
+            'mean_score': detail['mean_score']
+        })
+
     # Render template
     template = Template(html_template)
-    html_content = template.render(samples=samples_data)
-    
+    html_content = template.render(
+        samples=samples_data,
+        samples_json=json_module.dumps(samples_json_data)
+    )
+
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(html_content)
 
@@ -1046,7 +1338,9 @@ Examples:
         # Generate visualization
         generate_enhanced_visualization(
             result['token_details'],
-            agg_dir / 'token_visualization.html'
+            agg_dir / 'token_visualization.html',
+            samples=all_samples,
+            labeled_spans=labeled_spans_by_dataset
         )
         
 
