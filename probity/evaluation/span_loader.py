@@ -161,3 +161,289 @@ def aggregate_span_metrics(sample_metrics: List[Dict[str, float]]) -> Dict[str, 
     micro_recall = total_tp / (total_tp + total_fn) if (total_tp + total_fn) > 0 else 0.0
     micro_f1 = 2 * micro_precision * micro_recall / (micro_precision + micro_recall) if (micro_precision + micro_recall) > 0 else 0.0
     return {"span_precision": float(micro_precision), "span_recall": float(micro_recall), "span_f1": float(micro_f1), "mean_iou": float(np.mean([m["iou"] for m in sample_metrics])), "max_in_span": float(np.mean([m["max_in_span"] for m in sample_metrics])), "max_outside_span": float(np.mean([m["max_outside_span"] for m in sample_metrics])), "mean_in_span": float(np.mean([m["mean_in_span"] for m in sample_metrics])), "mean_outside_span": float(np.mean([m["mean_outside_span"] for m in sample_metrics])), "n_samples_with_spans": len(sample_metrics), "n_total_labeled_tokens": sum(m["n_labeled_tokens"] for m in sample_metrics)}
+
+
+def compute_ranking_metrics(token_scores: List[float], labeled_token_spans: List[Tuple[int, int]]) -> Dict[str, float]:
+    """Compute threshold-independent ranking metrics for span localization.
+
+    Args:
+        token_scores: Per-token probe scores
+        labeled_token_spans: List of (start, end) token indices for deceptive spans
+
+    Returns:
+        Dictionary with:
+        - span_auroc: AUROC treating in-span tokens as positive
+        - span_ap: Average Precision for ranking
+        - cohens_d: Standardized effect size
+        - recall_at_k: Recall at various K% thresholds
+        - precision_at_k: Precision at various K% thresholds
+    """
+    from sklearn.metrics import roc_auc_score, average_precision_score
+
+    n_tokens = len(token_scores)
+    if n_tokens == 0:
+        return {
+            "span_auroc": 0.5,
+            "span_ap": 0.0,
+            "cohens_d": 0.0,
+            "mean_in_span": 0.0,
+            "mean_out_span": 0.0,
+            "std_in_span": 0.0,
+            "std_out_span": 0.0,
+            "n_positive": 0,
+            "n_negative": 0,
+            "recall_at_5pct": 0.0,
+            "recall_at_10pct": 0.0,
+            "recall_at_20pct": 0.0,
+            "recall_at_30pct": 0.0,
+            "precision_at_5pct": 0.0,
+            "precision_at_10pct": 0.0,
+            "precision_at_20pct": 0.0,
+            "precision_at_30pct": 0.0,
+        }
+
+    scores_array = np.array(token_scores)
+
+    # Create in-span mask
+    in_span_mask = np.zeros(n_tokens, dtype=bool)
+    for start, end in labeled_token_spans:
+        start = max(0, start)
+        end = min(n_tokens - 1, end)
+        in_span_mask[start:end+1] = True
+
+    n_positive = np.sum(in_span_mask)
+    n_negative = n_tokens - n_positive
+
+    if n_positive == 0 or n_negative == 0:
+        # Return all fields with placeholder values
+        return {
+            "span_auroc": 0.5,
+            "span_ap": 0.0,
+            "cohens_d": 0.0,
+            "mean_in_span": 0.0,
+            "mean_out_span": 0.0,
+            "std_in_span": 0.0,
+            "std_out_span": 0.0,
+            "n_positive": int(n_positive),
+            "n_negative": int(n_negative),
+            "recall_at_5pct": 0.0,
+            "recall_at_10pct": 0.0,
+            "recall_at_20pct": 0.0,
+            "recall_at_30pct": 0.0,
+            "precision_at_5pct": 0.0,
+            "precision_at_10pct": 0.0,
+            "precision_at_20pct": 0.0,
+            "precision_at_30pct": 0.0,
+        }
+
+    # Compute AUROC and AP
+    try:
+        span_auroc = roc_auc_score(in_span_mask.astype(int), scores_array)
+    except ValueError:
+        span_auroc = 0.5
+
+    try:
+        span_ap = average_precision_score(in_span_mask.astype(int), scores_array)
+    except ValueError:
+        span_ap = 0.0
+
+    # Compute Cohen's d
+    in_span_scores = scores_array[in_span_mask]
+    out_span_scores = scores_array[~in_span_mask]
+
+    mean_in = np.mean(in_span_scores)
+    mean_out = np.mean(out_span_scores)
+    std_in = np.std(in_span_scores)
+    std_out = np.std(out_span_scores)
+    pooled_std = np.sqrt((std_in**2 + std_out**2) / 2)
+    cohens_d = (mean_in - mean_out) / pooled_std if pooled_std > 0 else 0.0
+
+    # Compute recall@K% and precision@K%
+    sorted_indices = np.argsort(scores_array)[::-1]  # Descending order
+    recall_at_k = {}
+    precision_at_k = {}
+
+    for k_pct in [5, 10, 20, 30]:
+        k = max(1, int(n_tokens * k_pct / 100))
+        top_k_indices = sorted_indices[:k]
+        top_k_mask = np.zeros(n_tokens, dtype=bool)
+        top_k_mask[top_k_indices] = True
+
+        # Recall@K: fraction of positive tokens in top K
+        tp_at_k = np.sum(top_k_mask & in_span_mask)
+        recall_at_k[f"recall_at_{k_pct}pct"] = float(tp_at_k / n_positive)
+
+        # Precision@K: fraction of top K that are positive
+        precision_at_k[f"precision_at_{k_pct}pct"] = float(tp_at_k / k)
+
+    return {
+        "span_auroc": float(span_auroc),
+        "span_ap": float(span_ap),
+        "cohens_d": float(cohens_d),
+        "mean_in_span": float(mean_in),
+        "mean_out_span": float(mean_out),
+        "std_in_span": float(std_in),
+        "std_out_span": float(std_out),
+        "n_positive": int(n_positive),
+        "n_negative": int(n_negative),
+        **recall_at_k,
+        **precision_at_k
+    }
+
+
+def compute_window_metrics(token_scores: List[float], labeled_token_spans: List[Tuple[int, int]],
+                           window_sizes: List[int] = [5, 10]) -> Dict[str, Dict]:
+    """Compute window-level ranking metrics.
+
+    Groups adjacent tokens into sliding windows and evaluates if windows
+    overlapping deceptive spans rank higher than non-overlapping windows.
+
+    Args:
+        token_scores: Per-token probe scores
+        labeled_token_spans: List of (start, end) token indices for deceptive spans
+        window_sizes: List of window sizes to evaluate (default [5, 10])
+
+    Returns:
+        Dictionary with metrics for each window size
+    """
+    from sklearn.metrics import roc_auc_score, average_precision_score
+
+    n_tokens = len(token_scores)
+    scores_array = np.array(token_scores)
+
+    # Create in-span mask
+    in_span_mask = np.zeros(n_tokens, dtype=bool)
+    for start, end in labeled_token_spans:
+        start = max(0, start)
+        end = min(n_tokens - 1, end)
+        in_span_mask[start:end+1] = True
+
+    results = {}
+
+    for window_size in window_sizes:
+        if n_tokens < window_size:
+            results[f"k{window_size}"] = {
+                "window_auroc": 0.5,
+                "window_ap": 0.0,
+                "n_windows": 0,
+                "n_positive_windows": 0
+            }
+            continue
+
+        # Compute sliding window scores (mean of tokens in each window)
+        n_windows = n_tokens - window_size + 1
+        window_scores = np.array([
+            np.mean(scores_array[i:i+window_size])
+            for i in range(n_windows)
+        ])
+
+        # Label windows: positive if ANY token in window is in span
+        window_labels = np.array([
+            np.any(in_span_mask[i:i+window_size])
+            for i in range(n_windows)
+        ]).astype(int)
+
+        n_positive_windows = np.sum(window_labels)
+        n_negative_windows = n_windows - n_positive_windows
+
+        if n_positive_windows == 0 or n_negative_windows == 0:
+            results[f"k{window_size}"] = {
+                "window_auroc": 0.5,
+                "window_ap": 0.0,
+                "n_windows": int(n_windows),
+                "n_positive_windows": int(n_positive_windows)
+            }
+            continue
+
+        # Compute AUROC and AP for windows
+        try:
+            window_auroc = roc_auc_score(window_labels, window_scores)
+        except ValueError:
+            window_auroc = 0.5
+
+        try:
+            window_ap = average_precision_score(window_labels, window_scores)
+        except ValueError:
+            window_ap = 0.0
+
+        results[f"k{window_size}"] = {
+            "window_auroc": float(window_auroc),
+            "window_ap": float(window_ap),
+            "n_windows": int(n_windows),
+            "n_positive_windows": int(n_positive_windows)
+        }
+
+    return results
+
+
+def aggregate_ranking_metrics(sample_metrics: List[Dict[str, float]]) -> Dict[str, float]:
+    """Aggregate per-sample ranking metrics into overall metrics.
+
+    Uses macro-averaging (compute metric per sample, then average).
+    """
+    if not sample_metrics:
+        return {}
+
+    # Filter out empty metrics (samples without spans)
+    valid_metrics = [m for m in sample_metrics if m and "span_auroc" in m]
+
+    if not valid_metrics:
+        return {"n_samples": 0, "n_samples_with_spans": 0}
+
+    # Aggregate token-level metrics
+    result = {
+        "span_auroc": float(np.mean([m["span_auroc"] for m in valid_metrics])),
+        "span_ap": float(np.mean([m["span_ap"] for m in valid_metrics])),
+        "cohens_d": float(np.mean([m["cohens_d"] for m in valid_metrics])),
+        "mean_in_span": float(np.mean([m["mean_in_span"] for m in valid_metrics])),
+        "mean_out_span": float(np.mean([m["mean_out_span"] for m in valid_metrics])),
+        "n_samples": len(sample_metrics),
+        "n_samples_with_spans": len(valid_metrics)
+    }
+
+    # Aggregate recall@K and precision@K
+    for k_pct in [5, 10, 20, 30]:
+        key_recall = f"recall_at_{k_pct}pct"
+        key_precision = f"precision_at_{k_pct}pct"
+        if valid_metrics and key_recall in valid_metrics[0]:
+            result[key_recall] = float(np.mean([m[key_recall] for m in valid_metrics]))
+            result[key_precision] = float(np.mean([m[key_precision] for m in valid_metrics]))
+
+    return result
+
+
+def aggregate_window_metrics(sample_window_metrics: List[Dict[str, Dict]],
+                              window_sizes: List[int] = [5, 10]) -> Dict[str, Dict]:
+    """Aggregate per-sample window metrics into overall metrics."""
+    if not sample_window_metrics:
+        return {}
+
+    results = {}
+    for window_size in window_sizes:
+        key = f"k{window_size}"
+        metrics_for_size = [m[key] for m in sample_window_metrics if key in m]
+
+        if not metrics_for_size:
+            continue
+
+        # Filter out samples with no valid windows
+        valid_metrics = [m for m in metrics_for_size if m["n_windows"] > 0]
+
+        if not valid_metrics:
+            results[key] = {
+                "window_auroc": 0.5,
+                "window_ap": 0.0,
+                "total_windows": 0,
+                "total_positive_windows": 0
+            }
+            continue
+
+        results[key] = {
+            "window_auroc": float(np.mean([m["window_auroc"] for m in valid_metrics])),
+            "window_ap": float(np.mean([m["window_ap"] for m in valid_metrics])),
+            "total_windows": int(sum(m["n_windows"] for m in valid_metrics)),
+            "total_positive_windows": int(sum(m["n_positive_windows"] for m in valid_metrics)),
+            "n_samples": len(valid_metrics)
+        }
+
+    return results

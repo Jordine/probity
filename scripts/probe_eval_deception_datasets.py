@@ -10,7 +10,9 @@ from jinja2 import Template
 from probity.evaluation.batch_evaluator import OptimizedBatchProbeEvaluator
 from probity.evaluation.span_loader import (
     load_labeled_spans, convert_spans_to_token_indices,
-    compute_span_metrics, aggregate_span_metrics, get_response_text
+    compute_span_metrics, aggregate_span_metrics, get_response_text,
+    compute_ranking_metrics, compute_window_metrics,
+    aggregate_ranking_metrics, aggregate_window_metrics
 )
 from probity.utils.dataset_loading import apply_chat_template_unified, detect_model_type
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
@@ -193,7 +195,9 @@ def load_probe_from_checkpoint(probe_path: Path, device: str) -> Optional[object
 def evaluate_on_assistant_tokens(evaluator: OptimizedBatchProbeEvaluator,
                                 probe_configs: Dict, samples: List[Dict],
                                 tokenizer_name: str,
-                                labeled_spans_by_dataset: Dict = None) -> Dict:
+                                labeled_spans_by_dataset: Dict = None,
+                                compute_ranking: bool = False,
+                                window_sizes: List[int] = None) -> Dict:
     """Evaluate probes only on final assistant message tokens."""
     
     from transformers import AutoTokenizer
@@ -478,6 +482,71 @@ def evaluate_on_assistant_tokens(evaluator: OptimizedBatchProbeEvaluator,
                       f"recall={span_metrics_result['span_recall']:.3f}, "
                       f"n_samples={span_metrics_result['n_samples_with_spans']}")
 
+        # Compute threshold-independent ranking metrics if enabled
+        ranking_metrics_result = None
+        window_metrics_result = None
+
+        if compute_ranking and labeled_spans_by_dataset:
+            sample_ranking_metrics = []
+            sample_window_metrics = []
+            ws = window_sizes if window_sizes else [5, 10]
+
+            for i, detail in enumerate(token_details):
+                sample = samples[i]
+                source = sample.get('source_dataset', '')
+                sample_idx = sample.get('sample_index') or sample.get('metadata', {}).get('sample_index', i)
+                sample_idx_val = sample_idx
+
+                # Only compute for deceptive samples with spans
+                if detail.get('label') != 1:
+                    continue
+
+                if source in labeled_spans_by_dataset:
+                    spans_dict = labeled_spans_by_dataset[source]
+                    sample_key = None
+                    for key_format in [str(sample_idx_val), f"sample_{sample_idx_val}"]:
+                        if key_format in spans_dict:
+                            sample_key = key_format
+                            break
+
+                    if sample_key:
+                        char_spans = spans_dict[sample_key]
+                        assistant_text = detail.get('text', '')
+                        if assistant_text and char_spans:
+                            try:
+                                token_spans = convert_spans_to_token_indices(
+                                    char_spans, assistant_text, tokenizer
+                                )
+                                if token_spans:
+                                    # Compute ranking metrics
+                                    ranking_m = compute_ranking_metrics(
+                                        token_scores=detail['token_scores'],
+                                        labeled_token_spans=token_spans
+                                    )
+                                    sample_ranking_metrics.append(ranking_m)
+
+                                    # Compute window metrics
+                                    window_m = compute_window_metrics(
+                                        token_scores=detail['token_scores'],
+                                        labeled_token_spans=token_spans,
+                                        window_sizes=ws
+                                    )
+                                    sample_window_metrics.append(window_m)
+                            except Exception as e:
+                                pass  # Skip samples with errors
+
+            if sample_ranking_metrics:
+                ranking_metrics_result = aggregate_ranking_metrics(sample_ranking_metrics)
+                print(f"  Ranking metrics: AUROC={ranking_metrics_result['span_auroc']:.3f}, "
+                      f"AP={ranking_metrics_result['span_ap']:.3f}, "
+                      f"Cohen's d={ranking_metrics_result['cohens_d']:.3f}")
+
+            if sample_window_metrics:
+                window_metrics_result = aggregate_window_metrics(sample_window_metrics, ws)
+                for ws_key, ws_metrics in window_metrics_result.items():
+                    print(f"  Window {ws_key}: AUROC={ws_metrics['window_auroc']:.3f}, "
+                          f"AP={ws_metrics['window_ap']:.3f}")
+
         results[(layer, probe_type)] = {
             'metrics': metrics_by_threshold[best_threshold_name],  # Primary metrics
             'metrics_all_thresholds': metrics_by_threshold,
@@ -488,7 +557,9 @@ def evaluate_on_assistant_tokens(evaluator: OptimizedBatchProbeEvaluator,
             'predictions': (np.array(all_scores) > thresholds_to_evaluate[best_threshold_name]).astype(int).tolist(),
             'labels': all_labels,
             'raw_scores': raw_scores_data,
-            'span_metrics': span_metrics_result  # Span-level metrics (None if no labeled spans)
+            'span_metrics': span_metrics_result,  # Span-level metrics (None if no labeled spans)
+            'ranking_metrics': ranking_metrics_result,  # Threshold-independent ranking metrics
+            'window_metrics': window_metrics_result  # Window-level metrics
         }
 
     return results
@@ -1080,7 +1151,11 @@ Examples:
     parser.add_argument('--batch_size', type=int, default=4)
     parser.add_argument('--labeled_dir', type=str, default=None,
                         help='Directory with *_labeled.json files for span-level evaluation')
-    
+    parser.add_argument('--compute_ranking_metrics', action='store_true',
+                        help='Compute threshold-independent ranking metrics (span-wise AUROC, AP, etc.)')
+    parser.add_argument('--window_sizes', type=int, nargs='+', default=[5, 10],
+                        help='Window sizes for window-level metrics (default: 5 10)')
+
     args = parser.parse_args()
     
     # Prepare dataset specifications
@@ -1191,7 +1266,9 @@ Examples:
     
     results = evaluate_on_assistant_tokens(
         evaluator, probe_configs, all_samples, args.model_name,
-        labeled_spans_by_dataset=labeled_spans_by_dataset
+        labeled_spans_by_dataset=labeled_spans_by_dataset,
+        compute_ranking=args.compute_ranking_metrics,
+        window_sizes=args.window_sizes
     )
     
     # Group results by dataset for per-dataset metrics
@@ -1335,6 +1412,20 @@ Examples:
                     'out_span_scores': result['span_metrics'].get('out_span_scores', [])
                 }, f)
 
+        # Save ranking metrics if computed
+        if result.get('ranking_metrics'):
+            ranking_metrics_path = agg_dir / 'ranking_metrics.json'
+            with open(ranking_metrics_path, 'w') as f:
+                json.dump(clean_json_floats(result['ranking_metrics']), f, indent=2)
+            print(f"  Saved ranking metrics to {ranking_metrics_path}")
+
+        # Save window metrics if computed
+        if result.get('window_metrics'):
+            window_metrics_path = agg_dir / 'window_metrics.json'
+            with open(window_metrics_path, 'w') as f:
+                json.dump(clean_json_floats(result['window_metrics']), f, indent=2)
+            print(f"  Saved window metrics to {window_metrics_path}")
+
         # Generate visualization
         generate_enhanced_visualization(
             result['token_details'],
@@ -1368,5 +1459,8 @@ Examples:
     print(f"    - metrics.json: Best threshold metrics (backward compatible)")
     print(f"    - metrics_all_thresholds.json: Results for all thresholds")
     print(f"    - token_visualization.html: Token-level score visualization")
+    if args.compute_ranking_metrics:
+        print(f"    - ranking_metrics.json: Threshold-independent ranking metrics (AUROC, AP, etc.)")
+        print(f"    - window_metrics.json: Window-level ranking metrics")
 if __name__ == "__main__":
     main()

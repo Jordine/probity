@@ -1,0 +1,16 @@
+{
+  "k5": {
+    "window_auroc": 0.5151527385676342,
+    "window_ap": 0.2712694087505008,
+    "total_windows": 82276,
+    "total_positive_windows": 15793,
+    "n_samples": 366
+  },
+  "k10": {
+    "window_auroc": 0.5216443477609292,
+    "window_ap": 0.34154523155285577,
+    "total_windows": 80446,
+    "total_positive_windows": 18797,
+    "n_samples": 366
+  }
+}
