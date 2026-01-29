@@ -1,6 +1,6 @@
 #!/bin/bash
 # Merge cluster outputs and run evaluation
-# Run this locally after downloading probes from both clusters
+# Run this on a machine with GPU after downloading probes from both clusters
 
 set -e
 
@@ -36,29 +36,33 @@ echo "probe files total"
 
 echo ""
 echo "============================================"
-echo "Running evaluation on merged probes"
+echo "Running sweep evaluation"
 echo "============================================"
 
-# Evaluate all probes on ai_liar and sandbagging
-python3 scripts/eval_ntml_by_layer.py \
+python3 experiments/phase1_dataset_sweep/scripts/evaluate_sweep.py \
   --probe_dir "$MERGED_DIR" \
-  --datasets ai_liar sandbagging_v2__wmdp_mmlu \
+  --eval_datasets ai_liar sandbagging_v2__wmdp_mmlu \
   --labeled_dir ./data/deception_detection \
   --results_dir "$RESULTS_DIR" \
   --model_name meta-llama/Llama-3.3-70B-Instruct \
-  --start_layer 22 --end_layer 44
+  --batch_size 4
 
 echo ""
 echo "============================================"
-echo "Analyzing with token-level metrics"
+echo "Running token-level analysis"
 echo "============================================"
 
-python3 scripts/analyze_probe_token_metrics.py \
-  --results_dir "$RESULTS_DIR" \
-  --baseline_name apollo --baseline_layer 22
+# Run Recall@Oracle and MRR analysis if results exist
+if [ -f "$RESULTS_DIR/sweep_results.csv" ]; then
+  python3 scripts/analyze_probe_token_metrics.py \
+    --results_dir "$RESULTS_DIR" \
+    --baseline_name apollo --baseline_layer 22 || echo "Token analysis skipped (may need different input format)"
+fi
 
 echo ""
 echo "============================================"
 echo "Evaluation complete!"
 echo "Results: $RESULTS_DIR"
+echo "  - sweep_results.json (all metrics)"
+echo "  - sweep_results.csv (for analysis)"
 echo "============================================"

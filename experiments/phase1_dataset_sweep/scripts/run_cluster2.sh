@@ -50,6 +50,7 @@ for style in "${STYLES[@]}"; do
     --train_dataset_dir "$DATASET_PATH" \
     --probe_save_dir "$OUTPUT_DIR" \
     --sweep_config experiments/phase1_dataset_sweep/sweep_config.json \
+    --probe_types attention sklearn_logistic logistic meandiff \
     --layers $LAYERS \
     --max_length 1024 \
     --num_epochs $EPOCHS \
