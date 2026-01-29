@@ -5,15 +5,18 @@
   "probe_configs": {
     "attention": [
       {"n_heads": 1, "temperature": 1.0, "name_suffix": "h1_t1.0"},
+      {"n_heads": 2, "temperature": 1.0, "name_suffix": "h2_t1.0"},
       {"n_heads": 4, "temperature": 1.0, "name_suffix": "h4_t1.0"},
       {"n_heads": 8, "temperature": 1.0, "name_suffix": "h8_t1.0"},
       {"n_heads": 4, "temperature": 0.5, "name_suffix": "h4_t0.5"},
       {"n_heads": 4, "temperature": 2.0, "name_suffix": "h4_t2.0"}
     ],
     "sklearn_logistic": [
-      {"C": 0.1, "name_suffix": "C0.1"},
-      {"C": 1.0, "name_suffix": "C1.0"},
-      {"C": 10.0, "name_suffix": "C10.0"}
+      {"C": 0.01, "penalty": "l2", "name_suffix": "C0.01_l2"},
+      {"C": 0.1, "penalty": "l2", "name_suffix": "C0.1_l2"},
+      {"C": 1.0, "penalty": "l2", "name_suffix": "C1.0_l2"},
+      {"C": 10.0, "penalty": "l2", "name_suffix": "C10.0_l2"},
+      {"C": 1.0, "penalty": "l1", "name_suffix": "C1.0_l1"}
     ],
     "meandiff": [
       {"name_suffix": "default"}

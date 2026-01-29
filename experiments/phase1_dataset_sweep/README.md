@@ -33,18 +33,21 @@
 - `5T2L`: 5 truths, 2 lies per sample (29% lie density, stronger training signal)
 - `10T1L`: 10 truths, 1 lie per sample (9% lie density, closer to real debates)
 
-### Hyperparameter Configs (9 total)
+### Hyperparameter Configs (12 total)
 
 | Probe Type | Variant | Hyperparams |
 |------------|---------|-------------|
 | attention | h1_t1.0 | n_heads=1, temp=1.0 |
+| attention | h2_t1.0 | n_heads=2, temp=1.0 |
 | attention | h4_t1.0 | n_heads=4, temp=1.0 |
 | attention | h8_t1.0 | n_heads=8, temp=1.0 |
 | attention | h4_t0.5 | n_heads=4, temp=0.5 |
 | attention | h4_t2.0 | n_heads=4, temp=2.0 |
-| sklearn_logistic | C0.1 | C=0.1 |
-| sklearn_logistic | C1.0 | C=1.0 |
-| sklearn_logistic | C10.0 | C=10.0 |
+| sklearn_logistic | C0.01_l2 | C=0.01, L2 penalty |
+| sklearn_logistic | C0.1_l2 | C=0.1, L2 penalty |
+| sklearn_logistic | C1.0_l2 | C=1.0, L2 penalty |
+| sklearn_logistic | C10.0_l2 | C=10.0, L2 penalty |
+| sklearn_logistic | C1.0_l1 | C=1.0, L1 penalty (sparse) |
 | meandiff | default | - |
 
 **Note**: Dropped `logistic` probe (uses annealing loss - bad OOD generalization, slow training).
@@ -66,7 +69,7 @@
 
 ## Total Probes
 
-**12 datasets × 9 hyperparams × 3 layers = 324 probes**
+**12 datasets × 12 hyperparams × 3 layers = 432 probes**
 
 ## Hardware Requirements
 
@@ -78,8 +81,8 @@
 
 | Cluster | Mix | Datasets | Probes |
 |---------|-----|----------|--------|
-| cluster1 | 5T2L | 6 (all styles) | 162 |
-| cluster2 | 10T1L | 6 (all styles) | 162 |
+| cluster1 | 5T2L | 6 (all styles) | 216 |
+| cluster2 | 10T1L | 6 (all styles) | 216 |
 
 ## Running the Experiment
 

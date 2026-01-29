@@ -107,6 +107,7 @@ class SklearnLogisticProbeConfig(LogisticProbeConfigBase):
     solver: str = "lbfgs"
     C: float = 1.0  # Inverse regularization strength
     class_weight: str = "balanced"  # Handle class imbalance
+    penalty: str = "l2"  # 'l1', 'l2', 'elasticnet', or None
 
 @dataclass
 class AttentionProbeConfig(ProbeConfig):

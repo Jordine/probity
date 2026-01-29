@@ -35,6 +35,12 @@ class SklearnLogisticProbe(BaseProbe[SklearnLogisticProbeConfig]):
                 f"Warning: Invalid solver '{config.solver}' specified. Using default 'lbfgs'. Valid options: {SolverLiteral.__args__}"
             )
 
+        # Handle penalty and solver compatibility
+        penalty = getattr(config, 'penalty', 'l2')
+        if penalty == 'l1' and solver not in ('saga', 'liblinear'):
+            solver = 'saga'  # saga supports l1
+            print(f"Note: Using solver='saga' for L1 penalty")
+
         self.model = LogisticRegression(
             max_iter=config.max_iter,
             random_state=config.random_state,
@@ -42,6 +48,7 @@ class SklearnLogisticProbe(BaseProbe[SklearnLogisticProbeConfig]):
             solver=solver,
             C=getattr(config, 'C', 1.0),
             class_weight=getattr(config, 'class_weight', None),
+            penalty=penalty,
         )
         # Store the final, unscaled coefficients and intercept as tensors
         # Initialize buffers as None; they will be populated by fit() or load()
