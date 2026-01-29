@@ -40,7 +40,7 @@ echo "Running evaluation on merged probes"
 echo "============================================"
 
 # Evaluate all probes on ai_liar and sandbagging
-python scripts/eval_ntml_by_layer.py \
+python3 scripts/eval_ntml_by_layer.py \
   --probe_dir "$MERGED_DIR" \
   --datasets ai_liar sandbagging_v2__wmdp_mmlu \
   --labeled_dir ./data/deception_detection \
@@ -53,7 +53,7 @@ echo "============================================"
 echo "Analyzing with token-level metrics"
 echo "============================================"
 
-python scripts/analyze_probe_token_metrics.py \
+python3 scripts/analyze_probe_token_metrics.py \
   --results_dir "$RESULTS_DIR" \
   --baseline_name apollo --baseline_layer 22
 

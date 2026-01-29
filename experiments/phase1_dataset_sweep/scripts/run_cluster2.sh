@@ -45,7 +45,7 @@ for style in "${STYLES[@]}"; do
   echo ">>> Output: $OUTPUT_DIR"
   echo ""
 
-  python scripts/probe_training_ntml.py \
+  python3 scripts/probe_training_ntml.py \
     --model_name meta-llama/Llama-3.3-70B-Instruct \
     --train_dataset_dir "$DATASET_PATH" \
     --probe_save_dir "$OUTPUT_DIR" \
