@@ -118,6 +118,11 @@ for style in "${STYLES[@]}"; do
     --anneal_warmup $ANNEAL_WARMUP
 
   echo ">>> Completed: ${MIX}_${style}"
+
+  # Clear activation cache to free disk space
+  echo ">>> Clearing cache..."
+  rm -rf ./cache/contrastive/*
+  rm -rf ./cache/val_acts/*
 done
 
 echo ""
