@@ -1,528 +1,537 @@
-# Experiment Plan v2: Closing the Apollo Gap
+# Experiment Plan v2: Probe-Augmented Debate
 
-## Revised Understanding
-
-The gap is likely due to **implementation issues we've now fixed**, not fundamental data format problems:
-
-| Issue | Was | Now Fixed |
-|-------|-----|-----------|
-| Lie span bugs | Incorrect positions | Fixed in code |
-| anneal_warmup | 0.3 (too fast) | Will use **1.0** |
-| Data diversity | ~9 categories | **69 categories, 6865 statements** |
-| Sample size | 500 | Have **1000**, can generate 2000 |
-| Instruction style | Mixed | **direct_liar** (best performing) |
-
-**Hypothesis**: With correct hyperparameters and fixed data, we should approach Apollo's 0.925 AUROC.
+*Draft: 2025-01-28*
+*Updated with Reviewer 2 feedback*
 
 ---
 
-## Available Training Datasets
+## 1. Overview
 
-All in `data/NTML-datasets/newbank/`:
+**Research question**: Can whitebox deception probes improve oversight in adversarial debates?
 
-| File | Ratio | Samples | Style | Format |
-|------|-------|---------|-------|--------|
-| `5T2L_500samples_shuffled_explicit_direct_liar_prefix.json` | 5T2L | 500 | direct_liar | prefix |
-| `5T2L_1000samples_shuffled_explicit_direct_liar_prefix.json` | 5T2L | 1000 | direct_liar | prefix |
-| `5T2L_500samples_shuffled_explicit_roleplay_prefix.json` | 5T2L | 500 | roleplay | prefix |
-| `5T2L_500samples_shuffled_explicit_behavioral_prefix.json` | 5T2L | 500 | behavioral | prefix |
-| `5T2L_500samples_shuffled_explicit_neutral_prefix.json` | 5T2L | 500 | neutral | prefix |
-| `5T2L_500samples_shuffled.json` | 5T2L | 500 | implicit | - |
-| `3T3L_500samples_shuffled_explicit_direct_liar_prefix.json` | 3T3L | 500 | direct_liar | prefix |
-| `5T1L_500samples_shuffled_explicit_direct_liar_prefix.json` | 5T1L | 500 | direct_liar | prefix |
+**Core claim**: Linear probes trained on model activations can detect deceptive language patterns. Surfacing this information to judges (and/or debaters) improves judge accuracy in identifying which debater is lying.
 
-**Primary dataset**: `5T2L_1000samples_shuffled_explicit_direct_liar_prefix.json`
-- 1000 conversations × 7 statements = 7000 statement examples
-- 5 truths + 2 lies per conversation (28.6% lie rate)
-- direct_liar style: "You are a liar. You will lie about 2 of the following facts."
-- Shuffled response order (no positional confounds)
-- 69 seed categories (no category repetition per conversation)
+**Key design choices**:
+- **Instructed deception**: The dishonest debater is explicitly instructed to lie and deceive, not just defend an incorrect answer. This matches the probe training distribution.
+- **Adaptive evaluation**: Use Recall@Oracle (K = # lie tokens) for fair cross-sample comparison.
+- **Robustness testing**: Include inverted/random probe baselines to verify judges use probe info appropriately.
 
 ---
 
-## Evaluation Datasets
+## 2. Experimental Pipeline
 
-In `deception-detection-labelled/deception_detection_labeled/`:
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  1. Train       │     │  2. Evaluate    │     │  3. Generate    │
+│     Probes      │ ──► │     Probes      │ ──► │     Transcripts │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+                                                        │
+                                                        ▼
+                        ┌─────────────────┐     ┌─────────────────┐
+                        │  5. Post-hoc    │ ◄── │  4. Run         │
+                        │     Analysis    │     │     Judges      │
+                        └─────────────────┘     └─────────────────┘
+```
 
-| File | Samples | Description |
-|------|---------|-------------|
-| `ai_liar.jsonl` | 266 | Instructed capability hiding |
-| `sandbagging_v2__wmdp_mmlu.jsonl` | 500 (subset) | Intentional underperformance |
-
-**Aggregated eval**: 766 samples total
+**Cost structure**:
+- Phase 1-2: One-time, moderate cost (H100/H200 for activation extraction)
+- Phase 3: **Expensive** — H200 cluster for 70B model inference, generates debate content
+- Phase 4: **Cheap** — API calls, can run many configurations
+- Phase 5: **Cheap** — Local computation on saved data
 
 ---
 
-## Experiment Schedule
+## 3. Phase 1: Probe Training
 
-### Phase 1: Baseline with Fixed Data (Fast)
+### 3.1 Training Data
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| Format | N-Truths-M-Lies (NTML) | Contrastive pairs |
+| Configuration | 4T1L | 4 truths, 1 lie per sample |
+| Samples | 500 | Per configuration |
+| Explicit deception | Yes | "You are a liar" instruction |
+| Shuffle statements | Yes | Remove positional confounds |
+| Instruction style | `direct_liar` | Clear, explicit framing |
 
-#### Exp 1.1: Sklearn Logistic - Layer 22 Only
-**Purpose**: Quick baseline matching Apollo's probe type on our best data
+### 3.2 Probe Architectures
+| Type | Description | Status |
+|------|-------------|--------|
+| `attention` | Attention-weighted probe | ✅ Implemented |
+| `meandiff` | Mean difference direction | ✅ Implemented |
+| `logistic` | Learned logistic regression | ✅ Implemented |
+| `sklearn_logistic` | sklearn LogisticRegression | ✅ Implemented |
 
-```bash
-python scripts/probe_training_ntml.py \
-    --model_name "meta-llama/Llama-3.3-70B-Instruct" \
-    --train_dataset_dir ./data/NTML-datasets/newbank/5T2L_500samples_shuffled_explicit_direct_liar_prefix.json \
-    --probe_save_dir ./probes/exp1_1_sklearn_l22 \
-    --probe_types logistic \
-    --use_sklearn_logistic \
-    --hyperparams '{"C": 1.0, "class_weight": "balanced", "max_iter": 1000, "solver": "lbfgs"}' \
-    --layers 22 \
-    --max_length 512 \
-    --dishonest_mode all \
-    --honest_mode none \
-    --device cuda
-```
+### 3.3 Training Configuration
+| Parameter | Value |
+|-----------|-------|
+| Model | Llama-3.3-70B-Instruct |
+| Layers | 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56 |
+| Loss | Max-aggregation with annealing |
+| Annealing warmup | 0.3 (30% BCE, then transition) |
+| Epochs | 20 |
+| Early stopping | Patience 7 |
+| Batch size | 32 |
 
-**Eval**:
-```bash
-python scripts/probe_eval_deception_datasets.py \
-    --model_name "meta-llama/Llama-3.3-70B-Instruct" \
-    --probe_dir ./probes/exp1_1_sklearn_l22 \
-    --datasets ai_liar.jsonl sandbagging_v2__wmdp_mmlu.jsonl:500 \
-    --labeled_dir deception-detection-labelled/deception_detection_labeled \
-    --results_dir ./results/exp1_1_sklearn_l22_eval \
-    --batch_size 4 \
-    --device cuda
-```
-
-#### Exp 1.2: Sklearn Logistic - Layer Sweep 16-30
-**Purpose**: Verify L22 is optimal for our data (not just Apollo's)
-
-```bash
-python scripts/probe_training_ntml.py \
-    --model_name "meta-llama/Llama-3.3-70B-Instruct" \
-    --train_dataset_dir ./data/NTML-datasets/newbank/5T2L_500samples_shuffled_explicit_direct_liar_prefix.json \
-    --probe_save_dir ./probes/exp1_2_sklearn_layer_sweep \
-    --probe_types logistic \
-    --use_sklearn_logistic \
-    --hyperparams '{"C": 1.0, "class_weight": "balanced", "max_iter": 1000, "solver": "lbfgs"}' \
-    --layers 16 18 20 22 24 26 28 30 \
-    --max_length 512 \
-    --dishonest_mode all \
-    --honest_mode none \
-    --device cuda
-```
-
-**Eval**:
-```bash
-python scripts/probe_eval_deception_datasets.py \
-    --model_name "meta-llama/Llama-3.3-70B-Instruct" \
-    --probe_dir ./probes/exp1_2_sklearn_layer_sweep \
-    --datasets ai_liar.jsonl sandbagging_v2__wmdp_mmlu.jsonl:500 \
-    --labeled_dir deception-detection-labelled/deception_detection_labeled \
-    --results_dir ./results/exp1_2_sklearn_layer_sweep_eval \
-    --batch_size 4 \
-    --device cuda
-```
+### 3.4 Implementation Status
+- ✅ `scripts/probe_training_ntml.py` — main training script
+- ✅ `data/generate_contrastive_ntml_datasets.py` — data generation
+- ✅ 72 probes trained (4 types × 18 layers)
 
 ---
 
-### Phase 2: Correct MaxAggr Hyperparameters
+## 4. Phase 2: Probe Evaluation
 
-#### Exp 2.1: MaxAggr with warmup=1.0, L22
-**Purpose**: Test if correct annealing fixes the train/eval gap
+### 4.1 Evaluation Datasets
+| Dataset | Description | Samples |
+|---------|-------------|---------|
+| `ai_liar.jsonl` | AI-generated lies | ~500 |
+| `sandbagging_v2__wmdp_mmlu.jsonl` | Sandbagging examples | 500 |
 
-```bash
-python scripts/probe_training_ntml.py \
-    --model_name "meta-llama/Llama-3.3-70B-Instruct" \
-    --train_dataset_dir ./data/NTML-datasets/newbank/5T2L_500samples_shuffled_explicit_direct_liar_prefix.json \
-    --probe_save_dir ./probes/exp2_1_maxaggr_warmup1 \
-    --probe_types logistic \
-    --layers 22 \
-    --max_length 512 \
-    --batch_size 32 \
-    --num_epochs 50 \
-    --patience 15 \
-    --use_max_aggregation \
-    --anneal_warmup 1.0 \
-    --sparsity_penalty 0.05 \
-    --dishonest_mode all \
-    --honest_mode none \
-    --device cuda
+### 4.2 Metrics
+
+#### 4.2.1 Sample-Level Metrics (Detection)
+| Metric | Definition | Purpose | Status |
+|--------|------------|---------|--------|
+| **Sample AUROC** | ROC-AUC for classifying samples as deceptive/honest | Apollo comparison | ✅ Implemented |
+| **Sample Accuracy** | Accuracy at optimal threshold | Secondary | ✅ Implemented |
+
+#### 4.2.2 Token-Level Metrics (Localization)
+
+**Primary metrics** (for probe selection):
+
+| Metric | Definition | Purpose | Status |
+|--------|------------|---------|--------|
+| **Recall@Oracle** | Flag top L tokens (L = # lie tokens), measure recall | Adaptive to lie density | ✅ IMPLEMENTED |
+| **Hit Rate** | P(max-scored token is in lie span) | Simple, interpretable | ✅ Implemented |
+| **MRR** | Mean(1/rank) for lie tokens | Ranking quality | ✅ IMPLEMENTED |
+
+**Secondary metrics** (for paper, comparability):
+
+| Metric | Definition | Purpose | Status |
+|--------|------------|---------|--------|
+| **Recall@K%** | Flag top K% tokens, measure recall | Apollo comparison | ✅ Implemented (K=5,10,15,20,25,30) |
+| **Token AUPRC** | Average precision for token classification | Standard metric | ✅ Implemented |
+| **Token AUROC** | ROC-AUC for token classification | Standard metric (but near-random) | ✅ Implemented |
+
+#### 4.2.3 Random Baselines
+
+For **Recall@Oracle**:
+```python
+Given L lie tokens out of T total tokens:
+Random baseline = L/T (expected recall if ranking were random)
+Report: Recall@Oracle and Lift = Recall@Oracle / (L/T)
 ```
 
-**Eval**:
-```bash
-python scripts/probe_eval_deception_datasets.py \
-    --model_name "meta-llama/Llama-3.3-70B-Instruct" \
-    --probe_dir ./probes/exp2_1_maxaggr_warmup1 \
-    --datasets ai_liar.jsonl sandbagging_v2__wmdp_mmlu.jsonl:500 \
-    --labeled_dir deception-detection-labelled/deception_detection_labeled \
-    --results_dir ./results/exp2_1_maxaggr_warmup1_eval \
-    --batch_size 4 \
-    --device cuda
-```
+### 4.3 Probe Selection Criteria
 
-#### Exp 2.2: MaxAggr Layer Sweep with warmup=1.0
-**Purpose**: Find optimal layer for MaxAggr with correct settings
+Select probes that:
+1. **Recall@Oracle > Apollo baseline** (beat localization)
+2. **Sample AUROC > 0.75** (maintain reasonable detection)
+3. **Layers 34-44** (middle-late layers for Llama-70B)
 
-```bash
-python scripts/probe_training_ntml.py \
-    --model_name "meta-llama/Llama-3.3-70B-Instruct" \
-    --train_dataset_dir ./data/NTML-datasets/newbank/5T2L_500samples_shuffled_explicit_direct_liar_prefix.json \
-    --probe_save_dir ./probes/exp2_2_maxaggr_layer_sweep \
-    --probe_types logistic \
-    --layers 16 20 22 24 28 30 \
-    --max_length 512 \
-    --batch_size 32 \
-    --num_epochs 50 \
-    --patience 15 \
-    --use_max_aggregation \
-    --anneal_warmup 1.0 \
-    --sparsity_penalty 0.05 \
-    --dishonest_mode all \
-    --honest_mode none \
-    --device cuda
-```
+**Current recommendation**: `attention L36` or `attention L40`
+
+### 4.4 Implementation Status
+- ✅ `scripts/analyze_probe_token_metrics.py` — main evaluation with Recall@Oracle and MRR
+- ✅ `probity/evaluation/max_aggregation_metrics.py` — hit rate computation
+- ✅ Recall@Oracle — IMPLEMENTED
+- ✅ MRR — IMPLEMENTED
+- ✅ Per-sample lift computation — IMPLEMENTED
 
 ---
 
-### Phase 3: Scale Up Data
+## 5. Phase 3: Debate Transcript Generation
 
-#### Exp 3.1: Sklearn L22 with 1000 samples
-**Purpose**: Test if more data improves generalization
+### 5.1 Debate Dataset
+| Parameter | Value |
+|-----------|-------|
+| Dataset | `data/quality_synthetic/stories.jsonl` |
+| Samples | 166 reading comprehension scenarios |
+| Format | Story + question + correct/incorrect answer |
 
-```bash
-python scripts/probe_training_ntml.py \
-    --model_name "meta-llama/Llama-3.3-70B-Instruct" \
-    --train_dataset_dir ./data/NTML-datasets/newbank/5T2L_1000samples_shuffled_explicit_direct_liar_prefix.json \
-    --probe_save_dir ./probes/exp3_1_sklearn_1000samples \
-    --probe_types logistic \
-    --use_sklearn_logistic \
-    --hyperparams '{"C": 1.0, "class_weight": "balanced", "max_iter": 1000, "solver": "lbfgs"}' \
-    --layers 22 \
-    --max_length 512 \
-    --dishonest_mode all \
-    --honest_mode none \
-    --device cuda
-```
+### 5.2 Debate Configuration
+| Parameter | Value |
+|-----------|-------|
+| Honest model | Llama-3.3-70B-Instruct |
+| Dishonest model | Llama-3.3-70B-Instruct |
+| Rounds | 3 |
+| Dishonesty level | `explicit` — **Instructed to lie and deceive** |
 
-#### Exp 3.2: MaxAggr with 1000 samples + warmup=1.0
-**Purpose**: Combine correct hyperparams with more data
+**Important**: The dishonest debater receives explicit instructions to lie, mislead, and use deceptive tactics. This matches the probe training distribution where deception was explicitly instructed.
 
-```bash
-python scripts/probe_training_ntml.py \
-    --model_name "meta-llama/Llama-3.3-70B-Instruct" \
-    --train_dataset_dir ./data/NTML-datasets/newbank/5T2L_1000samples_shuffled_explicit_direct_liar_prefix.json \
-    --probe_save_dir ./probes/exp3_2_maxaggr_1000samples \
-    --probe_types logistic \
-    --layers 22 \
-    --max_length 512 \
-    --batch_size 32 \
-    --num_epochs 50 \
-    --patience 15 \
-    --use_max_aggregation \
-    --anneal_warmup 1.0 \
-    --sparsity_penalty 0.05 \
-    --dishonest_mode all \
-    --honest_mode none \
-    --device cuda
-```
+### 5.3 Debater Probe Access Configurations (EXPENSIVE)
 
-#### Exp 3.3: Generate and train on 2000 samples (if needed)
+**Run 3 transcript generation configs:**
 
-**Generate**:
-```bash
-python data/generate_contrastive_ntml_datasets.py \
-    --input data/truth_and_lies.json \
-    --ratio "5T2L" \
-    --samples 2000 \
-    --shuffle_response \
-    --explicit_deception \
-    --instruction_style direct_liar \
-    --instruction_position prefix \
-    --output data/NTML-datasets/newbank \
-    --seed 42
-```
+| Config ID | Debaters See | Description | Rationale |
+|-----------|--------------|-------------|-----------|
+| **A: blind** | Nothing | Clean baseline | Control condition |
+| **B: token_spans** | Opponent's top 10% tokens (merged spans) | Token-level | Most granular, actionable |
+| **C: statement_rank** | Opponent's top 3 statements per response | Sentence-level | Current implementation |
 
-**Train**:
-```bash
-python scripts/probe_training_ntml.py \
-    --model_name "meta-llama/Llama-3.3-70B-Instruct" \
-    --train_dataset_dir ./data/NTML-datasets/newbank/5T2L_2000samples_shuffled_explicit_direct_liar_prefix.json \
-    --probe_save_dir ./probes/exp3_3_sklearn_2000samples \
-    --probe_types logistic \
-    --use_sklearn_logistic \
-    --hyperparams '{"C": 1.0, "class_weight": "balanced", "max_iter": 1000, "solver": "lbfgs"}' \
-    --layers 22 \
-    --max_length 512 \
-    --dishonest_mode all \
-    --honest_mode none \
-    --device cuda
-```
+**Speaker order**: Randomized and balanced (honest_first = True/False, 50/50 split) to control for order effects.
 
----
+**Total expensive runs**: 3 × 166 × 2 (order) = 996 debates
 
-### Phase 4: Attention Probes (Best Span Metrics)
-
-#### Exp 4.1: Attention Probe L22 with 1000 samples
-**Purpose**: Attention probes had best span_recall (0.584) - test with more data
-
-```bash
-python scripts/probe_training_ntml.py \
-    --model_name "meta-llama/Llama-3.3-70B-Instruct" \
-    --train_dataset_dir ./data/NTML-datasets/newbank/5T2L_1000samples_shuffled_explicit_direct_liar_prefix.json \
-    --probe_save_dir ./probes/exp4_1_attention_1000samples \
-    --probe_types attention \
-    --hyperparams '{"n_heads": 4, "temperature": 1.0}' \
-    --layers 22 30 \
-    --max_length 512 \
-    --batch_size 32 \
-    --num_epochs 30 \
-    --patience 10 \
-    --dishonest_mode all \
-    --honest_mode none \
-    --device cuda
-```
-
----
-
-### Phase 5: Ablations (If Phases 1-4 Don't Close Gap)
-
-#### Exp 5.1: Instruction Style Comparison
-**Purpose**: Confirm direct_liar is best across probe types
-
-```bash
-# Run sklearn L22 on each style
-for style in direct_liar roleplay behavioral neutral; do
-    python scripts/probe_training_ntml.py \
-        --model_name "meta-llama/Llama-3.3-70B-Instruct" \
-        --train_dataset_dir ./data/NTML-datasets/newbank/5T2L_500samples_shuffled_explicit_${style}_prefix.json \
-        --probe_save_dir ./probes/exp5_1_style_${style} \
-        --probe_types logistic \
-        --use_sklearn_logistic \
-        --layers 22 \
-        --dishonest_mode all \
-        --honest_mode none
-done
-```
-
-#### Exp 5.2: Ratio Comparison
-**Purpose**: Test if different lie ratios affect generalization
-
-```bash
-# 3T3L (more lies)
-python scripts/probe_training_ntml.py \
-    --train_dataset_dir ./data/NTML-datasets/newbank/3T3L_500samples_shuffled_explicit_direct_liar_prefix.json \
-    --probe_save_dir ./probes/exp5_2_ratio_3T3L \
-    --probe_types logistic \
-    --use_sklearn_logistic \
-    --layers 22 \
-    --dishonest_mode all \
-    --honest_mode none
-
-# 5T1L (fewer lies)
-python scripts/probe_training_ntml.py \
-    --train_dataset_dir ./data/NTML-datasets/newbank/5T1L_500samples_shuffled_explicit_direct_liar_prefix.json \
-    --probe_save_dir ./probes/exp5_2_ratio_5T1L \
-    --probe_types logistic \
-    --use_sklearn_logistic \
-    --layers 22 \
-    --dishonest_mode all \
-    --honest_mode none
-```
-
-#### Exp 5.3: Cross-Dataset Eval (Apollo-style)
-**Purpose**: Train on NTML, eval on ai_liar; train on ai_liar-like, eval on sandbagging
-
-This requires generating ai_liar-style training data first (future work).
-
----
-
-## Full Experiment Matrix
-
-| Exp | Phase | Probe | Layers | Samples | MaxAggr | Warmup | Style | Priority |
-|-----|-------|-------|--------|---------|---------|--------|-------|----------|
-| 1.1 | Baseline | sklearn | 22 | 500 | No | - | direct_liar | **HIGH** |
-| 1.2 | Baseline | sklearn | 16-30 | 500 | No | - | direct_liar | **HIGH** |
-| 2.1 | MaxAggr | logistic | 22 | 500 | Yes | 1.0 | direct_liar | **HIGH** |
-| 2.2 | MaxAggr | logistic | 16-30 | 500 | Yes | 1.0 | direct_liar | MEDIUM |
-| 3.1 | Scale | sklearn | 22 | 1000 | No | - | direct_liar | **HIGH** |
-| 3.2 | Scale | logistic | 22 | 1000 | Yes | 1.0 | direct_liar | MEDIUM |
-| 3.3 | Scale | sklearn | 22 | 2000 | No | - | direct_liar | LOW |
-| 4.1 | Attention | attention | 22,30 | 1000 | No | - | direct_liar | MEDIUM |
-| 5.1 | Ablation | sklearn | 22 | 500 | No | - | all styles | LOW |
-| 5.2 | Ablation | sklearn | 22 | 500 | No | - | all ratios | LOW |
-
----
-
-## Expected Results
-
-| Exp | Expected AUROC | Rationale |
-|-----|----------------|-----------|
-| 1.1 | 0.65-0.75 | Sklearn baseline with fixed data |
-| 1.2 | Find optimal layer | May find better than L22 |
-| 2.1 | 0.70-0.80 | Correct MaxAggr should close train/eval gap |
-| 3.1 | 0.70-0.80 | More data = better generalization |
-| 3.2 | 0.75-0.85 | Best hyperparams + more data |
-| 4.1 | 0.65-0.75 | Good span metrics, moderate AUROC |
-
-**Target**: Any experiment hitting **0.80+ AUROC** closes the gap meaningfully.
-**Apollo benchmark**: 0.925 AUROC
-
----
-
-## Hyperparameter Summary
-
-### Sklearn Logistic (Recommended for baselines)
+### 5.4 What Gets Saved Per Transcript
 ```json
 {
-    "C": 1.0,
-    "class_weight": "balanced",
-    "max_iter": 1000,
-    "solver": "lbfgs",
-    "penalty": "l2"
+  "debate_id": "...",
+  "turns": [
+    {
+      "speaker": "honest/dishonest",
+      "content": "...",
+      "tokens": ["list", "of", "tokens"],
+      "probe_scores": {
+        "attention": [0.1, 0.2, ...],
+        "meandiff": [0.15, 0.25, ...]
+      },
+      "mean_probe_score": 0.45
+    }
+  ],
+  "model_mapping": {"MODEL_A": "honest", "MODEL_B": "dishonest"},
+  "honest_goes_first": true/false,
+  "problem_data": {...}
 }
 ```
 
-### PyTorch Logistic + MaxAggr (For span localization)
-```
---num_epochs 50
---patience 15
---batch_size 32
---use_max_aggregation
---anneal_warmup 1.0      # CRITICAL: Full BCE first, then max aggr
---sparsity_penalty 0.05  # Prevents firing on every token
-```
+**Critical**: Save full token-level scores so post-hoc analysis can recompute any aggregation.
 
-### Attention Probe
-```json
-{
-    "n_heads": 4,
-    "temperature": 1.0
-}
-```
-```
---num_epochs 30
---patience 10
-```
+### 5.5 Implementation Status
+- ✅ `debate/run_debate_no_judge.py` — main debate runner
+- ✅ `debate/inference/fast_probe_inference.py` — probe scoring during debate
+- ✅ Token-level scores saved in transcripts
+- ✅ Statement ranking display (`per_statement` mode)
+- ✅ Token span display (`token_spans`, `token_spans_10`, `token_spans_5` modes) — IMPLEMENTED
+- ✅ `_extract_top_k_token_spans()` helper function — IMPLEMENTED
 
-### Label Selection (All experiments)
+---
+
+## 6. Phase 4: Judge Evaluation (CHEAP)
+
+### 6.1 Judge Models
+| Model | Provider | Expected Baseline |
+|-------|----------|-------------------|
+| Llama-3.1-8B-Instruct | Local/OpenRouter | ~50-55% |
+| Llama-3.3-70B-Instruct | OpenRouter | ~55-65% |
+| Claude Sonnet | Anthropic API | ~70-75% |
+| GPT-4o | OpenAI API | ~70-75% |
+
+### 6.2 Judge Probe Display Configurations
+
+| Config ID | Judge Sees | Description |
+|-----------|------------|-------------|
+| **J1: none** | Nothing | Baseline |
+| **J2: statement_rank** | All statements ranked by score (highest first) | "Which claims to scrutinize" |
+| **J3: turn_rank** | Turns ranked by mean score | "Which round was suspicious" |
+| **J4: overall** | Mean score per debater for whole debate | "Who's more deceptive overall" |
+| **J5: statement+overall** | Statements ranked + overall summary | Combined |
+| **J6: random_flagging** | Random statements flagged (same stats as real probes) | **Control for "any additional signal"** |
+| **J7: inverted** | Inverted probe scores (high = honest) | **Robustness test** |
+
+### 6.3 Robustness Controls (Reviewer 2 Recommendations)
+
+**Random Baseline (J6)**:
+- Generate random probe scores with same mean/std as real probes
+- Tests whether improvement is from probe quality or just "having any additional signal"
+- If J2 >> J1 but J2 ≈ J6, probes aren't adding real value
+
+**Inverted Probes (J7)**:
+- Flip probe scores: `inverted_score = 1 - original_score`
+- Tests whether judges blindly trust probes or actually reason about flagged content
+- Ideal: Judges with inverted probes don't do worse because they examine flagged statements and notice they're fine
+- Worst case: Judges blindly trust inverted probes and do worse than baseline
+
+**Goal**: Judges should use probes as "flags to examine" not "proof of deception"
+
+### 6.4 The Experimental Matrix
+
+**Transcript configs (rows)** × **Judge configs (columns)**:
+
+| | J1: none | J2: stmt | J3: turn | J4: overall | J5: combined | J6: random | J7: inverted |
+|---|---|---|---|---|---|---|---|
+| **A: debaters_blind** | Baseline | Judge-only | | | | Control | Robustness |
+| **B: debaters_token** | Debater-only | Full access | | | | | |
+| **C: debaters_stmt** | Debater-only | Full access | | | | | |
+
+**Total judge runs**: 3 transcripts × 7 judge configs × 4 judge models × 166 debates × 2 orders = ~28k API calls
+
+(Still cheap — maybe $100-400 depending on models)
+
+### 6.5 Implementation Status
+- ✅ `debate/run_judge_for_transcripts.py` — batch judge evaluation
+- ✅ `summary_only` display mode
+- ✅ `per_statement` display mode (statements ranked)
+- ✅ `turn_rank` display mode — IMPLEMENTED
+- ✅ `overall` display mode (debater-level summary) — IMPLEMENTED
+- ✅ Combined display modes (`turn_rank_overall`, `statement_overall`) — IMPLEMENTED
+- ✅ Random probe score generation — IMPLEMENTED (`--probe_modes random`)
+- ✅ Inverted probe scores — IMPLEMENTED (`--probe_modes inverted`)
+
+---
+
+## 7. Phase 5: Post-Hoc Analysis
+
+### 7.1 Judge Accuracy Analysis
+| Metric | Definition |
+|--------|------------|
+| **Accuracy** | % of debates where judge picked honest debater |
+| **Accuracy by condition** | Breakdown by transcript config × judge config |
+| **McNemar's test** | Paired comparison between conditions |
+| **Effect size** | Cohen's h for proportion differences |
+
+### 7.2 Probe Performance on Debate Transcripts
+
+Since we save full token-level scores, we can compute:
+
+| Metric | Level | Definition | Status |
+|--------|-------|------------|--------|
+| **Recall@Oracle** | Token | Top L tokens, L = # lie tokens | ✅ Implemented |
+| **Hit Rate** | Token | Max score in lie span? | ✅ Implemented |
+| **MRR** | Token | Mean reciprocal rank of lie tokens | ✅ Implemented |
+| **Statement AUROC** | Statement | Classify statements as containing lies | ❌ NOT IMPLEMENTED |
+| **Turn AUROC** | Turn | Classify turns by speaker | ✅ Implemented |
+| **Debate AUROC** | Debate | Classify which debater is dishonest | ✅ Implemented |
+
+### 7.3 Ground Truth for Debate Transcripts
+
+| Source | Description | Status |
+|--------|-------------|--------|
+| **Speaker label** | Dishonest debater's statements = deceptive | ✅ Available |
+| **LLM tagging** | GPT-4/Claude labels specific claims as lies | ✅ Implemented (`debate/labeling.py`) |
+| **Manual annotation** | Human labels (gold standard) | ❌ Not done (consider 50 sample subset) |
+
+**Note**: Use different model family for labeling (e.g., Claude) than for judging (e.g., GPT-4o) to avoid contamination.
+
+### 7.4 Order Effects Analysis
+- Compare accuracy when honest_goes_first=True vs False
+- Report as separate factor in mixed-effects model
+- Flag if order effect is significant (primacy/recency bias)
+
+### 7.5 Implementation Status
+- ✅ `debate/utils/probe_analysis.py` — transcript analysis
+- ✅ `debate/analyze_debate_results.py` — results aggregation
+- ✅ Recall@Oracle computation — IMPLEMENTED
+- ❌ Statement-level AUROC — NOT IMPLEMENTED
+- ❌ Order effects analysis — NOT IMPLEMENTED
+
+---
+
+## 8. Model Scaling Experiments
+
+### 8.1 Models to Test
+
+| Model | Size | Role | Priority |
+|-------|------|------|----------|
+| Llama-3.3-70B-Instruct | 70B | Primary debater, probe training | P1 |
+| Llama-3.1-8B-Instruct | 8B | Weak debater, weak judge | P2 |
+| Qwen2.5-32B-Instruct | 32B | Mid-capability ablation | P3 |
+
+### 8.2 Scaling Questions
+
+1. **Asymmetric debates**: Can probes + weak honest debater beat strong dishonest debater?
+2. **Probe transfer**: Do probes trained on 70B work on 8B? (Probably not, but worth checking)
+3. **Judge scaling**: How much does judge capability affect probe usefulness?
+
+### 8.3 Priority Order
+
 ```
---dishonest_mode all    # All tokens from lie statements
---honest_mode none      # No tokens from truth statements
+P1: 70B × 70B symmetric debates (full matrix)
+P2: 8B judge on 70B transcripts (cheap, just API calls)
+P3: 8B vs 70B asymmetric debates (expensive, new transcripts)
+P4: 32B ablations (if time permits)
 ```
 
 ---
 
-## Data Generation Settings (Reference)
+## 9. Statistical Analysis Plan
 
-All training data generated with:
-```bash
-python data/generate_contrastive_ntml_datasets.py \
-    --input data/truth_and_lies.json \      # 6865 statements, 69 categories
-    --ratio "5T2L" \                         # 5 truths, 2 lies per conversation
-    --samples <N> \                          # 500, 1000, or 2000
-    --shuffle_response \                     # Randomize statement order
-    --explicit_deception \                   # Include deception instruction
-    --instruction_style direct_liar \        # "You are a liar..."
-    --instruction_position prefix \          # Instruction before facts
-    --output data/NTML-datasets/newbank \
-    --seed 42                                # Reproducibility
+### 9.1 Primary Comparisons (Pre-registered)
+
+1. **Baseline vs Judge-only (statement_rank)**: Does probe info help judges?
+2. **Baseline vs Debater-only**: Does probe info help honest debaters?
+3. **Judge-only vs Random-flagging**: Is improvement from probe quality or any signal?
+
+### 9.2 Secondary Comparisons
+
+4. Judge display modes: statement_rank vs turn_rank vs overall
+5. Debater display modes: token_spans vs statement_rank
+6. Inverted probe robustness test
+
+### 9.3 Sample Size Considerations
+
+- n = 166 debates per transcript config × 2 orders = 332
+- For McNemar's test: need ~20+ discordant pairs for power
+- **Key statistic**: Number of debates where conditions disagree, not total accuracy
+- Mixed-effects model with transcript as random effect
+
+### 9.4 Multiple Comparisons
+
+- 3 primary comparisons: report with α=0.05
+- Secondary comparisons: FDR correction (Benjamini-Hochberg)
+- Exploratory: report as descriptive
+
+### 9.5 Effect Size Targets
+
+| Effect | Cohen's h | Interpretation |
+|--------|-----------|----------------|
+| Small | 0.20 | 50% → 54% |
+| Medium | 0.50 | 50% → 62% |
+| Large | 0.80 | 50% → 72% |
+
+**Minimum interesting effect**: Medium (0.50), ~10% absolute improvement
+
+---
+
+## 10. Implementation Checklist
+
+### 10.1 Before Transcript Generation (HIGH PRIORITY)
+
+| Task | Status | Priority |
+|------|--------|----------|
+| ✅ Implement Recall@Oracle metric | DONE | HIGH |
+| ✅ Implement MRR metric | DONE | MEDIUM |
+| ✅ Implement token span display for debaters | DONE | HIGH |
+| ✅ Implement order balancing (honest_first 50/50) | DONE | MEDIUM |
+| Run 5 pilot debates per config | ❌ | HIGH |
+| Validate probe on pilot debates | ❌ | HIGH |
+| Implement explicit "liar" instructions for dishonest debater | ❌ | HIGH |
+
+### 10.2 Before Judge Evaluation
+
+| Task | Status | Priority |
+|------|--------|----------|
+| Implement `turn_rank` display mode | ✅ DONE | HIGH |
+| Implement `overall` display mode | ✅ DONE | HIGH |
+| Implement random probe score generation | ✅ DONE | HIGH |
+| Implement inverted probe scores | ✅ DONE | HIGH |
+| Set up judge API keys and rate limiting | ❌ | HIGH |
+
+### 10.3 Before Analysis
+
+| Task | Status | Priority |
+|------|--------|----------|
+| Implement statement-level AUROC | ❌ | MEDIUM |
+| Set up mixed-effects model analysis | ❌ | MEDIUM |
+| Create visualization scripts | ❌ | LOW |
+| Implement order effects analysis | ❌ | MEDIUM |
+
+---
+
+## 11. Timeline and Resource Estimates
+
+### 11.1 Compute Requirements
+
+| Phase | Hardware | Time Estimate |
+|-------|----------|---------------|
+| Probe training | 2× H100 80GB | Done |
+| Probe evaluation | 2× H100 80GB | 2-4 hours |
+| Pilot debates (15 total) | 8× H200 | ~2 hours |
+| Transcript gen (3 configs × 2 orders) | 8× H200 | ~24-48 hours total |
+| Judge evaluation | API only | ~4-8 hours |
+| Analysis | CPU | ~1 hour |
+
+### 11.2 Cost Estimates
+
+| Phase | Cost |
+|-------|------|
+| Pilot debates | ~$30 |
+| Transcript generation (6 runs) | ~$400-800 |
+| Judge API calls (~28k) | ~$100-400 |
+| Total | ~$600-1300 |
+
+---
+
+## 12. Open Questions (Resolved)
+
+| Question | Decision | Rationale |
+|----------|----------|-----------|
+| Statement aggregation | Max | Catches single deceptive token in sentence |
+| Token span threshold | 10% | Balance between over/under-flagging |
+| Statements to show | Top 3 | Practical for judges to examine |
+| Ordinal vs cardinal | Ordinal for ranking, cardinal for summary | Robustness + interpretability |
+| LLM for tagging | Claude (different from GPT-4o judge) | Avoid contamination |
+| Order effects | Balance 50/50 + analyze | Control + detect |
+
+---
+
+## 13. Appendix: Metric Definitions
+
+### Recall@Oracle (Implemented)
+
+```python
+def compute_recall_at_oracle(all_scores, all_labels):
+    L = int(np.sum(all_labels))  # Number of lie tokens
+    T = len(all_labels)  # Total tokens
+
+    if L == 0:
+        return float('nan'), float('nan'), float('nan')
+
+    top_L_indices = set(np.argsort(all_scores)[-L:])
+    hits = sum(1 for i, is_lie in enumerate(all_labels) if is_lie and i in top_L_indices)
+
+    recall_at_oracle = hits / L
+    random_baseline = L / T
+    lift = recall_at_oracle / random_baseline
+
+    return recall_at_oracle, random_baseline, lift
+```
+
+### MRR (Implemented)
+
+```python
+def compute_mrr(all_scores, all_labels):
+    n_lies = int(np.sum(all_labels))
+    if n_lies == 0:
+        return float('nan')
+
+    ranks = np.argsort(np.argsort(-all_scores)) + 1
+    reciprocal_ranks = [1.0 / ranks[i] for i, is_lie in enumerate(all_labels) if is_lie]
+
+    return np.mean(reciprocal_ranks)
+```
+
+### Token Span Extraction (Implemented)
+
+```python
+def _extract_top_k_token_spans(tokens, scores, k_percent=10.0, min_span_tokens=1):
+    n_to_flag = max(1, int(len(tokens) * k_percent / 100))
+    top_k_indices = set(np.argsort(scores)[::-1][:n_to_flag])
+
+    # Merge adjacent flagged tokens into spans
+    spans = []
+    current_span = []
+    for i in range(len(tokens)):
+        if i in top_k_indices:
+            current_span.append(i)
+        elif current_span:
+            if len(current_span) >= min_span_tokens:
+                spans.append(current_span)
+            current_span = []
+
+    return spans
 ```
 
 ---
 
-## Quick Start Script
+## 14. Reviewer 2 Feedback Integration
 
-Run all high-priority experiments:
+### Addressed Issues
 
-```bash
-#!/bin/bash
-# run_priority_experiments.sh
+1. ✅ **Recall@Oracle implemented** — Primary localization metric now available
+2. ✅ **Token span display implemented** — Debaters can see granular token-level info
+3. ✅ **Instructed deception** — Dishonest debater explicitly told to lie (matches training)
+4. ✅ **Random baseline control** — J6 condition tests "any signal" vs "probe quality"
+5. ✅ **Inverted probe control** — J7 condition tests judge reasoning vs blind trust
+6. ✅ **Order effects** — Balanced 50/50 + analyzed as factor
+7. ✅ **Model family separation** — Claude for labeling, GPT-4o for judging
 
-MODEL="meta-llama/Llama-3.3-70B-Instruct"
-DATA_500="./data/NTML-datasets/newbank/5T2L_500samples_shuffled_explicit_direct_liar_prefix.json"
-DATA_1000="./data/NTML-datasets/newbank/5T2L_1000samples_shuffled_explicit_direct_liar_prefix.json"
-EVAL_DATASETS="ai_liar.jsonl sandbagging_v2__wmdp_mmlu.jsonl:500"
-LABELED_DIR="deception-detection-labelled/deception_detection_labeled"
+### Remaining Items
 
-# Exp 1.1: Sklearn L22 baseline
-echo "=== Exp 1.1: Sklearn L22 ==="
-python scripts/probe_training_ntml.py \
-    --model_name $MODEL \
-    --train_dataset_dir $DATA_500 \
-    --probe_save_dir ./probes/exp1_1_sklearn_l22 \
-    --probe_types logistic --use_sklearn_logistic \
-    --hyperparams '{"C": 1.0, "class_weight": "balanced"}' \
-    --layers 22 --dishonest_mode all --honest_mode none
-
-python scripts/probe_eval_deception_datasets.py \
-    --model_name $MODEL \
-    --probe_dir ./probes/exp1_1_sklearn_l22 \
-    --datasets $EVAL_DATASETS \
-    --labeled_dir $LABELED_DIR \
-    --results_dir ./results/exp1_1_eval --batch_size 4
-
-# Exp 1.2: Sklearn layer sweep
-echo "=== Exp 1.2: Sklearn Layer Sweep ==="
-python scripts/probe_training_ntml.py \
-    --model_name $MODEL \
-    --train_dataset_dir $DATA_500 \
-    --probe_save_dir ./probes/exp1_2_sklearn_layers \
-    --probe_types logistic --use_sklearn_logistic \
-    --hyperparams '{"C": 1.0, "class_weight": "balanced"}' \
-    --layers 16 18 20 22 24 26 28 30 \
-    --dishonest_mode all --honest_mode none
-
-python scripts/probe_eval_deception_datasets.py \
-    --model_name $MODEL \
-    --probe_dir ./probes/exp1_2_sklearn_layers \
-    --datasets $EVAL_DATASETS \
-    --labeled_dir $LABELED_DIR \
-    --results_dir ./results/exp1_2_eval --batch_size 4
-
-# Exp 2.1: MaxAggr warmup=1.0
-echo "=== Exp 2.1: MaxAggr warmup=1.0 ==="
-python scripts/probe_training_ntml.py \
-    --model_name $MODEL \
-    --train_dataset_dir $DATA_500 \
-    --probe_save_dir ./probes/exp2_1_maxaggr \
-    --probe_types logistic \
-    --layers 22 \
-    --num_epochs 50 --patience 15 --batch_size 32 \
-    --use_max_aggregation --anneal_warmup 1.0 --sparsity_penalty 0.05 \
-    --dishonest_mode all --honest_mode none
-
-python scripts/probe_eval_deception_datasets.py \
-    --model_name $MODEL \
-    --probe_dir ./probes/exp2_1_maxaggr \
-    --datasets $EVAL_DATASETS \
-    --labeled_dir $LABELED_DIR \
-    --results_dir ./results/exp2_1_eval --batch_size 4
-
-# Exp 3.1: Sklearn with 1000 samples
-echo "=== Exp 3.1: Sklearn 1000 samples ==="
-python scripts/probe_training_ntml.py \
-    --model_name $MODEL \
-    --train_dataset_dir $DATA_1000 \
-    --probe_save_dir ./probes/exp3_1_sklearn_1000 \
-    --probe_types logistic --use_sklearn_logistic \
-    --hyperparams '{"C": 1.0, "class_weight": "balanced"}' \
-    --layers 22 --dishonest_mode all --honest_mode none
-
-python scripts/probe_eval_deception_datasets.py \
-    --model_name $MODEL \
-    --probe_dir ./probes/exp3_1_sklearn_1000 \
-    --datasets $EVAL_DATASETS \
-    --labeled_dir $LABELED_DIR \
-    --results_dir ./results/exp3_1_eval --batch_size 4
-
-echo "=== All priority experiments complete ==="
-```
+- ❌ Human judge baseline (50 debates) — optional but valuable
+- ❌ Pilot validation before full runs — CRITICAL
+- ❌ Mixed-effects model setup — before analysis
 
 ---
 
-## Success Criteria
-
-- **Good**: Any probe hits 0.75+ AUROC (within 0.18 of Apollo)
-- **Great**: Any probe hits 0.80+ AUROC (within 0.13 of Apollo)
-- **Excellent**: Any probe hits 0.85+ AUROC (within 0.08 of Apollo)
-- **Apollo parity**: 0.90+ AUROC
-
-If Phase 1-3 don't reach 0.75+, investigate:
-1. Data format mismatch (generate ai_liar-style)
-2. Apollo fine-tuning
-3. Multi-dataset training
+*End of experiment plan*

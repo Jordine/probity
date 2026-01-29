@@ -47,6 +47,71 @@ def load_sample_metrics(results_dir: Path, probe_type: str, layer: int) -> Optio
         return json.load(f)
 
 
+def compute_recall_at_oracle(all_scores: np.ndarray, all_labels: np.ndarray) -> dict:
+    """
+    Compute Recall@Oracle: Flag top L tokens where L = number of true positives.
+
+    This adapts to the actual lie density in each sample, providing a fairer
+    comparison than fixed Recall@K%.
+
+    Returns:
+        dict with recall_at_oracle, random_baseline, and lift
+    """
+    L = int(np.sum(all_labels))  # Number of lie tokens
+    T = len(all_labels)  # Total tokens
+
+    if L == 0:
+        return {
+            "recall_at_oracle": float('nan'),
+            "random_baseline": float('nan'),
+            "lift": float('nan'),
+            "L": 0,
+            "T": T
+        }
+
+    # Get indices of top L scores (descending order)
+    top_L_indices = set(np.argsort(all_scores)[-L:])
+
+    # Count how many true positives are in top L
+    hits = sum(1 for i, is_lie in enumerate(all_labels) if is_lie and i in top_L_indices)
+
+    recall_at_oracle = hits / L
+    random_baseline = L / T  # Expected recall if ranking were random
+    lift = recall_at_oracle / random_baseline if random_baseline > 0 else float('nan')
+
+    return {
+        "recall_at_oracle": float(recall_at_oracle),
+        "random_baseline": float(random_baseline),
+        "lift": float(lift),
+        "L": L,
+        "T": T
+    }
+
+
+def compute_mrr(all_scores: np.ndarray, all_labels: np.ndarray) -> float:
+    """
+    Compute Mean Reciprocal Rank for lie tokens.
+
+    Higher scores should rank higher (lower rank number = better).
+    MRR = mean(1/rank) over all lie tokens.
+
+    Returns:
+        MRR value (higher is better, max 1.0)
+    """
+    n_lies = int(np.sum(all_labels))
+    if n_lies == 0:
+        return float('nan')
+
+    # Get ranks (1-indexed, higher score = rank 1)
+    # argsort gives indices that would sort ascending, so we negate for descending
+    ranks = np.argsort(np.argsort(-all_scores)) + 1
+
+    # Get reciprocal ranks for lie tokens only
+    reciprocal_ranks = [1.0 / ranks[i] for i, is_lie in enumerate(all_labels) if is_lie]
+
+    return float(np.mean(reciprocal_ranks))
+
+
 def compute_token_metrics(in_span_scores: List[float], out_span_scores: List[float]) -> dict:
     """Compute comprehensive token-level metrics."""
     in_span = np.array(in_span_scores)
@@ -109,6 +174,12 @@ def compute_token_metrics(in_span_scores: List[float], out_span_scores: List[flo
             "actual_fpr": actual_fpr
         }
 
+    # Recall@Oracle (adaptive K = number of lie tokens)
+    oracle_metrics = compute_recall_at_oracle(all_scores, all_labels)
+
+    # Mean Reciprocal Rank
+    mrr = compute_mrr(all_scores, all_labels)
+
     return {
         "n_in_span": len(in_span),
         "n_out_span": len(out_span),
@@ -122,7 +193,11 @@ def compute_token_metrics(in_span_scores: List[float], out_span_scores: List[flo
         "baseline_auprc": float(n_positive / n_total),
         "recall_at_k": recall_at_k,
         "precision_at_k": precision_at_k,
-        "fpr_calibrated": fpr_thresholds
+        "fpr_calibrated": fpr_thresholds,
+        "recall_at_oracle": oracle_metrics["recall_at_oracle"],
+        "recall_at_oracle_random": oracle_metrics["random_baseline"],
+        "recall_at_oracle_lift": oracle_metrics["lift"],
+        "mrr": mrr
     }
 
 
@@ -203,7 +278,9 @@ def analyze_results(results_dir: Path, baseline_name: Optional[str] = None) -> d
         sample_str = f"{sample_auroc:.3f}" if sample_auroc else "N/A"
         print(f"  {key}: Sample AUROC={sample_str:>7}, "
               f"Token AUPRC={token_metrics['token_auprc']:.3f}, "
-              f"R@10%={token_metrics['recall_at_k'].get(10, 0):.3f}")
+              f"R@10%={token_metrics['recall_at_k'].get(10, 0):.3f}, "
+              f"R@Oracle={token_metrics['recall_at_oracle']:.3f} (lift={token_metrics['recall_at_oracle_lift']:.2f}x), "
+              f"MRR={token_metrics['mrr']:.3f}")
 
     return results, baseline_metrics
 
@@ -245,11 +322,39 @@ def generate_rankings(results: dict, baseline: Optional[dict] = None) -> dict:
         reverse=True
     )[:20]
 
+    # By Recall@Oracle
+    rankings["by_recall_oracle"] = sorted(
+        rows,
+        key=lambda x: x.get("recall_at_oracle", 0) if not np.isnan(x.get("recall_at_oracle", 0)) else 0,
+        reverse=True
+    )[:20]
+
+    # By Recall@Oracle Lift (how much better than random)
+    rankings["by_recall_oracle_lift"] = sorted(
+        rows,
+        key=lambda x: x.get("recall_at_oracle_lift", 0) if not np.isnan(x.get("recall_at_oracle_lift", 0)) else 0,
+        reverse=True
+    )[:20]
+
+    # By MRR
+    rankings["by_mrr"] = sorted(
+        rows,
+        key=lambda x: x.get("mrr", 0) if not np.isnan(x.get("mrr", 0)) else 0,
+        reverse=True
+    )[:20]
+
     # Best balanced (sample AUROC > 0.75 and good token metrics)
     balanced = [r for r in rows_with_sample if r["sample_auroc"] > 0.75]
     rankings["balanced"] = sorted(
         balanced,
         key=lambda x: x["token_auprc"],
+        reverse=True
+    )[:20]
+
+    # Best balanced by Recall@Oracle
+    rankings["balanced_by_oracle"] = sorted(
+        balanced,
+        key=lambda x: x.get("recall_at_oracle", 0) if not np.isnan(x.get("recall_at_oracle", 0)) else 0,
         reverse=True
     )[:20]
 

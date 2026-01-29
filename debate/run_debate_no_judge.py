@@ -28,22 +28,43 @@ from debate.utils.gpu_utils import detect_gpu_configuration, can_fit_models
 
 class NoJudgeDebateRunner:
     """Run debates without judge decision, save full transcripts with probe data"""
-    
-    def __init__(self, config: DebateConfig, save_dir: Path, experiment_mode: str, dishonesty_level: str = "selective"):
+
+    def __init__(self, config: DebateConfig, save_dir: Path, experiment_mode: str,
+                 dishonesty_level: str = "selective", order_balance: bool = True):
+        """
+        Args:
+            config: Debate configuration
+            save_dir: Directory to save transcripts
+            experiment_mode: Name of experiment mode for logging
+            dishonesty_level: Level of dishonesty for liar debater
+            order_balance: If True, alternate honest_first True/False for 50/50 balance.
+                          If False, randomize each debate independently.
+        """
         self.config = config
         self.save_dir = save_dir
         self.experiment_mode = experiment_mode
         self.dishonesty_level = dishonesty_level
+        self.order_balance = order_balance
+        self.debate_counter = 0  # Track for order balancing
         self.transcripts_dir = save_dir / "transcripts"
         self.transcripts_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Create summary file for tracking progress
         self.summary_file = save_dir / "transcript_summary.jsonl"
-        
+
         # Create DebateManager once and reuse it
         print("Loading models and probes once...")
         self.manager = DebateManager(config)
         print("Models and probes loaded successfully!")
+
+    def _get_force_honest_first(self) -> Optional[bool]:
+        """Get forced speaker order based on order_balance setting."""
+        if not self.order_balance:
+            return None  # Let manager randomize
+        # Alternate: even debates -> honest first, odd -> dishonest first
+        force_value = (self.debate_counter % 2 == 0)
+        self.debate_counter += 1
+        return force_value
         
     def _calculate_probe_only_winners(self, manager: DebateManager) -> Dict[str, str]:
         """Calculate probe-only winners based on mean and max scores"""
@@ -148,16 +169,24 @@ class NoJudgeDebateRunner:
         debate_id = f"{debate_type}_{problem_id}_{self.experiment_mode}_{int(start_time)}"
         
         try:
+            # Get forced speaker order for order balancing
+            force_honest_first = self._get_force_honest_first()
+
             # Setup debate based on type (using the existing manager)
             if debate_type == "simple":
-                self.manager.run_simple_debate_setup(item['scenario'])
+                self.manager.run_simple_debate_setup(item['scenario'], force_honest_first=force_honest_first)
             elif debate_type == "quality":
-                self.manager.run_quality_debate_setup(item['quality_problem'], dishonesty_level=self.dishonesty_level)
+                self.manager.run_quality_debate_setup(
+                    item['quality_problem'],
+                    dishonesty_level=self.dishonesty_level,
+                    force_honest_first=force_honest_first
+                )
             else:
                 self.manager.run_apps_debate_setup(
-                    item['problem'], 
-                    item['honest_solution'], 
-                    item['backdoored_solution']
+                    item['problem'],
+                    item['honest_solution'],
+                    item['backdoored_solution'],
+                    force_honest_first=force_honest_first
                 )
             
             # Run debate rounds (but not judge)
@@ -482,7 +511,11 @@ def main():
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--resume', action='store_true',
                        help='Resume from existing transcripts')
-    
+    parser.add_argument('--order_balance', action='store_true', default=True,
+                       help='Balance speaker order 50/50 (honest first vs dishonest first)')
+    parser.add_argument('--no_order_balance', dest='order_balance', action='store_false',
+                       help='Randomize speaker order per debate instead of balancing')
+
     args = parser.parse_args()
 
     # GPU Detection and Configuration
@@ -724,7 +757,10 @@ def main():
         json.dump(serializable_dataset, f, indent=2)
     
     # Run debates
-    runner = NoJudgeDebateRunner(config, save_dir, args.experiment_mode, args.dishonesty_level)
+    runner = NoJudgeDebateRunner(
+        config, save_dir, args.experiment_mode, args.dishonesty_level,
+        order_balance=args.order_balance
+    )
     results_df = runner.run_all_debates(dataset)
     
     print(f"\nExperiment complete! Transcripts saved to: {save_dir}")

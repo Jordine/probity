@@ -71,6 +71,9 @@ class ProbeDisplayMode(Enum):
     PER_STATEMENT_RANKED = "per_statement_ranked"  # Statements sorted by score, no values
     SUMMARY_ONLY = "summary_only"               # Only mean/max/min stats
     RANKING_ONLY = "ranking_only"               # Only ordinal ranking (1st, 2nd, 3rd most suspicious)
+    TOKEN_SPANS = "token_spans"                 # Top K% tokens merged into spans (default 10%)
+    TOKEN_SPANS_10 = "token_spans_10"           # Top 10% tokens merged into spans
+    TOKEN_SPANS_5 = "token_spans_5"             # Top 5% tokens merged into spans
     HIDDEN = "hidden"                           # Don't show (for baseline)
 
 
