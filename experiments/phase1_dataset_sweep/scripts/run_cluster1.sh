@@ -28,7 +28,6 @@ PROBE_TYPES="attention sklearn_logistic meandiff"
 LAYERS="22 36 44"
 EPOCHS=60
 PATIENCE=999
-ANNEAL_WARMUP=1.0
 MAX_LENGTH=1024
 
 SWEEP_CONFIG="experiments/phase1_dataset_sweep/sweep_config.json"
@@ -45,7 +44,7 @@ echo "Mix: $MIX"
 echo "Styles: ${STYLES[*]}"
 echo "Probe types: $PROBE_TYPES"
 echo "Layers: $LAYERS"
-echo "Epochs: $EPOCHS, Patience: $PATIENCE, Anneal: $ANNEAL_WARMUP"
+echo "Epochs: $EPOCHS, Patience: $PATIENCE"
 echo "Max length: $MAX_LENGTH"
 echo ""
 echo "Sweep config: $SWEEP_CONFIG"
@@ -113,9 +112,7 @@ for style in "${STYLES[@]}"; do
     --num_epochs $EPOCHS \
     --patience $PATIENCE \
     --dishonest_mode all \
-    --honest_mode none \
-    --use_max_aggregation \
-    --anneal_warmup $ANNEAL_WARMUP
+    --honest_mode none
 
   echo ">>> Completed: ${MIX}_${style}"
 
