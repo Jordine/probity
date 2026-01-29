@@ -1,5 +1,6 @@
 {
-  "_comment": "Phase 1: Dataset x Hyperparam sweep - full hyperparam variants",
+  "_comment": "Phase 1: Dataset x Hyperparam sweep",
+  "_note": "Dropped logistic (annealing - bad OOD generalization, slow training)",
 
   "probe_configs": {
     "attention": [
@@ -13,9 +14,6 @@
       {"C": 0.1, "name_suffix": "C0.1"},
       {"C": 1.0, "name_suffix": "C1.0"},
       {"C": 10.0, "name_suffix": "C10.0"}
-    ],
-    "logistic": [
-      {"name_suffix": "default"}
     ],
     "meandiff": [
       {"name_suffix": "default"}

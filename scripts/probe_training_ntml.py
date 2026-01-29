@@ -20,85 +20,138 @@ from probity.utils.caching import get_dataset_hash, smart_cache_activations
 from probity.utils.dataset_loading import load_contrastive_ntml_dataset, get_model_dtype
 
 
+def train_single_probe_with_hyperparams(
+    layer: int, activation_store: ActivationStore,
+    probe_type: str, hyperparams: Optional[Dict],
+    args, model_name: str, hidden_size: int,
+    device: str, dtype: torch.dtype,
+    name_suffix: str = ""
+) -> Dict:
+    """Train a single probe with specific hyperparameters."""
+    hook_point = f"blocks.{layer}.hook_resid_pre"
+
+    # Max aggregation only applies to PyTorch logistic probe
+    use_max_aggr = args.use_max_aggregation and probe_type == "logistic"
+    mode_str = " [max_aggr]" if use_max_aggr else ""
+    hp_str = f" {hyperparams}" if hyperparams else ""
+    print(f"Training {probe_type}{name_suffix} probe on layer {layer}{mode_str}{hp_str}")
+
+    # Get configurations with hyperparams
+    probe_config = get_probe_config(
+        probe_type, hidden_size, model_name,
+        hook_point, layer, dtype,
+        hyperparams=hyperparams
+    )
+    probe_cls = get_probe_class(probe_type)
+    trainer_config = get_trainer_config(probe_type, device, args.batch_size)
+    trainer_cls = get_trainer_class(probe_type)
+
+    # Apply max aggregation config if enabled
+    if use_max_aggr and hasattr(trainer_config, 'use_max_aggregation'):
+        trainer_config.use_max_aggregation = True
+        trainer_config.anneal_warmup = args.anneal_warmup
+        trainer_config.sparsity_penalty = args.sparsity_penalty
+
+    # Apply epoch/patience settings
+    trainer_config.num_epochs = args.num_epochs
+    trainer_config.patience = args.patience
+
+    # Initialize probe and trainer
+    probe = probe_cls(probe_config).to(device)
+    trainer = trainer_cls(trainer_config)
+
+    # Prepare data
+    if use_max_aggr and hasattr(trainer, 'prepare_supervised_data_with_spans'):
+        train_loader, val_loader, _, _ = trainer.prepare_supervised_data_with_spans(
+            activation_store, "LIE_SPAN"
+        )
+    else:
+        train_loader, val_loader = trainer.prepare_supervised_data(
+            activation_store, "LIE_SPAN"
+        )
+
+    # Train
+    history = trainer.train(probe, train_loader, val_loader)
+
+    # Determine save name
+    probe_name = f"{probe_type}{name_suffix}"
+    save_dir = Path(args.probe_save_dir) / probe_name
+    save_dir.mkdir(parents=True, exist_ok=True)
+    save_path = save_dir / f"layer_{layer}_probe.pt"
+    probe.save(str(save_path))
+
+    result = {
+        'final_train_loss': history['train_loss'][-1],
+        'final_val_loss': history['val_loss'][-1] if 'val_loss' in history and history['val_loss'] else None,
+        'save_path': str(save_path),
+        'max_aggregation': use_max_aggr,
+        'hyperparams': hyperparams,
+    }
+
+    # Add AUROC if available
+    if hasattr(probe, 'config') and hasattr(probe.config, 'optimal_thresholds'):
+        thresholds = probe.config.optimal_thresholds
+        if 'train_auroc_score' in thresholds:
+            result['train_auroc'] = thresholds['train_auroc_score']
+
+    if use_max_aggr and 'omega' in history and history['omega']:
+        result['final_omega'] = history['omega'][-1]
+        result['anneal_warmup'] = args.anneal_warmup
+
+    print(f"Saved {probe_name} probe for layer {layer} to {save_path}")
+
+    del probe
+    torch.cuda.empty_cache()
+
+    return result
+
+
 def train_all_probes_for_layer(layer: int, activation_store: ActivationStore,
                               probe_types: List[str], args,
                               model_name: str, hidden_size: int,
-                              device: str, dtype: torch.dtype) -> Dict[str, Dict]:
-    """Train all probe types for a single layer efficiently"""
+                              device: str, dtype: torch.dtype,
+                              sweep_config: Optional[Dict] = None) -> Dict[str, Dict]:
+    """Train all probe types for a single layer efficiently.
 
+    If sweep_config is provided, trains multiple hyperparameter variants per probe type.
+    sweep_config format:
+    {
+        "attention": [
+            {"n_heads": 1, "temperature": 1.0, "name_suffix": "_h1"},
+            {"n_heads": 4, "temperature": 1.0, "name_suffix": "_h4"}
+        ],
+        "sklearn_logistic": [
+            {"C": 0.1, "name_suffix": "_C0.1"},
+            {"C": 1.0, "name_suffix": "_C1.0"}
+        ]
+    }
+    """
     hook_point = f"blocks.{layer}.hook_resid_pre"
     layer_results = {}
 
     for probe_type in probe_types:
-        # Max aggregation only applies to PyTorch logistic probe
-        use_max_aggr_for_this_probe = args.use_max_aggregation and probe_type == "logistic"
-        mode_str = " [max_aggr]" if use_max_aggr_for_this_probe else ""
-        print(f"Training {probe_type} probe on layer {layer}{mode_str}")
-
-        # Get configurations
-        probe_config = get_probe_config(
-            probe_type, hidden_size, model_name,
-            hook_point, layer, dtype
-        )
-        probe_cls = get_probe_class(probe_type)
-        trainer_config = get_trainer_config(probe_type, device, args.batch_size)
-        trainer_cls = get_trainer_class(probe_type)
-
-        # Apply max aggregation config if enabled (only for logistic probe)
-        if use_max_aggr_for_this_probe and hasattr(trainer_config, 'use_max_aggregation'):
-            trainer_config.use_max_aggregation = True
-            trainer_config.anneal_warmup = args.anneal_warmup
-            trainer_config.sparsity_penalty = args.sparsity_penalty
-
-        # Apply epoch/patience settings
-        trainer_config.num_epochs = args.num_epochs
-        trainer_config.patience = args.patience
-
-        # Initialize probe and trainer
-        probe = probe_cls(probe_config).to(device)
-        trainer = trainer_cls(trainer_config)
-
-        # Prepare data - use span-aware prep for max aggregation (logistic only)
-        if use_max_aggr_for_this_probe and hasattr(trainer, 'prepare_supervised_data_with_spans'):
-            train_loader, val_loader, _, _ = trainer.prepare_supervised_data_with_spans(
-                activation_store, "LIE_SPAN"
-            )
+        # Check if we have sweep configs for this probe type
+        if sweep_config and probe_type in sweep_config:
+            # Train multiple variants
+            for hp_config in sweep_config[probe_type]:
+                name_suffix = hp_config.pop("name_suffix", "")
+                result = train_single_probe_with_hyperparams(
+                    layer, activation_store, probe_type, hp_config,
+                    args, model_name, hidden_size, device, dtype,
+                    name_suffix=name_suffix
+                )
+                # Put name_suffix back for logging
+                hp_config["name_suffix"] = name_suffix
+                result_key = f"{probe_type}{name_suffix}"
+                layer_results[result_key] = result
         else:
-            train_loader, val_loader = trainer.prepare_supervised_data(
-                activation_store, "LIE_SPAN"
+            # Train single probe with args.hyperparams (or None)
+            result = train_single_probe_with_hyperparams(
+                layer, activation_store, probe_type, args.hyperparams,
+                args, model_name, hidden_size, device, dtype
             )
+            layer_results[probe_type] = result
 
-        # Train
-        history = trainer.train(probe, train_loader, val_loader)
-        
-        # Save probe immediately (CHANGED: .pt instead of .json)
-        save_dir = Path(args.probe_save_dir) / probe_type
-        save_dir.mkdir(parents=True, exist_ok=True)
-        save_path = save_dir / f"layer_{layer}_probe.pt"
-        probe.save(str(save_path))  # CHANGED: .save() instead of .save_json()
-        
-        layer_results[probe_type] = {
-            'final_train_loss': history['train_loss'][-1],
-            'final_val_loss': history['val_loss'][-1] if 'val_loss' in history and history['val_loss'] else None,
-            'save_path': str(save_path),
-            'max_aggregation': use_max_aggr_for_this_probe,
-        }
-        # Add AUROC if available from probe config
-        if hasattr(probe, 'config') and hasattr(probe.config, 'optimal_thresholds'):
-            thresholds = probe.config.optimal_thresholds
-            if 'train_auroc_score' in thresholds:
-                layer_results[probe_type]['train_auroc'] = thresholds['train_auroc_score']
-        # Add omega info if max aggregation was used
-        if use_max_aggr_for_this_probe and 'omega' in history and history['omega']:
-            layer_results[probe_type]['final_omega'] = history['omega'][-1]
-            layer_results[probe_type]['anneal_warmup'] = args.anneal_warmup
-
-        print(f"Saved {probe_type} probe for layer {layer} to {save_path}")
-        
-        # Clear probe from memory
-        del probe
-        torch.cuda.empty_cache()
-    
     return layer_results
 
 
@@ -145,9 +198,9 @@ def parse_args():
     parser.add_argument('--model_name', type=str, required=True)
     parser.add_argument('--train_dataset_dir', type=str, help='Path to contrastive JSON file')
     parser.add_argument('--dataset_name', type=str, help='Name of dataset (will auto-find .json file)')
-    parser.add_argument('--probe_types', nargs='+',
+    parser.add_argument('--probe_types', nargs='+', required=True,
                        choices=['logistic', 'linear', 'pca', 'meandiff', 'kmeans', 'mlp', 'attention', 'sklearn_logistic'],
-                       default=['logistic', 'pca', 'meandiff'])
+                       help='Probe types to train (REQUIRED - no default to prevent mistakes)')
     parser.add_argument('--hyperparams', type=json.loads, default=None,
                        help='JSON dict of hyperparameters')
     parser.add_argument('--sweep_config', type=str,
@@ -241,8 +294,22 @@ def main():
     print("🚀 Contrastive NTML Probe Training")
     print(f"📄 Dataset: {dataset_path.name}")
     print(f"🤖 Model: {args.model_name}")
-   
-    
+
+    # Load sweep config if provided
+    sweep_config = None
+    if args.sweep_config:
+        with open(args.sweep_config) as f:
+            raw_config = json.load(f)
+        # Handle both formats: {"probe_configs": {...}} or direct {...}
+        sweep_config = raw_config.get("probe_configs", raw_config)
+        # Remove non-probe keys if present
+        sweep_config = {k: v for k, v in sweep_config.items()
+                        if isinstance(v, list) and k not in ["layers", "training", "training_modes"]}
+        print(f"📋 Sweep config loaded: {list(sweep_config.keys())}")
+        # Count total probes to train
+        total_variants = sum(len(v) for v in sweep_config.values())
+        print(f"   Training {total_variants} probe variants per layer")
+
     # Load dataset using the new loader
     print(f"Loading contrastive dataset from {dataset_path}")
     dataset = load_contrastive_ntml_dataset(str(dataset_path),
@@ -320,7 +387,8 @@ def main():
         # Train all probe types for this layer
         layer_results = train_all_probes_for_layer(
             layer, activation_store, args.probe_types, args,
-            args.model_name, hidden_size, args.device, model_dtype
+            args.model_name, hidden_size, args.device, model_dtype,
+            sweep_config=sweep_config
         )
         
         results[layer] = layer_results

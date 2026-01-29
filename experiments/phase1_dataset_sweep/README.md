@@ -33,7 +33,7 @@
 - `5T2L`: 5 truths, 2 lies per sample (29% lie density, stronger training signal)
 - `10T1L`: 10 truths, 1 lie per sample (9% lie density, closer to real debates)
 
-### Hyperparameter Configs (10 total)
+### Hyperparameter Configs (9 total)
 
 | Probe Type | Variant | Hyperparams |
 |------------|---------|-------------|
@@ -45,8 +45,9 @@
 | sklearn_logistic | C0.1 | C=0.1 |
 | sklearn_logistic | C1.0 | C=1.0 |
 | sklearn_logistic | C10.0 | C=10.0 |
-| logistic | default | - |
 | meandiff | default | - |
+
+**Note**: Dropped `logistic` probe (uses annealing loss - bad OOD generalization, slow training).
 
 ### Layers
 - **22**: Apollo baseline layer
@@ -65,7 +66,7 @@
 
 ## Total Probes
 
-**12 datasets × 10 hyperparams × 3 layers = 360 probes**
+**12 datasets × 9 hyperparams × 3 layers = 324 probes**
 
 ## Hardware Requirements
 
@@ -77,8 +78,8 @@
 
 | Cluster | Mix | Datasets | Probes |
 |---------|-----|----------|--------|
-| cluster1 | 5T2L | 6 (all styles) | 180 |
-| cluster2 | 10T1L | 6 (all styles) | 180 |
+| cluster1 | 5T2L | 6 (all styles) | 162 |
+| cluster2 | 10T1L | 6 (all styles) | 162 |
 
 ## Running the Experiment
 
