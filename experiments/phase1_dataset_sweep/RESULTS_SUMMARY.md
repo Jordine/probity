@@ -1,97 +1,107 @@
-# Phase 1 Dataset Sweep Results
+# Phase 1 Dataset Sweep Results (Corrected)
 
 ## Summary
 
 Evaluated 202 probes across 7 training datasets + Apollo baseline.
 
-## Key Findings
+**Complete datasets:** 10T1L_direct_liar, 5T2L_direct_liar, 5T2L_roleplay, 5T2L_instructional, 5T2L_conditional (36 probes each)
+**Partial datasets:** 10T1L_roleplay (10), 5T2L_neutral (12)
 
-### Q1: Did 10T1L improve over 5T2L?
+---
 
-**YES, significantly.**
+## Q1: Did 10T1L improve over 5T2L?
 
-| Mix | Avg AUROC | n |
-|-----|-----------|---|
-| 10T1L | **0.806** | 46 |
-| 5T2L | 0.733 | 156 |
+**YES - every single probe improved.**
 
-**Delta: +0.073 AUROC** (10% relative improvement)
+Fair comparison: 10T1L_direct_liar vs 5T2L_direct_liar (same style, both complete)
 
-More truths per lie (10:1 vs 5:2) creates cleaner training signal.
+| Mix | Avg AUROC |
+|-----|-----------|
+| **10T1L_direct_liar** | **0.799** |
+| 5T2L_direct_liar | 0.722 |
+| **Delta** | **+0.077** |
 
-### Q2: Best Attention Hyperparameters
+All 36 matched probes improved with 10T1L. Biggest gains:
+- sklearn_logisticC1.0_l2 L36: +0.227 (!)
+- sklearn_logisticC10.0_l2 L36: +0.228 (!)
+- attentionh8_t1.0 L44: +0.128
+
+**Conclusion:** 10:1 truth-to-lie ratio creates much cleaner training signal.
+
+---
+
+## Q2: Best Attention Hyperparameters
+
+(Using complete 5T2L datasets: conditional, direct_liar, instructional, roleplay)
 
 | Variant | Avg AUROC |
 |---------|-----------|
-| **attentionh1_t1.0** | **0.856** |
-| attentionh2_t1.0 | 0.846 |
-| attentionh4_t0.5 | 0.835 |
-| attentionh4_t2.0 | 0.833 |
-| attentionh4_t1.0 | 0.832 |
-| attentionh8_t1.0 | 0.813 |
+| **attentionh1_t1.0** | **0.848** |
+| attentionh2_t1.0 | 0.836 |
+| attentionh4_t0.5 | 0.825 |
+| attentionh4_t2.0 | 0.823 |
+| attentionh4_t1.0 | 0.822 |
+| attentionh8_t1.0 | 0.800 |
 
 **Winner: 1 attention head, temperature 1.0**
 
-Fewer heads = better. Suggests deception signal is concentrated, not distributed.
+Pattern: Fewer heads = better. Deception signal is concentrated, not distributed.
 
-### Q3: Best Sklearn Hyperparameters
+---
+
+## Q3: Best Sklearn Hyperparameters
+
+(Using complete 5T2L datasets)
 
 | Variant | Avg AUROC |
 |---------|-----------|
-| **sklearn_logisticC0.01_l2** | **0.678** |
-| sklearn_logisticC1.0_l1 | 0.651 |
-| sklearn_logisticC0.1_l2 | 0.649 |
-| sklearn_logisticC1.0_l2 | 0.643 |
-| sklearn_logisticC10.0_l2 | 0.642 |
+| **sklearn_logisticC0.01_l2** | **0.653** |
+| sklearn_logisticC1.0_l1 | 0.632 |
+| sklearn_logisticC0.1_l2 | 0.623 |
+| sklearn_logisticC1.0_l2 | 0.617 |
+| sklearn_logisticC10.0_l2 | 0.617 |
 
 **Winner: C=0.01 with L2 regularization**
 
-Strong regularization (low C) helps. L2 beats L1.
+BUT: Sklearn performance dramatically improves with 10T1L training data:
+- 10T1L sklearn L36: 0.82+ AUROC
+- 5T2L sklearn L36: 0.59 AUROC
 
-**Note:** All sklearn probes underperform attention probes significantly.
+**Conclusion:** Sklearn probes aren't inherently bad - they just need cleaner training signal.
 
-### Q4: Best 5T2L Dataset (Instruction Style)
+---
+
+## Q4: Best 5T2L Dataset (Instruction Style)
+
+(Complete datasets only: conditional, direct_liar, instructional, roleplay)
 
 | Style | Avg AUROC |
 |-------|-----------|
-| **neutral** | **0.738** |
 | **conditional** | **0.738** |
 | roleplay | 0.736 |
 | instructional | 0.736 |
 | direct_liar | 0.722 |
 
-**Winner: Neutral or Conditional (tied)**
+**Winner: Conditional** (marginally)
 
-Surprisingly, explicit "you are a liar" framing (direct_liar) performed worst.
+Surprising: Explicit "you are a liar" framing (direct_liar) performed worst.
+
+---
+
+## Additional Findings
+
+### Meandiff Performance
+- 5T2L: 0.700 avg AUROC
+- Beats sklearn with 5T2L data, but not with 10T1L data
 
 ### Best Layer
-
-| Layer | Avg AUROC |
+| Layer | Avg AUROC (5T2L complete) |
 |-------|-----------|
-| **22** | **0.783** |
-| 36 | 0.743 |
-| 44 | 0.712 |
+| **22** | **0.760** |
+| 36 | 0.726 |
+| 44 | 0.690 |
 
-**Winner: Layer 22** (Apollo's choice validated)
-
-### All Probe Types Ranked
-
-| Probe Type | Avg AUROC |
-|------------|-----------|
-| attentionh1_t1.0 | 0.856 |
-| attentionh2_t1.0 | 0.846 |
-| attentionh4_t0.5 | 0.835 |
-| attentionh4_t2.0 | 0.833 |
-| attentionh4_t1.0 | 0.832 |
-| attentionh8_t1.0 | 0.813 |
-| **meandiffdefault** | **0.714** |
-| sklearn_logisticC0.01_l2 | 0.678 |
-| sklearn_logisticC1.0_l1 | 0.651 |
-| sklearn_logisticC0.1_l2 | 0.649 |
-| sklearn_logisticC1.0_l2 | 0.643 |
-| sklearn_logisticC10.0_l2 | 0.642 |
-
-**Note:** Meandiff (simple mean difference) outperforms all sklearn probes!
+Layer 22 is best (validates Apollo's choice).
 
 ### vs Apollo Baseline
 
@@ -101,7 +111,7 @@ Surprisingly, explicit "you are a liar" framing (direct_liar) performed worst.
 | Best non-Apollo (10T1L_roleplay attentionh1_t1.0 L22) | 0.917 |
 | **Gap** | 0.009 |
 
-Apollo still wins, but gap is small with 10T1L + attention probes.
+---
 
 ## Top 10 Individual Configurations
 
@@ -118,15 +128,18 @@ Apollo still wins, but gap is small with 10T1L + attention probes.
 | 9 | 0.892 | 10T1L_direct_liar | attentionh4_t1.0 | 22 |
 | 10 | 0.888 | 10T1L_roleplay | attentionh4_t1.0 | 22 |
 
+---
+
 ## Recommendations
 
-1. **Use 10T1L** (10 truths, 1 lie) for training data generation
-2. **Use attention probes with 1-2 heads** at temperature 1.0
-3. **Target layer 22** (validates Apollo's choice)
-4. **Neutral/conditional instruction styles** work best for 5T2L
-5. **Meandiff is a strong simple baseline** - don't overcomplicate with sklearn
+1. **Use 10T1L** (10 truths, 1 lie) - massive improvement (+0.077 avg, all probes better)
+2. **Use attention probes with 1 head** at temperature 1.0
+3. **Target layer 22** (validates Apollo)
+4. **Conditional instruction style** for 5T2L (but 10T1L matters more than style)
+5. **Sklearn probes need 10T1L** to be competitive - don't write them off
 
 ## Files
 
 - `all_metrics_summary.csv`: Full results table
+- `results_comparison.png`: Visualization plots
 - Individual results in `results/<dataset>/aggregated/<probe_type>/layer_<N>/`
