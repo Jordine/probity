@@ -1,0 +1,434 @@
+{
+  "22": {
+    "attentionh1_t1.0": {
+      "final_train_loss": 0.5651837759067357,
+      "final_val_loss": 0.5858728002070394,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/attentionh1_t1.0/layer_22_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "n_heads": 1,
+        "temperature": 1.0,
+        "name_suffix": "h1_t1.0"
+      },
+      "train_auroc": 0.9221525546087955
+    },
+    "attentionh2_t1.0": {
+      "final_train_loss": 0.5193248056994819,
+      "final_val_loss": 0.5291694972826086,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/attentionh2_t1.0/layer_22_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "n_heads": 2,
+        "temperature": 1.0,
+        "name_suffix": "h2_t1.0"
+      },
+      "train_auroc": 0.9337867022434512
+    },
+    "attentionh4_t1.0": {
+      "final_train_loss": 0.47378359779792745,
+      "final_val_loss": 0.508493869694617,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/attentionh4_t1.0/layer_22_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "n_heads": 4,
+        "temperature": 1.0,
+        "name_suffix": "h4_t1.0"
+      },
+      "train_auroc": 0.9451409763181973
+    },
+    "attentionh8_t1.0": {
+      "final_train_loss": 0.43045761819948186,
+      "final_val_loss": 0.46699703998447206,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/attentionh8_t1.0/layer_22_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "n_heads": 8,
+        "temperature": 1.0,
+        "name_suffix": "h8_t1.0"
+      },
+      "train_auroc": 0.9545607089351362
+    },
+    "attentionh4_t0.5": {
+      "final_train_loss": 0.47325129533678756,
+      "final_val_loss": 0.5036009478519669,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/attentionh4_t0.5/layer_22_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "n_heads": 4,
+        "temperature": 0.5,
+        "name_suffix": "h4_t0.5"
+      },
+      "train_auroc": 0.9453101957748904
+    },
+    "attentionh4_t2.0": {
+      "final_train_loss": 0.47447427542098447,
+      "final_val_loss": 0.4995794513457557,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/attentionh4_t2.0/layer_22_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "n_heads": 4,
+        "temperature": 2.0,
+        "name_suffix": "h4_t2.0"
+      },
+      "train_auroc": 0.9446546127810904
+    },
+    "sklearn_logisticC0.01_l2": {
+      "final_train_loss": 0.1728515625,
+      "final_val_loss": 0.1728515625,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/sklearn_logisticC0.01_l2/layer_22_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "C": 0.01,
+        "penalty": "l2",
+        "name_suffix": "C0.01_l2"
+      },
+      "train_auroc": 0.9832530821360566
+    },
+    "sklearn_logisticC0.1_l2": {
+      "final_train_loss": 0.19140625,
+      "final_val_loss": 0.19140625,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/sklearn_logisticC0.1_l2/layer_22_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "C": 0.1,
+        "penalty": "l2",
+        "name_suffix": "C0.1_l2"
+      },
+      "train_auroc": 0.9851592505678497
+    },
+    "sklearn_logisticC1.0_l2": {
+      "final_train_loss": 0.201171875,
+      "final_val_loss": 0.201171875,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/sklearn_logisticC1.0_l2/layer_22_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "C": 1.0,
+        "penalty": "l2",
+        "name_suffix": "C1.0_l2"
+      },
+      "train_auroc": 0.98531478162714
+    },
+    "sklearn_logisticC10.0_l2": {
+      "final_train_loss": 0.205078125,
+      "final_val_loss": 0.205078125,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/sklearn_logisticC10.0_l2/layer_22_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "C": 10.0,
+        "penalty": "l2",
+        "name_suffix": "C10.0_l2"
+      },
+      "train_auroc": 0.9853161328555109
+    },
+    "sklearn_logisticC1.0_l1": {
+      "final_train_loss": 0.1806640625,
+      "final_val_loss": 0.1806640625,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/sklearn_logisticC1.0_l1/layer_22_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "C": 1.0,
+        "penalty": "l1",
+        "name_suffix": "C1.0_l1"
+      },
+      "train_auroc": 0.9846978828630057
+    },
+    "meandiffdefault": {
+      "final_train_loss": 0.55078125,
+      "final_val_loss": 0.55078125,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/meandiffdefault/layer_22_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "name_suffix": "default"
+      },
+      "train_auroc": 0.8033403834236946
+    }
+  },
+  "36": {
+    "attentionh1_t1.0": {
+      "final_train_loss": 0.5265458022992228,
+      "final_val_loss": 0.5552334045031055,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/attentionh1_t1.0/layer_36_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "n_heads": 1,
+        "temperature": 1.0,
+        "name_suffix": "h1_t1.0"
+      },
+      "train_auroc": 0.9302171662801626
+    },
+    "attentionh2_t1.0": {
+      "final_train_loss": 0.4830093304727979,
+      "final_val_loss": 0.5101942611283644,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/attentionh2_t1.0/layer_36_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "n_heads": 2,
+        "temperature": 1.0,
+        "name_suffix": "h2_t1.0"
+      },
+      "train_auroc": 0.9417860825072775
+    },
+    "attentionh4_t1.0": {
+      "final_train_loss": 0.4374418110427461,
+      "final_val_loss": 0.4832933003364389,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/attentionh4_t1.0/layer_36_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "n_heads": 4,
+        "temperature": 1.0,
+        "name_suffix": "h4_t1.0"
+      },
+      "train_auroc": 0.9527031880762249
+    },
+    "attentionh8_t1.0": {
+      "final_train_loss": 0.3992248218911917,
+      "final_val_loss": 0.44050449663561075,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/attentionh8_t1.0/layer_36_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "n_heads": 8,
+        "temperature": 1.0,
+        "name_suffix": "h8_t1.0"
+      },
+      "train_auroc": 0.9606196501427289
+    },
+    "attentionh4_t0.5": {
+      "final_train_loss": 0.4395431913860104,
+      "final_val_loss": 0.48161919319358176,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/attentionh4_t0.5/layer_36_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "n_heads": 4,
+        "temperature": 0.5,
+        "name_suffix": "h4_t0.5"
+      },
+      "train_auroc": 0.9518946221291786
+    },
+    "attentionh4_t2.0": {
+      "final_train_loss": 0.4391586382772021,
+      "final_val_loss": 0.4716513813405797,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/attentionh4_t2.0/layer_36_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "n_heads": 4,
+        "temperature": 2.0,
+        "name_suffix": "h4_t2.0"
+      },
+      "train_auroc": 0.9518874556949384
+    },
+    "sklearn_logisticC0.01_l2": {
+      "final_train_loss": 0.1982421875,
+      "final_val_loss": 0.1982421875,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/sklearn_logisticC0.01_l2/layer_36_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "C": 0.01,
+        "penalty": "l2",
+        "name_suffix": "C0.01_l2"
+      },
+      "train_auroc": 0.9816374757938997
+    },
+    "sklearn_logisticC0.1_l2": {
+      "final_train_loss": 0.248046875,
+      "final_val_loss": 0.248046875,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/sklearn_logisticC0.1_l2/layer_36_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "C": 0.1,
+        "penalty": "l2",
+        "name_suffix": "C0.1_l2"
+      },
+      "train_auroc": 0.9832909645203318
+    },
+    "sklearn_logisticC1.0_l2": {
+      "final_train_loss": 0.28515625,
+      "final_val_loss": 0.28515625,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/sklearn_logisticC1.0_l2/layer_36_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "C": 1.0,
+        "penalty": "l2",
+        "name_suffix": "C1.0_l2"
+      },
+      "train_auroc": 0.9833957206071691
+    },
+    "sklearn_logisticC10.0_l2": {
+      "final_train_loss": 0.294921875,
+      "final_val_loss": 0.294921875,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/sklearn_logisticC10.0_l2/layer_36_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "C": 10.0,
+        "penalty": "l2",
+        "name_suffix": "C10.0_l2"
+      },
+      "train_auroc": 0.9834050469205916
+    },
+    "sklearn_logisticC1.0_l1": {
+      "final_train_loss": 0.2197265625,
+      "final_val_loss": 0.2197265625,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/sklearn_logisticC1.0_l1/layer_36_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "C": 1.0,
+        "penalty": "l1",
+        "name_suffix": "C1.0_l1"
+      },
+      "train_auroc": 0.9830156995209957
+    },
+    "meandiffdefault": {
+      "final_train_loss": 0.458984375,
+      "final_val_loss": 0.458984375,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/meandiffdefault/layer_36_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "name_suffix": "default"
+      },
+      "train_auroc": 0.8211413387045954
+    }
+  },
+  "44": {
+    "attentionh1_t1.0": {
+      "final_train_loss": 0.5268154954663212,
+      "final_val_loss": 0.5667499676501035,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/attentionh1_t1.0/layer_44_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "n_heads": 1,
+        "temperature": 1.0,
+        "name_suffix": "h1_t1.0"
+      },
+      "train_auroc": 0.9317350951412491
+    },
+    "attentionh2_t1.0": {
+      "final_train_loss": 0.47800659812176166,
+      "final_val_loss": 0.5279159387939959,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/attentionh2_t1.0/layer_44_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "n_heads": 2,
+        "temperature": 1.0,
+        "name_suffix": "h2_t1.0"
+      },
+      "train_auroc": 0.9435693550343116
+    },
+    "attentionh4_t1.0": {
+      "final_train_loss": 0.4338093021373057,
+      "final_val_loss": 0.5017428506728778,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/attentionh4_t1.0/layer_44_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "n_heads": 4,
+        "temperature": 1.0,
+        "name_suffix": "h4_t1.0"
+      },
+      "train_auroc": 0.9533294060446613
+    },
+    "attentionh8_t1.0": {
+      "final_train_loss": 0.39087242956606216,
+      "final_val_loss": 0.48828327186853004,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/attentionh8_t1.0/layer_44_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "n_heads": 8,
+        "temperature": 1.0,
+        "name_suffix": "h8_t1.0"
+      },
+      "train_auroc": 0.9616464764440105
+    },
+    "attentionh4_t0.5": {
+      "final_train_loss": 0.43304677380181344,
+      "final_val_loss": 0.5035685979554866,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/attentionh4_t0.5/layer_44_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "n_heads": 4,
+        "temperature": 0.5,
+        "name_suffix": "h4_t0.5"
+      },
+      "train_auroc": 0.9536026918794028
+    },
+    "attentionh4_t2.0": {
+      "final_train_loss": 0.43541076343911916,
+      "final_val_loss": 0.4932085436076605,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/attentionh4_t2.0/layer_44_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "n_heads": 4,
+        "temperature": 2.0,
+        "name_suffix": "h4_t2.0"
+      },
+      "train_auroc": 0.9528589651148044
+    },
+    "sklearn_logisticC0.01_l2": {
+      "final_train_loss": 0.19140625,
+      "final_val_loss": 0.19140625,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/sklearn_logisticC0.01_l2/layer_44_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "C": 0.01,
+        "penalty": "l2",
+        "name_suffix": "C0.01_l2"
+      },
+      "train_auroc": 0.9742139293634227
+    },
+    "sklearn_logisticC0.1_l2": {
+      "final_train_loss": 0.18359375,
+      "final_val_loss": 0.18359375,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/sklearn_logisticC0.1_l2/layer_44_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "C": 0.1,
+        "penalty": "l2",
+        "name_suffix": "C0.1_l2"
+      },
+      "train_auroc": 0.9754067109762743
+    },
+    "sklearn_logisticC1.0_l2": {
+      "final_train_loss": 0.1875,
+      "final_val_loss": 0.1875,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/sklearn_logisticC1.0_l2/layer_44_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "C": 1.0,
+        "penalty": "l2",
+        "name_suffix": "C1.0_l2"
+      },
+      "train_auroc": 0.9754520013302963
+    },
+    "sklearn_logisticC10.0_l2": {
+      "final_train_loss": 0.1904296875,
+      "final_val_loss": 0.1904296875,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/sklearn_logisticC10.0_l2/layer_44_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "C": 10.0,
+        "penalty": "l2",
+        "name_suffix": "C10.0_l2"
+      },
+      "train_auroc": 0.9754546420261367
+    },
+    "sklearn_logisticC1.0_l1": {
+      "final_train_loss": 0.18359375,
+      "final_val_loss": 0.18359375,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/sklearn_logisticC1.0_l1/layer_44_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "C": 1.0,
+        "penalty": "l1",
+        "name_suffix": "C1.0_l1"
+      },
+      "train_auroc": 0.9751522176703881
+    },
+    "meandiffdefault": {
+      "final_train_loss": 0.46484375,
+      "final_val_loss": 0.46484375,
+      "save_path": "experiments/phase1_dataset_sweep/probes/cluster1/5T2L_direct_liar/meandiffdefault/layer_44_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "name_suffix": "default"
+      },
+      "train_auroc": 0.8093980549689384
+    }
+  }
+}
