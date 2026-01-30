@@ -47,19 +47,20 @@ def get_probe_config(
     if hyperparams:
         base.update(hyperparams)
 
-    configs = {
-        "logistic":  LogisticProbeConfig(**base),
-        "linear":    LinearProbeConfig(**base),
-        "pca":       PCAProbeConfig(**base),
-        "meandiff":  MeanDiffProbeConfig(**base),
-        "kmeans":    KMeansProbeConfig(**base),
-        "attention": AttentionProbeConfig(**base),
-        "mlp":       MLPProbeConfig(**base),
-        "sklearn_logistic": SklearnLogisticProbeConfig(**base),
+    # Map probe types to their config classes (don't instantiate all - only the one we need)
+    config_classes = {
+        "logistic":  LogisticProbeConfig,
+        "linear":    LinearProbeConfig,
+        "pca":       PCAProbeConfig,
+        "meandiff":  MeanDiffProbeConfig,
+        "kmeans":    KMeansProbeConfig,
+        "attention": AttentionProbeConfig,
+        "mlp":       MLPProbeConfig,
+        "sklearn_logistic": SklearnLogisticProbeConfig,
     }
-    if probe_type not in configs:
+    if probe_type not in config_classes:
         raise ValueError(f"Unknown probe type '{probe_type}'")
-    return configs[probe_type]
+    return config_classes[probe_type](**base)
 
 # ---------- PROBE CLASS ----------------------------------------------------- #
 def get_probe_class(probe_type: str):
