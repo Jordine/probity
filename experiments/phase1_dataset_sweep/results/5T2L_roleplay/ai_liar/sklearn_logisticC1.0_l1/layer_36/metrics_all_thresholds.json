@@ -1,0 +1,17 @@
+{
+  "best_threshold_name": "train_auroc",
+  "all_thresholds": {
+    "default_0.5": {
+      "threshold_value": 0.5,
+      "accuracy": 0.57,
+      "auroc": 0.7085535540934096,
+      "n_samples": 200
+    },
+    "train_auroc": {
+      "threshold_value": 0.4980684326710817,
+      "accuracy": 0.565,
+      "auroc": 0.7085535540934096,
+      "n_samples": 200
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "threshold_value": -0.0159912109375,
+  "accuracy": 0.72,
+  "precision": 0.5625,
+  "recall": 1.0,
+  "f1": 0.72,
+  "auroc": 0.9895833333333334,
+  "confusion_matrix": {
+    "tp": 18,
+    "fp": 14,
+    "tn": 18,
+    "fn": 0
+  },
+  "fpr": 0.4375,
+  "tpr": 1.0
+}

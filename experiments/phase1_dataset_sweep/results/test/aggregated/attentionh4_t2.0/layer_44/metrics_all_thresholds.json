@@ -1,0 +1,57 @@
+{
+  "primary_metrics": {
+    "threshold_value": -0.142578125,
+    "accuracy": 0.68,
+    "precision": 0.5294117647058824,
+    "recall": 1.0,
+    "f1": 0.6923076923076923,
+    "auroc": 0.9704861111111112,
+    "confusion_matrix": {
+      "tp": 18,
+      "fp": 16,
+      "tn": 16,
+      "fn": 0
+    },
+    "fpr": 0.5,
+    "tpr": 1.0
+  },
+  "best_threshold_name": "train_auroc",
+  "all_thresholds": {
+    "default_0.5": {
+      "threshold_value": 0.5,
+      "accuracy": 0.92,
+      "precision": 0.8181818181818182,
+      "recall": 1.0,
+      "f1": 0.9,
+      "auroc": 0.9704861111111112,
+      "confusion_matrix": {
+        "tp": 18,
+        "fp": 4,
+        "tn": 28,
+        "fn": 0
+      },
+      "fpr": 0.125,
+      "tpr": 1.0
+    },
+    "train_auroc": {
+      "threshold_value": -0.142578125,
+      "accuracy": 0.68,
+      "precision": 0.5294117647058824,
+      "recall": 1.0,
+      "f1": 0.6923076923076923,
+      "auroc": 0.9704861111111112,
+      "confusion_matrix": {
+        "tp": 18,
+        "fp": 16,
+        "tn": 16,
+        "fn": 0
+      },
+      "fpr": 0.5,
+      "tpr": 1.0
+    }
+  },
+  "thresholds_evaluated": {
+    "default_0.5": 0.5,
+    "train_auroc": -0.142578125
+  }
+}
