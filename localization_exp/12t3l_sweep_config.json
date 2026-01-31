@@ -1,0 +1,7 @@
+{
+  "attention": [
+    {"n_heads": 1, "temperature": 0.25, "name_suffix": "_h1_t0.25"},
+    {"n_heads": 2, "temperature": 0.25, "name_suffix": "_h2_t0.25"},
+    {"n_heads": 1, "temperature": 0.5, "name_suffix": "_h1_t0.5"}
+  ]
+}
