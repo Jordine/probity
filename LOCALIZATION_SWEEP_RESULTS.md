@@ -148,3 +148,80 @@ Key insight: "Even though token-level classification is near-random, **ranking s
 - Trained probes: `localization_exp/T*_h*_t*/`
 - Evaluation results: `localization_exp/T*_h*_t*_eval/`
 - 12T3L dataset: `localization_exp/data/12T3L_300samples_shuffled.json`
+
+---
+
+## Exact Training Commands (12T3L)
+
+### Dataset Generation
+```bash
+python3 data/generate_contrastive_ntml_datasets.py \
+  --input data/truth_and_lies.json \
+  --ratio 12T3L \
+  --samples 300 \
+  --output localization_exp/data \
+  --seed 42 \
+  --shuffle_response \
+  --instruction_style implicit
+```
+
+### Sweep Config (localization_exp/12t3l_sweep_config.json)
+```json
+{
+  "attention": [
+    {"n_heads": 1, "temperature": 0.25, "name_suffix": "_h1_t0.25"},
+    {"n_heads": 2, "temperature": 0.25, "name_suffix": "_h2_t0.25"},
+    {"n_heads": 1, "temperature": 0.5, "name_suffix": "_h1_t0.5"}
+  ]
+}
+```
+
+### Training (per layer)
+```bash
+export HF_TOKEN=<HF_TOKEN>
+export CUDA_VISIBLE_DEVICES=0,1
+
+for layer in 22 24 26 30 34; do
+    python3 scripts/probe_training_ntml.py \
+        --model_name meta-llama/Llama-3.3-70B-Instruct \
+        --train_dataset_dir localization_exp/data/12T3L_300samples_shuffled.json \
+        --probe_types attention \
+        --sweep_config localization_exp/12t3l_sweep_config.json \
+        --layers $layer \
+        --probe_save_dir localization_exp/12T3L/L${layer} \
+        --max_length 1536 \
+        --num_epochs 60 \
+        --patience 999 \
+        --dishonest_mode all \
+        --honest_mode none \
+        --batch_size 4 \
+        --activation_batch_size 4
+
+    # Clear cache between layers to save disk
+    rm -rf cache/contrastive/* cache/val_acts/* 2>/dev/null || true
+done
+```
+
+### Evaluation (per layer)
+```bash
+for layer in 22 24 26 30 34; do
+    python3 scripts/probe_eval_deception_datasets.py \
+        --probe_dir localization_exp/12T3L/L${layer} \
+        --datasets \
+            data/deception_detection/ai_liar.jsonl \
+            data/deception_detection/sandbagging_v2__wmdp_mmlu.jsonl \
+        --labeled_dir deception-detection-labelled/deception_detection_labeled \
+        --results_dir localization_exp/12T3L/L${layer}_eval \
+        --model_name meta-llama/Llama-3.3-70B-Instruct \
+        --batch_size 4 \
+        --compute_ranking_metrics
+done
+```
+
+### Token Metrics Analysis
+```bash
+for layer in 22 24 26 30 34; do
+    python3 scripts/analyze_probe_token_metrics.py \
+        --results_dir localization_exp/12T3L/L${layer}_eval
+done
+```
