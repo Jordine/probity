@@ -1,0 +1,40 @@
+{
+  "26": {
+    "attention_h1_t0.25": {
+      "final_train_loss": 0.7162448603026869,
+      "final_val_loss": 0.7377618572013932,
+      "save_path": "/root/probity/localization_exp/12T3L/L26/attention_h1_t0.25/layer_26_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "n_heads": 1,
+        "temperature": 0.25,
+        "name_suffix": "_h1_t0.25"
+      },
+      "train_auroc": 0.8972844572023999
+    },
+    "attention_h2_t0.25": {
+      "final_train_loss": 0.6644614968935697,
+      "final_val_loss": 0.692330893227566,
+      "save_path": "/root/probity/localization_exp/12T3L/L26/attention_h2_t0.25/layer_26_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "n_heads": 2,
+        "temperature": 0.25,
+        "name_suffix": "_h2_t0.25"
+      },
+      "train_auroc": 0.9129457453327294
+    },
+    "attention_h1_t0.5": {
+      "final_train_loss": 0.7149455784395651,
+      "final_val_loss": 0.7181295696962713,
+      "save_path": "/root/probity/localization_exp/12T3L/L26/attention_h1_t0.5/layer_26_probe.pt",
+      "max_aggregation": false,
+      "hyperparams": {
+        "n_heads": 1,
+        "temperature": 0.5,
+        "name_suffix": "_h1_t0.5"
+      },
+      "train_auroc": 0.8968840782324772
+    }
+  }
+}

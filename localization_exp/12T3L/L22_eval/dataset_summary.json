@@ -1,0 +1,18 @@
+[
+  {
+    "name": "ai_liar",
+    "path": "data/deception_detection/ai_liar.jsonl",
+    "requested": "all",
+    "loaded": 266,
+    "honest": 173,
+    "deceptive": 93
+  },
+  {
+    "name": "sandbagging_v2__wmdp_mmlu",
+    "path": "data/deception_detection/sandbagging_v2__wmdp_mmlu.jsonl",
+    "requested": "all",
+    "loaded": 931,
+    "honest": 511,
+    "deceptive": 420
+  }
+]
