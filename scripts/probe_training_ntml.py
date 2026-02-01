@@ -30,9 +30,22 @@ def train_single_probe_with_hyperparams(
     """Train a single probe with specific hyperparameters."""
     hook_point = f"blocks.{layer}.hook_resid_pre"
 
-    # Max aggregation only applies to PyTorch logistic probe
+    # Determine loss mode (handle deprecated --use_max_aggregation)
+    loss_mode = args.loss_mode
+    if args.use_max_aggregation:
+        loss_mode = "span_max"
+
+    # Max aggregation only applies to PyTorch logistic probe (legacy behavior)
     use_max_aggr = args.use_max_aggregation and probe_type == "logistic"
-    mode_str = " [max_aggr]" if use_max_aggr else ""
+
+    # Build mode string for logging
+    if loss_mode != "sample_mean":
+        mode_str = f" [{loss_mode}]"
+    elif use_max_aggr:
+        mode_str = " [max_aggr]"
+    else:
+        mode_str = ""
+
     hp_str = f" {hyperparams}" if hyperparams else ""
     print(f"Training {probe_type}{name_suffix} probe on layer {layer}{mode_str}{hp_str}")
 
@@ -46,7 +59,19 @@ def train_single_probe_with_hyperparams(
     trainer_config = get_trainer_config(probe_type, device, args.batch_size)
     trainer_cls = get_trainer_class(probe_type)
 
-    # Apply max aggregation config if enabled
+    # Handle deprecated --use_max_aggregation flag
+    if args.use_max_aggregation:
+        print("WARNING: --use_max_aggregation is deprecated. Use --loss_mode span_max instead.")
+        args.loss_mode = 'span_max'
+
+    # Apply loss mode configuration
+    if hasattr(trainer_config, 'loss_mode'):
+        trainer_config.loss_mode = args.loss_mode
+        trainer_config.joint_alpha = args.joint_alpha
+        trainer_config.anneal_warmup = args.anneal_warmup
+        trainer_config.sparsity_penalty = args.sparsity_penalty
+
+    # Legacy max aggregation support (for backward compatibility)
     if use_max_aggr and hasattr(trainer_config, 'use_max_aggregation'):
         trainer_config.use_max_aggregation = True
         trainer_config.anneal_warmup = args.anneal_warmup
@@ -60,8 +85,11 @@ def train_single_probe_with_hyperparams(
     probe = probe_cls(probe_config).to(device)
     trainer = trainer_cls(trainer_config)
 
-    # Prepare data
-    if use_max_aggr and hasattr(trainer, 'prepare_supervised_data_with_spans'):
+    # Prepare data - use spans for token-level loss modes
+    token_level_modes = ['token_all', 'token_spans_only', 'joint', 'annealed', 'span_max', 'span_mean']
+    needs_spans = use_max_aggr or args.loss_mode in token_level_modes
+
+    if needs_spans and hasattr(trainer, 'prepare_supervised_data_with_spans'):
         train_loader, val_loader, _, _ = trainer.prepare_supervised_data_with_spans(
             activation_store, "LIE_SPAN"
         )
@@ -244,11 +272,26 @@ LLM-tagged spans provide fine-grained phrase-level deception labels
 (e.g., "red Honda Civic") from running scripts/run_tagging.py.
 Sentence parsing splits by .!? and uses full sentences.''')
 
-    # Max aggregation training options
-    parser.add_argument('--use_max_aggregation', action='store_true',
-                       help='Use span-level max aggregation loss (like hallucination probes)')
+    # Loss mode options (see LOSS_DESIGN.md)
+    parser.add_argument('--loss_mode', type=str, default='sample_mean',
+                       choices=['sample_mean', 'sample_max', 'token_all', 'token_spans_only',
+                                'span_mean', 'span_max', 'joint', 'annealed'],
+                       help='''Loss function mode:
+  - sample_mean (default): BCE on mean of all token scores
+  - sample_max: BCE on max of all token scores
+  - token_all: Per-token BCE on ALL tokens (best for localization)
+  - token_spans_only: Per-token BCE only on tokens in labeled spans
+  - span_max: BCE on max score per span (current --use_max_aggregation)
+  - joint: α * sample_loss + (1-α) * token_loss
+  - annealed: Curriculum from sample_mean to token_all over epochs''')
+    parser.add_argument('--joint_alpha', type=float, default=0.5,
+                       help='Weight for sample loss in joint mode (1.0 = sample only, 0.0 = token only)')
     parser.add_argument('--anneal_warmup', type=float, default=0.3,
-                       help='Fraction of training for BCE→max_aggr annealing (default: 0.3)')
+                       help='Fraction of epochs for warmup in annealed mode (default: 0.3)')
+
+    # Legacy max aggregation (DEPRECATED - use --loss_mode span_max instead)
+    parser.add_argument('--use_max_aggregation', action='store_true',
+                       help='DEPRECATED: Use --loss_mode span_max instead')
     parser.add_argument('--sparsity_penalty', type=float, default=0.0,
                        help='Penalty for high average activation (default: 0.0, off)')
     return parser.parse_args()

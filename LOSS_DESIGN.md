@@ -1,5 +1,29 @@
 # Probe Training Loss Design
 
+## Implementation Status: COMPLETE
+
+**Implemented (Feb 1, 2026):**
+- `LossMode` enum with 8 loss modes in `probity/training/losses.py`
+- `ProbeLoss` class with unified interface for all modes
+- `SupervisedTrainerConfig` updated with `loss_mode`, `joint_alpha` fields
+- `SupervisedProbeTrainer.train_epoch_with_probe_loss()` method
+- CLI args: `--loss_mode`, `--joint_alpha`, `--anneal_warmup`
+- Backward compatibility: `--use_max_aggregation` maps to `--loss_mode span_max`
+
+**Usage:**
+```bash
+# Token-level training (best for localization)
+python scripts/probe_training_ntml.py --loss_mode token_all ...
+
+# Joint training (balance detection + localization)
+python scripts/probe_training_ntml.py --loss_mode joint --joint_alpha 0.5 ...
+
+# Curriculum learning (sample -> token)
+python scripts/probe_training_ntml.py --loss_mode annealed --anneal_warmup 0.3 ...
+```
+
+---
+
 ## Problem Statement
 
 We want probes that are:

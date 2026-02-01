@@ -25,6 +25,8 @@ from probity.training.losses import (
     precompute_span_masks,
     compute_annealed_loss,
     compute_sparsity_loss,
+    LossMode,
+    ProbeLoss,
 )
 
 
@@ -178,11 +180,14 @@ class SupervisedTrainerConfig(BaseTrainerConfig):
     patience: int = 5
     min_delta: float = 1e-4
     # Advanced training options (ported from hallucination probes)
-    use_max_aggregation: bool = False  # Use span-level max aggregation loss
-    anneal_warmup: float = 0.3  # Fraction of training for BCE → max aggr transition
+    use_max_aggregation: bool = False  # Use span-level max aggregation loss (DEPRECATED - use loss_mode)
+    anneal_warmup: float = 0.3  # Fraction of training for annealing transition
     pos_weight_override: float = 0.0  # Manual pos_weight (0 = auto-calculate)
     neg_weight_override: float = 0.0  # Manual neg_weight (0 = equal to pos)
     sparsity_penalty: float = 0.0  # Penalize high average activation (0 = off)
+    # New unified loss mode system (see LOSS_DESIGN.md)
+    loss_mode: str = "sample_mean"  # sample_mean, sample_max, token_all, joint, annealed, span_max, etc.
+    joint_alpha: float = 0.5  # Weight for sample loss in joint mode (1.0 = sample only)
 
 
 class SupervisedProbeTrainer(BaseProbeTrainer):
@@ -452,6 +457,107 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
 
         return total_loss / max(len(train_loader), 1), omega
 
+    def train_epoch_with_probe_loss(
+        self,
+        model: torch.nn.Module,
+        train_loader: DataLoader,
+        optimizer: torch.optim.Optimizer,
+        probe_loss: ProbeLoss,
+        epoch: int,
+        num_epochs: int,
+    ) -> Tuple[float, float]:
+        """Run one epoch with configurable ProbeLoss (GPU-optimized).
+
+        This is the new unified training method that supports all loss modes
+        defined in LOSS_DESIGN.md.
+
+        Returns:
+            Tuple of (total_loss, alpha) where alpha is the annealing coefficient
+        """
+        model.train()
+        total_loss = 0.0
+
+        # Update epoch for annealed mode
+        probe_loss.set_epoch(epoch, num_epochs)
+
+        # Check for precomputed masks
+        has_token_labels = self._train_token_labels is not None
+        has_span_masks = self._train_pos_masks is not None
+
+        batch_pbar = tqdm(
+            train_loader,
+            desc=f"Epoch {epoch+1}/{num_epochs} [{probe_loss.mode.value}]",
+            disable=not self.config.show_progress,
+            leave=False,
+        )
+
+        cumulative_idx = 0
+        alpha = probe_loss._get_annealed_alpha() if probe_loss.mode == LossMode.ANNEALED else 1.0
+
+        for batch_x, batch_y, _ in batch_pbar:
+            optimizer.zero_grad()
+            batch_x = batch_x.to(self.config.device)
+            batch_y = batch_y.to(self.config.device).float().squeeze()
+
+            batch_size = batch_x.shape[0]
+            start_idx = cumulative_idx
+            end_idx = start_idx + batch_size
+
+            # Handle different input shapes
+            if batch_x.dim() == 3:
+                # (batch, seq_len, hidden) -> need to process per-position
+                B, S, H = batch_x.shape
+                batch_x_flat = batch_x.view(B * S, H)
+                logits_flat = model(batch_x_flat)  # (B*S, 1)
+                logits = logits_flat.view(B, S)  # (B, S)
+            else:
+                # (batch, hidden) - shouldn't happen for token-level modes
+                logits = model(batch_x).squeeze(-1)
+
+            # Prepare tensors for loss
+            attention_mask = torch.ones_like(logits)  # TODO: use actual mask if available
+
+            token_labels = None
+            span_masks = None
+
+            if has_token_labels and self._train_token_labels is not None:
+                token_labels = self._train_token_labels[start_idx:end_idx].to(self.config.device)
+
+            if has_span_masks and self._train_pos_masks is not None:
+                span_masks = self._train_pos_masks[start_idx:end_idx].to(self.config.device)
+
+            cumulative_idx = end_idx
+
+            # Compute loss using ProbeLoss
+            loss = probe_loss(
+                token_scores=logits,
+                sample_labels=batch_y,
+                token_labels=token_labels,
+                attention_mask=attention_mask,
+                span_masks=span_masks,
+            )
+
+            # Add sparsity penalty if configured
+            if self.config.sparsity_penalty > 0:
+                sparsity = compute_sparsity_loss(logits)
+                loss = loss + self.config.sparsity_penalty * sparsity
+
+            loss.backward()
+            optimizer.step()
+
+            total_loss += loss.item()
+
+            # Update alpha for annealed mode
+            if probe_loss.mode == LossMode.ANNEALED:
+                alpha = probe_loss._get_annealed_alpha()
+
+            batch_pbar.set_postfix({
+                "Loss": f"{loss.item():.4f}",
+                "alpha": f"{alpha:.2f}" if probe_loss.mode in [LossMode.ANNEALED, LossMode.JOINT] else "N/A"
+            })
+
+        return total_loss / max(len(train_loader), 1), alpha
+
     def train_epoch(
         self,
         model: torch.nn.Module,
@@ -562,11 +668,39 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
             "val_loss": [],
             "learning_rate": [],
             "omega": [],  # Track annealing coefficient when using max aggregation
+            "alpha": [],  # Track annealing coefficient for ProbeLoss modes
         }
+
+        # Determine which training method to use
+        use_probe_loss = self.config.loss_mode != "sample_mean" and self._train_spans is not None
+        use_legacy_max_aggr = self.config.use_max_aggregation and self._train_spans is not None and not use_probe_loss
+
+        # Create ProbeLoss if using new loss modes
+        probe_loss_fn: Optional[ProbeLoss] = None
+        if use_probe_loss:
+            try:
+                loss_mode = LossMode(self.config.loss_mode)
+            except ValueError:
+                print(f"Warning: Unknown loss_mode '{self.config.loss_mode}', falling back to sample_mean")
+                loss_mode = LossMode.SAMPLE_MEAN
+                use_probe_loss = False
+
+            if use_probe_loss:
+                probe_loss_fn = ProbeLoss(
+                    mode=loss_mode,
+                    joint_alpha=self.config.joint_alpha,
+                    anneal_warmup=self.config.anneal_warmup,
+                )
+
+        mode_str = ""
+        if use_probe_loss and probe_loss_fn:
+            mode_str = f" [{probe_loss_fn.mode.value}]"
+        elif use_legacy_max_aggr:
+            mode_str = " [max_aggr]"
 
         epoch_pbar = tqdm(
             range(self.config.num_epochs),
-            desc="Training" + (" [max_aggr]" if self.config.use_max_aggregation else ""),
+            desc=f"Training{mode_str}",
             disable=not self.config.show_progress,
         )
 
@@ -576,7 +710,17 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
 
         for epoch in epoch_pbar:
             # Choose training method based on config
-            if self.config.use_max_aggregation and self._train_spans is not None:
+            if use_probe_loss and probe_loss_fn is not None:
+                train_loss, alpha = self.train_epoch_with_probe_loss(
+                    model,
+                    train_loader,
+                    optimizer,
+                    probe_loss_fn,
+                    epoch,
+                    self.config.num_epochs,
+                )
+                history["alpha"].append(alpha)
+            elif use_legacy_max_aggr:
                 train_loss, omega = self.train_epoch_with_max_aggr(
                     model,
                     train_loader,
@@ -599,19 +743,36 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
 
             if val_loader is not None:
                 # Choose validation method based on training mode
-                if self.config.use_max_aggregation and self._val_spans is not None:
+                if use_legacy_max_aggr:
                     val_loss = self.validate_with_max_aggr(model, val_loader)
                 else:
                     val_loss = self.validate(model, val_loader, loss_fn, is_multi_class=is_multi_class)
                 history["val_loss"].append(val_loss)
 
-                # Only do early stopping after warmup completes (when omega=1.0)
-                # This prevents comparing BCE-phase losses with max_aggr-phase losses
-                if self.config.use_max_aggregation and history["omega"]:
-                    current_omega = history["omega"][-1]
-                    if current_omega >= 1.0:
+                # Handle early stopping with warmup for annealing modes
+                # (prevents comparing BCE-phase losses with token-phase losses)
+                uses_annealing = (
+                    (use_legacy_max_aggr and history["omega"]) or
+                    (use_probe_loss and probe_loss_fn and probe_loss_fn.mode == LossMode.ANNEALED and history["alpha"])
+                )
+
+                if uses_annealing:
+                    # Get current annealing coefficient
+                    if use_legacy_max_aggr and history["omega"]:
+                        current_coef = history["omega"][-1]
+                        coef_threshold = 1.0  # omega goes 0->1
+                    else:
+                        current_coef = history["alpha"][-1]
+                        coef_threshold = 0.0  # alpha goes 1->0 (fully token-level when 0)
+
+                    # Check if warmup is complete
+                    is_warmup_complete = (
+                        (use_legacy_max_aggr and current_coef >= coef_threshold) or
+                        (use_probe_loss and current_coef <= coef_threshold)
+                    )
+
+                    if is_warmup_complete:
                         if not warmup_complete:
-                            # First epoch at omega=1.0 - reset best_val_loss
                             warmup_complete = True
                             best_val_loss = val_loss
                             patience_counter = 0
@@ -621,7 +782,7 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
                         else:
                             patience_counter += 1
                 else:
-                    # No max aggregation - normal early stopping
+                    # No annealing - normal early stopping
                     if val_loss < best_val_loss - self.config.min_delta:
                         best_val_loss = val_loss
                         patience_counter = 0
@@ -636,16 +797,20 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
                     "Val Loss": f"{val_loss:.6f}",
                     "LR": f"{scheduler.get_last_lr()[0]:.2e}",
                 }
-                if self.config.use_max_aggregation and history["omega"]:
+                if use_legacy_max_aggr and history["omega"]:
                     postfix["omega"] = f"{history['omega'][-1]:.2f}"
+                if use_probe_loss and history["alpha"]:
+                    postfix["alpha"] = f"{history['alpha'][-1]:.2f}"
                 epoch_pbar.set_postfix(postfix)
             else:
                 postfix = {
                     "Train Loss": f"{train_loss:.6f}",
                     "LR": f"{scheduler.get_last_lr()[0]:.2e}",
                 }
-                if self.config.use_max_aggregation and history["omega"]:
+                if use_legacy_max_aggr and history["omega"]:
                     postfix["omega"] = f"{history['omega'][-1]:.2f}"
+                if use_probe_loss and history["alpha"]:
+                    postfix["alpha"] = f"{history['alpha'][-1]:.2f}"
                 epoch_pbar.set_postfix(postfix)
 
             history["learning_rate"].append(scheduler.get_last_lr()[0])
