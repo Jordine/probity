@@ -14,15 +14,31 @@ We train linear probes to detect deception from LLM activations, then test wheth
 
 ### 1. Environment Setup
 
+**IMPORTANT:** Do NOT just `pip install`. Use the setup script which installs dependencies AND patches TransformerLens for longer context support.
+
 ```bash
 # Required environment variables
 export HF_TOKEN=hf_your_token_here
 export CUDA_VISIBLE_DEVICES=0,1
 export OPENROUTER_API_KEY=sk-or-your-key  # For API-based models/judges
 
-# Install dependencies
-pip install -r requirements.txt
+# Install with setup script (REQUIRED)
+bash setup_vast.sh
 ```
+
+**What `setup_vast.sh` does:**
+1. `pip install -e .` — Install probity in editable mode
+2. `pip uninstall torchvision --yes` — Remove conflicting package
+3. Patch TransformerLens `n_ctx` from 2048 → 16384 tokens
+4. Copy patched TransformerLens files for explicit GPU assignment
+
+**GPU Memory Requirements:**
+
+| Model | VRAM Needed | Recommended Batch Size |
+|-------|-------------|------------------------|
+| Qwen2.5-7B | 16GB | 32 |
+| Llama-3.1-8B | 18GB | 32 |
+| Llama-3.3-70B | 140GB+ (2-4x H100/A100) | 4-8 |
 
 ### 2. Generate Training Data (NTML Dataset)
 
@@ -77,7 +93,7 @@ python scripts/probe_training_ntml.py \
     --patience 7 \
     --dishonest_mode all \
     --honest_mode none \
-    --use_max_aggregation \
+    --loss_mode span_max \
     --anneal_warmup 0.3
 ```
 
@@ -90,10 +106,45 @@ python scripts/probe_training_ntml.py \
 | `--batch_size` | 32 (80GB GPU), 16 (40GB GPU), 8 (24GB GPU) | Batch size for activation collection |
 | `--dishonest_mode` | `all` (all lie tokens), `diff` (only differing tokens) | Which tokens from lie samples |
 | `--honest_mode` | `none` (no truth tokens), `all`, `diff` | Which tokens from truth samples |
-| `--use_max_aggregation` | flag | Use max-aggregation loss (improves localization) |
-| `--anneal_warmup` | 0.0-1.0 | Fraction of epochs for BCE warmup before max-aggregation. 0.3 = 30% BCE, then transition |
+| `--loss_mode` | `sample_mean`, `span_max`, `token_all`, `joint`, `annealed` | Loss function (see below) |
+| `--anneal_warmup` | 0.0-1.0 | Fraction of epochs for BCE warmup before transition. 0.3 = 30% BCE, then transition |
 
-**Recommended**: `--dishonest_mode all --honest_mode none` with `--use_max_aggregation --anneal_warmup 0.3`
+**Loss Modes:**
+- `sample_mean` (default): BCE on mean of all token scores
+- `span_max`: BCE on max score per span (**recommended for localization**)
+- `token_all`: Per-token BCE on all tokens
+- `joint`: α × sample_loss + (1-α) × token_loss
+- `annealed`: Curriculum from sample_mean → token_all
+
+**Recommended**: `--dishonest_mode all --honest_mode none --loss_mode span_max --anneal_warmup 0.3`
+
+#### Efficient Multi-Probe Training with `--sweep_config`
+
+**CRITICAL:** Activation collection is the slow part (~60-80% of training time). Use `--sweep_config` to train multiple probe configurations from a single activation collection per layer:
+
+```bash
+# Create sweep_config.json:
+{
+  "attention": [
+    {"n_heads": 1, "temperature": 0.25, "name_suffix": "_h1_t0.25"},
+    {"n_heads": 2, "temperature": 0.25, "name_suffix": "_h2_t0.25"},
+    {"n_heads": 4, "temperature": 0.50, "name_suffix": "_h4_t0.50"}
+  ]
+}
+
+# Train ALL variants with ONE activation collection per layer:
+python scripts/probe_training_ntml.py \
+    --model_name meta-llama/Llama-3.3-70B-Instruct \
+    --train_dataset_dir ./data.json \
+    --probe_types attention \
+    --sweep_config sweep_config.json \
+    --layers 32 34 36 38 40 \
+    --probe_save_dir ./probes \
+    --batch_size 4 \
+    --dishonest_mode all --honest_mode none
+```
+
+This trains 5 layers × 3 configs = 15 probes with only 5 activation collections instead of 15.
 
 ### 4. Evaluate Probe
 

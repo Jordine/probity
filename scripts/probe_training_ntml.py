@@ -16,6 +16,11 @@ from probity.training.configs import (
     get_trainer_config,
     get_trainer_class
 )
+from probity.training.parallel import (
+    train_probes_parallel,
+    train_all_layers_parallel,
+    _ensure_spawn_start_method,
+)
 from probity.utils.caching import get_dataset_hash, smart_cache_activations
 from probity.utils.dataset_loading import load_contrastive_ntml_dataset, get_model_dtype
 
@@ -30,21 +35,9 @@ def train_single_probe_with_hyperparams(
     """Train a single probe with specific hyperparameters."""
     hook_point = f"blocks.{layer}.hook_resid_pre"
 
-    # Determine loss mode (handle deprecated --use_max_aggregation)
-    loss_mode = args.loss_mode
-    if args.use_max_aggregation:
-        loss_mode = "span_max"
-
-    # Max aggregation only applies to PyTorch logistic probe (legacy behavior)
-    use_max_aggr = args.use_max_aggregation and probe_type == "logistic"
-
     # Build mode string for logging
-    if loss_mode != "sample_mean":
-        mode_str = f" [{loss_mode}]"
-    elif use_max_aggr:
-        mode_str = " [max_aggr]"
-    else:
-        mode_str = ""
+    loss_mode = args.loss_mode
+    mode_str = f" [{loss_mode}]" if loss_mode != "sample_mean" else ""
 
     hp_str = f" {hyperparams}" if hyperparams else ""
     print(f"Training {probe_type}{name_suffix} probe on layer {layer}{mode_str}{hp_str}")
@@ -59,21 +52,10 @@ def train_single_probe_with_hyperparams(
     trainer_config = get_trainer_config(probe_type, device, args.batch_size)
     trainer_cls = get_trainer_class(probe_type)
 
-    # Handle deprecated --use_max_aggregation flag
-    if args.use_max_aggregation:
-        print("WARNING: --use_max_aggregation is deprecated. Use --loss_mode span_max instead.")
-        args.loss_mode = 'span_max'
-
     # Apply loss mode configuration
     if hasattr(trainer_config, 'loss_mode'):
         trainer_config.loss_mode = args.loss_mode
         trainer_config.joint_alpha = args.joint_alpha
-        trainer_config.anneal_warmup = args.anneal_warmup
-        trainer_config.sparsity_penalty = args.sparsity_penalty
-
-    # Legacy max aggregation support (for backward compatibility)
-    if use_max_aggr and hasattr(trainer_config, 'use_max_aggregation'):
-        trainer_config.use_max_aggregation = True
         trainer_config.anneal_warmup = args.anneal_warmup
         trainer_config.sparsity_penalty = args.sparsity_penalty
 
@@ -281,7 +263,7 @@ Sentence parsing splits by .!? and uses full sentences.''')
   - sample_max: BCE on max of all token scores
   - token_all: Per-token BCE on ALL tokens (best for localization)
   - token_spans_only: Per-token BCE only on tokens in labeled spans
-  - span_max: BCE on max score per span (current --use_max_aggregation)
+  - span_max: BCE on max score per span (good for localization)
   - joint: α * sample_loss + (1-α) * token_loss
   - annealed: Curriculum from sample_mean to token_all over epochs''')
     parser.add_argument('--joint_alpha', type=float, default=0.5,
@@ -289,17 +271,39 @@ Sentence parsing splits by .!? and uses full sentences.''')
     parser.add_argument('--anneal_warmup', type=float, default=0.3,
                        help='Fraction of epochs for warmup in annealed mode (default: 0.3)')
 
-    # Legacy max aggregation (DEPRECATED - use --loss_mode span_max instead)
-    parser.add_argument('--use_max_aggregation', action='store_true',
-                       help='DEPRECATED: Use --loss_mode span_max instead')
     parser.add_argument('--sparsity_penalty', type=float, default=0.0,
                        help='Penalty for high average activation (default: 0.0, off)')
+
+    # ========== PARALLEL TRAINING ==========
+    parser.add_argument('--parallel_probes', action='store_true',
+                       help='''Enable parallel probe training across GPUs.
+After activation collection completes for a layer, trains all probe
+configs (e.g., h1_t0.25, h2_t0.25) in parallel using torch.multiprocessing.
+Requires multiple GPUs for best performance (8xH200 recommended).''')
+    parser.add_argument('--cross_layer_parallel', action='store_true',
+                       help='''Enable cross-layer parallel training (more aggressive).
+Trains ALL probes across ALL layers simultaneously after activation
+collection. Example: 10 layers x 6 configs = 60 parallel tasks.
+Best for clusters with many GPUs (8+). Implies --parallel_probes.''')
+    parser.add_argument('--num_gpus', type=int, default=None,
+                       help='Number of GPUs to use for parallel training (default: all available)')
+    parser.add_argument('--max_parallel_workers', type=int, default=None,
+                       help='Max parallel workers (default: num_gpus * 2, capped at 16/32)')
+
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
-    
+
+    # Set spawn start method early if parallel training requested
+    if args.parallel_probes or args.cross_layer_parallel:
+        _ensure_spawn_start_method()
+
+    # Cross-layer parallel implies parallel_probes
+    if args.cross_layer_parallel:
+        args.parallel_probes = True
+
     # Handle --list_datasets
     if args.list_datasets:
         datasets = list_available_datasets()
@@ -371,9 +375,9 @@ def main():
     
     try:
         model = HookedTransformer.from_pretrained_no_processing(
-            args.model_name, 
-            device="cuda",  
-            n_devices=2,
+            args.model_name,
+            device="cuda",
+            n_devices=torch.cuda.device_count() or 1,
             dtype=model_dtype
         )
 
@@ -420,26 +424,80 @@ def main():
     del model
     torch.cuda.empty_cache()
     
-    # Train probes efficiently - one layer at a time, all probe types per layer
+    # Train probes efficiently
     results = {}
-    
-    for layer in tqdm(layers, desc="Training layers"):
-        hook_point = f"blocks.{layer}.hook_resid_pre"
-        activation_store = activation_stores[hook_point]
-        
-        # Train all probe types for this layer
-        layer_results = train_all_probes_for_layer(
-            layer, activation_store, args.probe_types, args,
-            args.model_name, hidden_size, args.device, model_dtype,
-            sweep_config=sweep_config
+
+    # Choose training strategy based on parallelization mode
+    if args.cross_layer_parallel:
+        # Most aggressive: train ALL probes across ALL layers in parallel
+        print(f"\n{'='*60}")
+        print("CROSS-LAYER PARALLEL TRAINING ENABLED")
+        print(f"  Layers: {len(layers)}")
+        print(f"  GPUs: {args.num_gpus or torch.cuda.device_count()}")
+        print(f"  Max workers: {args.max_parallel_workers or 'auto'}")
+        print(f"{'='*60}\n")
+
+        results = train_all_layers_parallel(
+            layers=layers,
+            activation_stores=activation_stores,
+            probe_types=args.probe_types,
+            args=args,
+            model_name=args.model_name,
+            hidden_size=hidden_size,
+            dtype=model_dtype,
+            sweep_config=sweep_config,
+            num_gpus=args.num_gpus,
+            max_workers=args.max_parallel_workers,
         )
-        
-        results[layer] = layer_results
-        
-        # Optional: Clear activation store to save memory if processing many layers
-        if len(layers) > 16:
-            del activation_stores[hook_point]
-            torch.cuda.empty_cache()
+
+    elif args.parallel_probes:
+        # Per-layer parallel: train probes in parallel within each layer
+        print(f"\n{'='*60}")
+        print("PER-LAYER PARALLEL TRAINING ENABLED")
+        print(f"  GPUs: {args.num_gpus or torch.cuda.device_count()}")
+        print(f"  Max workers: {args.max_parallel_workers or 'auto'}")
+        print(f"{'='*60}\n")
+
+        for layer in tqdm(layers, desc="Training layers"):
+            hook_point = f"blocks.{layer}.hook_resid_pre"
+            activation_store = activation_stores[hook_point]
+
+            layer_results = train_probes_parallel(
+                layer=layer,
+                activation_store=activation_store,
+                probe_types=args.probe_types,
+                args=args,
+                model_name=args.model_name,
+                hidden_size=hidden_size,
+                dtype=model_dtype,
+                sweep_config=sweep_config,
+                num_gpus=args.num_gpus,
+                max_workers=args.max_parallel_workers,
+            )
+            results[layer] = layer_results
+
+            # Clear activation store to save memory if processing many layers
+            if len(layers) > 16:
+                del activation_stores[hook_point]
+                torch.cuda.empty_cache()
+
+    else:
+        # Sequential: train one probe at a time (original behavior)
+        for layer in tqdm(layers, desc="Training layers"):
+            hook_point = f"blocks.{layer}.hook_resid_pre"
+            activation_store = activation_stores[hook_point]
+
+            layer_results = train_all_probes_for_layer(
+                layer, activation_store, args.probe_types, args,
+                args.model_name, hidden_size, args.device, model_dtype,
+                sweep_config=sweep_config
+            )
+            results[layer] = layer_results
+
+            # Clear activation store to save memory if processing many layers
+            if len(layers) > 16:
+                del activation_stores[hook_point]
+                torch.cuda.empty_cache()
     
     # Save training summary
     summary_path = Path(args.probe_save_dir) / "training_summary.json"
@@ -455,8 +513,11 @@ def main():
     for layer, layer_results in results.items():
         print(f"\nLayer {layer}:")
         for probe_type, probe_results in layer_results.items():
-            final_loss = probe_results['final_train_loss']
-            print(f"  {probe_type}: Final loss = {final_loss:.6f}")
+            if 'error' in probe_results:
+                print(f"  {probe_type}: FAILED - {probe_results['error'][:100]}...")
+            else:
+                final_loss = probe_results.get('final_train_loss', float('nan'))
+                print(f"  {probe_type}: Final loss = {final_loss:.6f}")
 
 
 if __name__ == "__main__":

@@ -180,7 +180,7 @@ class SupervisedTrainerConfig(BaseTrainerConfig):
     patience: int = 5
     min_delta: float = 1e-4
     # Advanced training options (ported from hallucination probes)
-    use_max_aggregation: bool = False  # Use span-level max aggregation loss (DEPRECATED - use loss_mode)
+    use_max_aggregation: bool = False  # DEPRECATED: kept for backward compat with old saved configs. Use loss_mode="span_max" instead
     anneal_warmup: float = 0.3  # Fraction of training for annealing transition
     pos_weight_override: float = 0.0  # Manual pos_weight (0 = auto-calculate)
     neg_weight_override: float = 0.0  # Manual neg_weight (0 = equal to pos)

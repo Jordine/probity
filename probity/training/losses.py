@@ -9,7 +9,7 @@ Loss Modes (see LOSS_DESIGN.md for details):
 - token_all: Per-token BCE on all tokens
 - token_spans_only: Per-token BCE only on tokens near labeled spans
 - span_mean: BCE on mean score per span
-- span_max: BCE on max score per span (current --use_max_aggregation)
+- span_max: BCE on max score per span (good for localization)
 - joint: α * sample_loss + (1-α) * token_loss
 - annealed: Curriculum from sample_mean to token_all over epochs
 """

@@ -28,7 +28,7 @@ class TransformerLensCollector:
         self.model = HookedTransformer.from_pretrained_no_processing(
             config.model_name,
             device="cuda",
-            n_devices=2,
+            n_devices=torch.cuda.device_count() or 1,
             dtype=self.model_dtype,
         )
         print(f"Model distributed across: {self.model.hf_model.hf_device_map}")
