@@ -2,10 +2,11 @@
 Model providers for debate infrastructure.
 """
 
-from .base import BaseModelProvider, GenerationResult
+from .base import BaseModelProvider, AsyncModelProvider, GenerationResult
 from .openai import OpenAIProvider
 from .anthropic import AnthropicProvider
 from .openrouter import OpenRouterProvider
+from .openrouter_async import AsyncOpenRouterProvider
 
 # Lazy imports for torch-dependent providers
 def __getattr__(name):
@@ -39,11 +40,13 @@ def create_provider(config):
 
 __all__ = [
     "BaseModelProvider",
+    "AsyncModelProvider",
     "GenerationResult",
     "LocalModelProvider",
     "FastLocalModelProvider",
     "OpenAIProvider",
     "AnthropicProvider",
     "OpenRouterProvider",
+    "AsyncOpenRouterProvider",
     "create_provider"
 ]

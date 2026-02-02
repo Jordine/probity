@@ -38,7 +38,8 @@ dependencies = [
     "datasets==3.6.0",
     "openai",
     "anthropic",
-    "openrouter"
+    "openrouter",
+    "aiohttp>=3.9.0",
 ]
 
 [tool.setuptools]

@@ -3,6 +3,7 @@
 Run debates without judge decisions, saving full transcripts with probe scores.
 This allows efficient re-evaluation with different judges and probe configurations.
 """
+import os
 import numpy as np
 import argparse
 import json
@@ -30,7 +31,8 @@ class NoJudgeDebateRunner:
     """Run debates without judge decision, save full transcripts with probe data"""
 
     def __init__(self, config: DebateConfig, save_dir: Path, experiment_mode: str,
-                 dishonesty_level: str = "selective", order_balance: bool = True):
+                 dishonesty_level: str = "selective", order_balance: bool = True,
+                 force_honest_first: Optional[bool] = None):
         """
         Args:
             config: Debate configuration
@@ -39,6 +41,8 @@ class NoJudgeDebateRunner:
             dishonesty_level: Level of dishonesty for liar debater
             order_balance: If True, alternate honest_first True/False for 50/50 balance.
                           If False, randomize each debate independently.
+            force_honest_first: If provided, forces ALL debates to use this speaker order.
+                               Overrides order_balance. Used by parallel debate runner.
         """
         self.config = config
         self.save_dir = save_dir
@@ -49,6 +53,26 @@ class NoJudgeDebateRunner:
         self.transcripts_dir = save_dir / "transcripts"
         self.transcripts_dir.mkdir(parents=True, exist_ok=True)
 
+        # Check for forced speaker order
+        # Priority: explicit arg > environment variable > order_balance logic
+        if force_honest_first is not None:
+            self.force_honest_first = force_honest_first
+            order_str = "honest_first" if force_honest_first else "dishonest_first"
+            print(f"[FORCED ORDER] All debates will use: {order_str}")
+        else:
+            # Fallback to environment variable (for backward compatibility)
+            env_force = os.environ.get('FORCE_HONEST_FIRST')
+            if env_force is not None:
+                self.force_honest_first = env_force.lower() == 'true'
+                order_str = "honest_first" if self.force_honest_first else "dishonest_first"
+                print(f"[FORCED ORDER from env] All debates will use: {order_str}")
+            else:
+                self.force_honest_first = None  # Use order_balance logic
+                if self.order_balance:
+                    print("[BALANCED ORDER] Alternating honest_first/dishonest_first")
+                else:
+                    print("[RANDOM ORDER] Randomizing speaker order per debate")
+
         # Create summary file for tracking progress
         self.summary_file = save_dir / "transcript_summary.jsonl"
 
@@ -58,9 +82,21 @@ class NoJudgeDebateRunner:
         print("Models and probes loaded successfully!")
 
     def _get_force_honest_first(self) -> Optional[bool]:
-        """Get forced speaker order based on order_balance setting."""
+        """Get forced speaker order based on settings.
+
+        Priority:
+        1. force_honest_first (from env var FORCE_HONEST_FIRST or explicit arg)
+        2. order_balance (alternates between True/False for 50/50 balance)
+        3. None (let manager randomize)
+        """
+        # If force_honest_first is set, use it for ALL debates
+        if self.force_honest_first is not None:
+            return self.force_honest_first
+
+        # If order_balance is disabled, let manager randomize
         if not self.order_balance:
-            return None  # Let manager randomize
+            return None
+
         # Alternate: even debates -> honest first, odd -> dishonest first
         force_value = (self.debate_counter % 2 == 0)
         self.debate_counter += 1
@@ -516,7 +552,22 @@ def main():
     parser.add_argument('--no_order_balance', dest='order_balance', action='store_false',
                        help='Randomize speaker order per debate instead of balancing')
 
+    # Force speaker order (used by parallel debate runner)
+    order_force_group = parser.add_mutually_exclusive_group()
+    order_force_group.add_argument('--force_honest_first', action='store_true',
+                       help='Force ALL debates to have honest debater speak first')
+    order_force_group.add_argument('--force_dishonest_first', action='store_true',
+                       help='Force ALL debates to have dishonest debater speak first')
+
     args = parser.parse_args()
+
+    # Convert force flags to Optional[bool]
+    if args.force_honest_first:
+        args.force_speaker_order = True
+    elif args.force_dishonest_first:
+        args.force_speaker_order = False
+    else:
+        args.force_speaker_order = None  # Use order_balance or randomize
 
     # GPU Detection and Configuration
     print("\n" + "="*60)
@@ -655,6 +706,10 @@ def main():
             "honest_gpu_indices": honest_gpu_indices,
             "dishonest_gpu_indices": dishonest_gpu_indices
         },
+        "speaker_order": {
+            "force_honest_first": args.force_speaker_order,  # None = balanced/random
+            "order_balance": args.order_balance,
+        },
         "dataset": args.dataset,
         "n_problems": args.n_problems,
         "max_rounds": args.max_rounds,
@@ -759,7 +814,8 @@ def main():
     # Run debates
     runner = NoJudgeDebateRunner(
         config, save_dir, args.experiment_mode, args.dishonesty_level,
-        order_balance=args.order_balance
+        order_balance=args.order_balance,
+        force_honest_first=args.force_speaker_order
     )
     results_df = runner.run_all_debates(dataset)
     

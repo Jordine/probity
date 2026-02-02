@@ -113,36 +113,27 @@ def load_model_with_hooks(model_name: str, device: str = "cuda"):
     model_dtype = get_model_dtype(model_name)
     print(f"Using model dtype: {model_dtype}")
 
-    print("Loading model via HookedTransformer...")
-    try:
-        model = HookedTransformer.from_pretrained_no_processing(
-            model_name,
-            device=device,
-            n_devices=2,
-            dtype=model_dtype,
-        )
-        print("Model loaded successfully with n_devices=2")
-    except Exception as e:
-        print(f"Error with n_devices=2: {e}")
-        print("Trying with device_map='auto'...")
+    # Use device_map='auto' directly - more reliable for multi-GPU
+    print("Loading HuggingFace model with device_map='auto'...")
+    hf_model = AutoModelForCausalLM.from_pretrained(
+        model_name,
+        torch_dtype=model_dtype,
+        device_map="auto",
+        trust_remote_code=True,
+    )
+    print(f"HF model device map: {hf_model.hf_device_map if hasattr(hf_model, 'hf_device_map') else 'unknown'}")
 
-        # Fallback: load with device_map auto
-        hf_model = AutoModelForCausalLM.from_pretrained(
-            model_name,
-            torch_dtype=model_dtype,
-            device_map="auto",
-            trust_remote_code=True,
-        )
-        model = HookedTransformer.from_pretrained(
-            model_name,
-            hf_model=hf_model,
-            device=device,
-            dtype=model_dtype,
-            fold_ln=False,
-            center_writing_weights=False,
-            center_unembed=False,
-        )
-        print("Model loaded with device_map='auto' fallback")
+    print("Wrapping in HookedTransformer...")
+    model = HookedTransformer.from_pretrained(
+        model_name,
+        hf_model=hf_model,
+        device=device,
+        dtype=model_dtype,
+        fold_ln=False,
+        center_writing_weights=False,
+        center_unembed=False,
+    )
+    print("Model loaded successfully!")
 
     model.eval()
     return model
