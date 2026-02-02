@@ -69,7 +69,7 @@ def train_single_probe_with_hyperparams(
 
     # Prepare data - use spans for token-level loss modes
     token_level_modes = ['token_all', 'token_spans_only', 'joint', 'annealed', 'span_max', 'span_mean']
-    needs_spans = use_max_aggr or args.loss_mode in token_level_modes
+    needs_spans = args.loss_mode in token_level_modes
 
     if needs_spans and hasattr(trainer, 'prepare_supervised_data_with_spans'):
         train_loader, val_loader, _, _ = trainer.prepare_supervised_data_with_spans(
@@ -94,7 +94,7 @@ def train_single_probe_with_hyperparams(
         'final_train_loss': history['train_loss'][-1],
         'final_val_loss': history['val_loss'][-1] if 'val_loss' in history and history['val_loss'] else None,
         'save_path': str(save_path),
-        'max_aggregation': use_max_aggr,
+        'loss_mode': args.loss_mode,
         'hyperparams': hyperparams,
     }
 
@@ -104,7 +104,8 @@ def train_single_probe_with_hyperparams(
         if 'train_auroc_score' in thresholds:
             result['train_auroc'] = thresholds['train_auroc_score']
 
-    if use_max_aggr and 'omega' in history and history['omega']:
+    # Track omega for span_max and similar loss modes
+    if 'omega' in history and history['omega']:
         result['final_omega'] = history['omega'][-1]
         result['anneal_warmup'] = args.anneal_warmup
 
