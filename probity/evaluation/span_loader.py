@@ -185,6 +185,7 @@ def compute_ranking_metrics(token_scores: List[float], labeled_token_spans: List
         return {
             "span_auroc": 0.5,
             "span_ap": 0.0,
+            "span_auprc": 0.0,  # Alias for span_ap
             "cohens_d": 0.0,
             "mean_in_span": 0.0,
             "mean_out_span": 0.0,
@@ -196,10 +197,12 @@ def compute_ranking_metrics(token_scores: List[float], labeled_token_spans: List
             "recall_at_10pct": 0.0,
             "recall_at_20pct": 0.0,
             "recall_at_30pct": 0.0,
+            "recall_at_oracle": 0.0,  # Adaptive: K = n_positive
             "precision_at_5pct": 0.0,
             "precision_at_10pct": 0.0,
             "precision_at_20pct": 0.0,
             "precision_at_30pct": 0.0,
+            "precision_at_oracle": 0.0,  # Adaptive: K = n_positive
         }
 
     scores_array = np.array(token_scores)
@@ -219,6 +222,7 @@ def compute_ranking_metrics(token_scores: List[float], labeled_token_spans: List
         return {
             "span_auroc": 0.5,
             "span_ap": 0.0,
+            "span_auprc": 0.0,  # Alias for span_ap
             "cohens_d": 0.0,
             "mean_in_span": 0.0,
             "mean_out_span": 0.0,
@@ -230,10 +234,12 @@ def compute_ranking_metrics(token_scores: List[float], labeled_token_spans: List
             "recall_at_10pct": 0.0,
             "recall_at_20pct": 0.0,
             "recall_at_30pct": 0.0,
+            "recall_at_oracle": 0.0,  # Adaptive: K = n_positive
             "precision_at_5pct": 0.0,
             "precision_at_10pct": 0.0,
             "precision_at_20pct": 0.0,
             "precision_at_30pct": 0.0,
+            "precision_at_oracle": 0.0,  # Adaptive: K = n_positive
         }
 
     # Compute AUROC and AP
@@ -276,9 +282,29 @@ def compute_ranking_metrics(token_scores: List[float], labeled_token_spans: List
         # Precision@K: fraction of top K that are positive
         precision_at_k[f"precision_at_{k_pct}pct"] = float(tp_at_k / k)
 
+    # Recall@Oracle and Precision@Oracle: select top n_positive tokens (adaptive)
+    # Definition: Given a sample with L deceptive tokens, select the top L tokens
+    # by probe score.
+    # - Recall@Oracle = (# of those L that are actually deceptive) / L
+    # - Precision@Oracle = (# of those L that are actually deceptive) / L
+    # Note: When K = n_positive, recall and precision are mathematically identical.
+    # This adapts to each sample's lie density - unlike fixed Recall@10% which
+    # over-flags sparse samples and under-flags dense samples.
+    k_oracle = int(n_positive)
+    top_oracle_indices = sorted_indices[:k_oracle]
+    top_oracle_mask = np.zeros(n_tokens, dtype=bool)
+    top_oracle_mask[top_oracle_indices] = True
+    tp_at_oracle = np.sum(top_oracle_mask & in_span_mask)
+    recall_at_oracle = float(tp_at_oracle / n_positive) if n_positive > 0 else 0.0
+    precision_at_oracle = float(tp_at_oracle / k_oracle) if k_oracle > 0 else 0.0
+
+    # span_auprc is an alias for span_ap (Average Precision = Area Under PR Curve)
+    span_auprc = span_ap
+
     return {
         "span_auroc": float(span_auroc),
         "span_ap": float(span_ap),
+        "span_auprc": float(span_auprc),
         "cohens_d": float(cohens_d),
         "mean_in_span": float(mean_in),
         "mean_out_span": float(mean_out),
@@ -286,6 +312,8 @@ def compute_ranking_metrics(token_scores: List[float], labeled_token_spans: List
         "std_out_span": float(std_out),
         "n_positive": int(n_positive),
         "n_negative": int(n_negative),
+        "recall_at_oracle": recall_at_oracle,
+        "precision_at_oracle": precision_at_oracle,
         **recall_at_k,
         **precision_at_k
     }
@@ -394,9 +422,12 @@ def aggregate_ranking_metrics(sample_metrics: List[Dict[str, float]]) -> Dict[st
     result = {
         "span_auroc": float(np.mean([m["span_auroc"] for m in valid_metrics])),
         "span_ap": float(np.mean([m["span_ap"] for m in valid_metrics])),
+        "span_auprc": float(np.mean([m.get("span_auprc", m["span_ap"]) for m in valid_metrics])),
         "cohens_d": float(np.mean([m["cohens_d"] for m in valid_metrics])),
         "mean_in_span": float(np.mean([m["mean_in_span"] for m in valid_metrics])),
         "mean_out_span": float(np.mean([m["mean_out_span"] for m in valid_metrics])),
+        "recall_at_oracle": float(np.mean([m.get("recall_at_oracle", 0.0) for m in valid_metrics])),
+        "precision_at_oracle": float(np.mean([m.get("precision_at_oracle", 0.0) for m in valid_metrics])),
         "n_samples": len(sample_metrics),
         "n_samples_with_spans": len(valid_metrics)
     }
