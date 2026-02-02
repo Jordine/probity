@@ -1,5 +1,7 @@
 # Soothcheck: Probe-Augmented Debate for Deception Detection
 
+> **⚡ Quick Setup:** Run `bash setup_vast.sh` (not pip install) — this installs dependencies AND patches TransformerLens.
+
 Research project investigating whether whitebox deception probes can help LLM judges detect dishonest debaters.
 
 ## Project Overview
@@ -97,26 +99,83 @@ python scripts/probe_training_ntml.py \
     --anneal_warmup 0.3
 ```
 
-#### Probe Training Parameters
+#### Complete CLI Reference
 
-| Parameter | Values | Description |
-|-----------|--------|-------------|
-| `--probe_types` | `logistic`, `attention`, `meandiff`, `sklearn_logistic`, `pca`, `mlp` | Probe architecture |
-| `--layers` | space-separated integers or `all` | Which transformer layers to probe. For Llama-70B, try 32-44 range |
-| `--batch_size` | 32 (80GB GPU), 16 (40GB GPU), 8 (24GB GPU) | Batch size for activation collection |
-| `--dishonest_mode` | `all` (all lie tokens), `diff` (only differing tokens) | Which tokens from lie samples |
-| `--honest_mode` | `none` (no truth tokens), `all`, `diff` | Which tokens from truth samples |
-| `--loss_mode` | `sample_mean`, `span_max`, `token_all`, `joint`, `annealed` | Loss function (see below) |
-| `--anneal_warmup` | 0.0-1.0 | Fraction of epochs for BCE warmup before transition. 0.3 = 30% BCE, then transition |
+**Required Arguments:**
 
-**Loss Modes:**
-- `sample_mean` (default): BCE on mean of all token scores
-- `span_max`: BCE on max score per span (**recommended for localization**)
-- `token_all`: Per-token BCE on all tokens
-- `joint`: α × sample_loss + (1-α) × token_loss
-- `annealed`: Curriculum from sample_mean → token_all
+| Argument | Description |
+|----------|-------------|
+| `--model_name` | HuggingFace model name (e.g., `meta-llama/Llama-3.3-70B-Instruct`) |
+| `--train_dataset_dir` | Path to contrastive JSON training file |
+| `--probe_types` | Space-separated probe architectures: `logistic`, `attention`, `meandiff`, `sklearn_logistic`, `pca`, `mlp` |
+| `--probe_save_dir` | Directory to save trained probes |
+| `--max_length` | Maximum token sequence length (e.g., 1024, 1536, 2048) |
+| `--dishonest_mode` | Which tokens from lie samples: `all` (recommended) or `diff` (only differing tokens) |
+| `--honest_mode` | Which tokens from truth samples: `none` (recommended), `all`, or `diff` |
 
-**Recommended**: `--dishonest_mode all --honest_mode none --loss_mode span_max --anneal_warmup 0.3`
+**Training Arguments:**
+
+| Argument | Default | Description |
+|----------|---------|-------------|
+| `--layers` | `all` | Space-separated layer numbers (e.g., `32 34 36 38 40`) or `all` |
+| `--batch_size` | 32 | Batch size for training. Use 4-8 for 70B models, 32 for smaller |
+| `--activation_batch_size` | 16 | Batch size for activation collection (can differ from training) |
+| `--num_epochs` | 10 | Maximum training epochs |
+| `--patience` | 5 | Early stopping: epochs without improvement before stopping |
+| `--device` | `cuda` | Device for training (`cuda` or `cpu`) |
+
+**Loss Mode Arguments:**
+
+| Argument | Default | Description |
+|----------|---------|-------------|
+| `--loss_mode` | `sample_mean` | Loss function (see table below) |
+| `--joint_alpha` | 0.5 | For `joint` mode: weight for sample loss (1.0=sample only, 0.0=token only) |
+| `--anneal_warmup` | 0.3 | Fraction of epochs for warmup before transitioning loss |
+| `--sparsity_penalty` | 0.0 | Penalty for high average activation (0=off) |
+
+**Loss Modes Explained:**
+
+| Mode | What it does | Use when |
+|------|--------------|----------|
+| `sample_mean` | BCE on mean of all token scores | Default, sample-level detection only |
+| `sample_max` | BCE on max of all token scores | Slight localization improvement |
+| `span_max` | BCE on max score per deceptive span | **Recommended for localization** |
+| `token_all` | Per-token BCE on ALL tokens | Best localization, lower sample AUROC |
+| `token_spans_only` | Per-token BCE only on labeled spans | Focused token training |
+| `joint` | α×sample_loss + (1-α)×token_loss | Balance detection + localization |
+| `annealed` | Curriculum: sample_mean → token_all | Progressive training |
+
+**Efficiency Arguments:**
+
+| Argument | Description |
+|----------|-------------|
+| `--sweep_config` | Path to JSON file with multiple probe configs (trains all from single activation collection) |
+| `--hyperparams` | JSON dict of hyperparameters (e.g., `'{"n_heads": 2, "temperature": 0.5}'`) |
+| `--cache_dir` | Directory for cached activations (default: `./cache/contrastive`) |
+| `--force_recache` | Force re-collection of activations even if cache exists |
+
+**Parallel Training Arguments:**
+
+| Argument | Description |
+|----------|-------------|
+| `--parallel_probes` | Train all probe configs in parallel after activation collection |
+| `--cross_layer_parallel` | Train ALL probes across ALL layers simultaneously (aggressive, needs 8+ GPUs) |
+| `--num_gpus` | Number of GPUs for parallel training (default: all available) |
+| `--max_parallel_workers` | Max parallel workers (default: num_gpus × 2) |
+
+**Span Extraction:**
+
+| Argument | Default | Description |
+|----------|---------|-------------|
+| `--use_llm_spans` | `auto` | `auto`: use LLM spans if present, else sentence parsing. `always`: require LLM spans. `never`: always use sentences |
+| `--last_k_tokens` | 0 | Only use last K tokens of each span (Apollo style). 0=all tokens |
+
+**Recommended Configuration:**
+```bash
+--dishonest_mode all --honest_mode none --loss_mode span_max --anneal_warmup 0.3
+```
+
+**Why `--honest_mode none`?** Using `all` or `diff` causes the probe to overfit on distinguishing honest vs dishonest samples rather than learning deception features. This drops test AUROC from ~0.95 to ~0.72.
 
 #### Efficient Multi-Probe Training with `--sweep_config`
 
@@ -334,7 +393,7 @@ python scripts/probe_training_ntml.py \
     --batch_size 32 \
     --num_epochs 20 \
     --dishonest_mode all --honest_mode none \
-    --use_max_aggregation --anneal_warmup 0.3
+    --loss_mode span_max --anneal_warmup 0.3
 
 # 3. Evaluate probe on deception benchmarks
 python scripts/probe_eval_deception_datasets.py \
