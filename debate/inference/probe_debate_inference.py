@@ -187,7 +187,7 @@ class ProbeDebateInference:
             try:
                 device_id = int(device.split(":")[1])
                 instance.device = torch.device(f"cuda:{device_id}")
-            except:
+            except (ValueError, IndexError):
                 instance.device = torch.device(device)
         else:
             instance.device = torch.device(device)

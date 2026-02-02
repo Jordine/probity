@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from typing import Dict, List, Tuple, Any, Optional, Union
-from transformer_lens import HookedTransformer, loading_from_pretrained
+from transformer_lens import HookedTransformer
 from sklearn.metrics import roc_auc_score, accuracy_score, precision_score, recall_score, f1_score, roc_curve
 from tqdm import tqdm
 import matplotlib.pyplot as plt
@@ -42,7 +42,7 @@ class OptimizedBatchProbeEvaluator:
         self.model = HookedTransformer.from_pretrained_no_processing(
             model_name,
             device="cuda",
-            n_devices=2,
+            n_devices=torch.cuda.device_count() or 1,
             dtype=self.model_dtype,
         )
         self.model.eval()
@@ -52,50 +52,9 @@ class OptimizedBatchProbeEvaluator:
         
 
     def _ensure_qwen3_support(self):
-        """Add Qwen-3 models to TransformerLens’ model table.
-
-        (TL ≤ 0.7.0 forgot to register them.)
-        """
-        try:
-            qwen3_models = ["Qwen/Qwen3-32B",
-                            "Qwen/Qwen3-14B"]
-
-            existing_names = set(
-                loading_from_pretrained.OFFICIAL_MODEL_NAMES
-            )
-            new_models      = [m for m in qwen3_models
-                               if m not in existing_names]
-            already_present = [m for m in qwen3_models
-                               if m in existing_names]
-
-            # ── print status ─────────────────────────────────────────
-            if already_present:
-                print("Already in TransformerLens:")
-                for m in already_present:
-                    print(f"  ✓ {m}")
-
-            if new_models:
-                loading_from_pretrained.OFFICIAL_MODEL_NAMES.extend(
-                    new_models
-                )
-                print("Added Qwen-3 support:")
-                for m in new_models:
-                    print(f"  + {m}")
-
-            total = len(qwen3_models)
-            print(f"Qwen-3 model support: "
-                  f"{len(already_present) + len(new_models)}/{total}")
-
-        except ImportError as e:
-            print(f"Failed to import TransformerLens for Qwen3 model support: {e}")
-            print("Failed to add any Qwen3 models:")
-            for model in qwen3_models:
-                print(f"  ✗ {model}")
-        except Exception as e:
-            print(f"Unexpected error while adding Qwen3 models: {e}")
-            print("Status unknown for models:")
-            for model in qwen3_models:
-                print(f"  ? {model}")
+        """Add Qwen3 models to TransformerLens model table."""
+        from probity.utils.qwen3_support import ensure_qwen3_transformerlens_support
+        ensure_qwen3_transformerlens_support()
 
         
         

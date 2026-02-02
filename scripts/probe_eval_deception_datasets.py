@@ -17,7 +17,7 @@ from probity.evaluation.span_loader import (
 from probity.utils.dataset_loading import apply_chat_template_unified, detect_model_type
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 
-def parse_dataset_spec(spec: str) -> Tuple[str, int]:
+def parse_dataset_spec(spec: str) -> Tuple[str, Optional[int]]:
     """Parse dataset specification like 'path.jsonl:10' or just 'path.jsonl'"""
     if ':' in spec:
         path, count = spec.rsplit(':', 1)
@@ -197,8 +197,25 @@ def evaluate_on_assistant_tokens(evaluator: OptimizedBatchProbeEvaluator,
                                 tokenizer_name: str,
                                 labeled_spans_by_dataset: Dict = None,
                                 compute_ranking: bool = False,
-                                window_sizes: List[int] = None) -> Dict:
-    """Evaluate probes only on final assistant message tokens."""
+                                window_sizes: List[int] = None,
+                                batch_size: int = 4) -> Dict:
+    """Evaluate probes only on final assistant message tokens.
+
+    Args:
+        evaluator: Batch probe evaluator instance
+        probe_configs: Dict mapping (layer, probe_type) to probe instances
+        samples: List of sample dicts with 'messages' and 'label' keys
+        tokenizer_name: HuggingFace tokenizer name (must match training model)
+        labeled_spans_by_dataset: Optional dict of labeled spans for localization metrics
+        compute_ranking: If True AND labeled_spans_by_dataset provided, compute ranking metrics
+        window_sizes: Window sizes for window-level metrics (only used if compute_ranking=True
+            AND labeled_spans_by_dataset provided). Default: [5, 10]
+        batch_size: Batch size for activation collection. Recommended: 4 for 70B models
+            on 80GB GPUs, 8 for smaller models or more VRAM. Default: 4
+
+    Returns:
+        Dict mapping (layer, probe_type) to evaluation results
+    """
     
     from transformers import AutoTokenizer
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_fast=True)
@@ -241,7 +258,7 @@ def evaluate_on_assistant_tokens(evaluator: OptimizedBatchProbeEvaluator,
     # Get activations for all texts
     print("Getting activations...")
     layers = list(set(layer for layer, _ in probe_configs.keys()))
-    activation_data = evaluator.get_batch_activations(formatted_texts, layers, batch_size=4, disk_cache_dir="./cache/val_acts")
+    activation_data = evaluator.get_batch_activations(formatted_texts, layers, batch_size=batch_size, disk_cache_dir="./cache/val_acts")
     activations = activation_data['activations']
     tokens_by_text = activation_data['tokens_by_text']
     
@@ -472,7 +489,7 @@ def evaluate_on_assistant_tokens(evaluator: OptimizedBatchProbeEvaluator,
                                     in_span_scores.extend(token_scores[in_span_mask].tolist())
                                     out_span_scores.extend(token_scores[~in_span_mask].tolist())
                             except Exception as e:
-                                pass  # Skip samples with conversion errors
+                                print(f"  Warning: Span conversion failed for sample {i} ({source}): {e}")
 
             if sample_span_metrics:
                 span_metrics_result = aggregate_span_metrics(sample_span_metrics)
@@ -533,7 +550,7 @@ def evaluate_on_assistant_tokens(evaluator: OptimizedBatchProbeEvaluator,
                                     )
                                     sample_window_metrics.append(window_m)
                             except Exception as e:
-                                pass  # Skip samples with errors
+                                print(f"  Warning: Ranking/window metrics failed for sample {i} ({source}): {e}")
 
             if sample_ranking_metrics:
                 ranking_metrics_result = aggregate_ranking_metrics(sample_ranking_metrics)
@@ -1268,7 +1285,8 @@ Examples:
         evaluator, probe_configs, all_samples, args.model_name,
         labeled_spans_by_dataset=labeled_spans_by_dataset,
         compute_ranking=args.compute_ranking_metrics,
-        window_sizes=args.window_sizes
+        window_sizes=args.window_sizes,
+        batch_size=args.batch_size
     )
     
     # Group results by dataset for per-dataset metrics

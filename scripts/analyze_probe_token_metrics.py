@@ -134,13 +134,15 @@ def compute_token_metrics(in_span_scores: List[float], out_span_scores: List[flo
     # Token-level AUROC
     try:
         token_auroc = float(roc_auc_score(all_labels, all_scores))
-    except:
+    except (ValueError, RuntimeError) as e:
+        print(f"Warning: AUROC calculation failed: {e}")
         token_auroc = 0.5
 
     # Token-level AUPRC (Average Precision)
     try:
         token_auprc = float(average_precision_score(all_labels, all_scores))
-    except:
+    except (ValueError, RuntimeError) as e:
+        print(f"Warning: AUPRC calculation failed: {e}")
         token_auprc = len(in_span) / len(all_scores)
 
     # Recall@K% and Precision@K%

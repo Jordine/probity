@@ -414,8 +414,8 @@ class LocalModelProvider(BaseModelProvider):
                     tensor_count += 1
                     if obj.is_cuda:
                         total_size += obj.element_size() * obj.nelement()
-            except:
-                pass
+            except (RuntimeError, AttributeError):
+                pass  # Expected during gc.get_objects() iteration
         print(f"Live tensors: {tensor_count}, Total CUDA tensor memory: {total_size/1024**3:.2f}GB")
     
     def _clear_kv_cache(self):

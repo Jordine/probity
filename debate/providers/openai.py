@@ -55,5 +55,5 @@ class OpenAIProvider(BaseModelProvider):
         try:
             # Just check if we have a valid client with API key
             return self.client.api_key is not None
-        except:
+        except AttributeError:
             return False

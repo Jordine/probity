@@ -720,7 +720,7 @@ class UnifiedTagger:
         # original_id is like "story_0" - extract index
         try:
             story_idx = int(original_id.replace("story_", ""))
-        except:
+        except ValueError:
             return "", ""
 
         for spath in stories_paths:

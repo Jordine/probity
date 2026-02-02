@@ -488,9 +488,10 @@ class DebateResultsAnalyzer:
             try:
                 with open(label_file, 'r') as f:
                     return json.load(f)
-            except:
+            except (json.JSONDecodeError, IOError) as e:
+                print(f"Warning: Failed to load {label_file}: {e}")
                 continue
-        
+
         return None
 
     def _load_llm_labels(self, debate_id: str) -> Optional[Dict]:
@@ -499,13 +500,14 @@ class DebateResultsAnalyzer:
         llm_dir = self.output_dir.parent / 'llm_labels'
         if not llm_dir.exists():
             return None
-        
+
         # Try to find matching file
         for label_file in llm_dir.glob(f"*{debate_id}*labeled*.json"):
             try:
                 with open(label_file, 'r') as f:
                     return json.load(f)
-            except:
+            except (json.JSONDecodeError, IOError) as e:
+                print(f"Warning: Failed to load {label_file}: {e}")
                 continue
         
         return None
