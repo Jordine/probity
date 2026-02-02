@@ -12,14 +12,17 @@ from probity.collection.activation_store import ActivationStore
 
 
 def get_dataset_hash(dataset) -> str:
-    """Generate a hash for the dataset to enable smart caching"""
-    # Create a hash based on dataset content
-    content_str = ""
-    for ex in dataset.examples[:10]:  # Sample first 10 examples for efficiency
-        content_str += f"{ex.text[:100]}_{ex.label}_"  # First 100 chars + label
-    
-    content_str += f"_size_{len(dataset.examples)}"
-    return hashlib.md5(content_str.encode()).hexdigest()[:16]
+    """Generate a hash for the dataset to enable smart caching.
+
+    Uses ALL examples to avoid cache collisions when datasets differ
+    only in later examples.
+    """
+    hasher = hashlib.md5()
+    for ex in dataset.examples:
+        # Hash text and label for each example
+        hasher.update(f"{ex.text}_{ex.label}_".encode())
+    hasher.update(f"_size_{len(dataset.examples)}".encode())
+    return hasher.hexdigest()[:16]
 
 
 def smart_cache_activations(model: HookedTransformer, dataset, layers: List[int], 
@@ -70,22 +73,39 @@ def smart_cache_activations(model: HookedTransformer, dataset, layers: List[int]
     
     # Collect activations
     print(f"Collecting activations for {len(layers)} layers...")
-    
+
     hook_points = [f"blocks.{layer}.hook_resid_pre" for layer in layers]
     all_activations = {hook: [] for hook in hook_points}
-    
+
+    # CRITICAL FIX: Collect adjusted positions for each position type
+    # These positions account for left padding and are the correct indices into raw_activations
+    all_adjusted_positions = {}  # position_type -> list of positions (one per example)
+
     # Process in batches
     model.eval()
     with torch.no_grad():
-        for batch_start in tqdm(range(0, len(dataset.examples), batch_size), 
+        for batch_start in tqdm(range(0, len(dataset.examples), batch_size),
                                desc="Collecting activations"):
             batch_end = min(batch_start + batch_size, len(dataset.examples))
             batch_indices = list(range(batch_start, batch_end))
-            
-            # Get batch tensors
+
+            # Get batch tensors - this returns ADJUSTED positions that account for padding
             batch = dataset.get_batch_tensors(batch_indices)
             input_ids = batch["input_ids"].to(device)
-            
+
+            # CRITICAL: Collect adjusted positions from batch["positions"]
+            if "positions" in batch:
+                for pos_type, pos_tensor in batch["positions"].items():
+                    if pos_type not in all_adjusted_positions:
+                        all_adjusted_positions[pos_type] = []
+                    # Convert tensor to list of positions (one per example in batch)
+                    for i in range(len(batch_indices)):
+                        pos_val = pos_tensor[i]
+                        if pos_val.dim() == 0:  # Single position (scalar)
+                            all_adjusted_positions[pos_type].append(int(pos_val.item()))
+                        else:  # Multiple positions (list)
+                            all_adjusted_positions[pos_type].append(pos_val.tolist())
+
             # Run model with caching for all layers at once
             _, cache = model.run_with_cache(
                 input_ids,
@@ -93,7 +113,7 @@ def smart_cache_activations(model: HookedTransformer, dataset, layers: List[int]
                 return_cache_object=True,
                 stop_at_layer=max(layers) + 1
             )
-            
+
             # Store activations for each hook point
             for hook in hook_points:
                 all_activations[hook].append(cache[hook].cpu())
@@ -145,6 +165,7 @@ def smart_cache_activations(model: HookedTransformer, dataset, layers: List[int]
             dataset=dataset,
             labels=torch.tensor([ex.label for ex in dataset.examples]),
             label_texts=[ex.label_text for ex in dataset.examples],
+            adjusted_positions=all_adjusted_positions if all_adjusted_positions else None,  # CRITICAL FIX
         )
         
         activation_stores[hook] = store
