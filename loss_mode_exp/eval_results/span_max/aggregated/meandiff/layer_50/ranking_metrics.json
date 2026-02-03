@@ -1,0 +1,20 @@
+{
+  "span_auroc": 0.48746484806558693,
+  "span_ap": 0.19907329291013331,
+  "span_auprc": 0.19907329291013331,
+  "cohens_d": -0.05565213869229536,
+  "mean_in_span": -0.2596105089385261,
+  "mean_out_span": -0.22989967465348876,
+  "recall_at_oracle": 0.1709534872428331,
+  "precision_at_oracle": 0.1709534872428331,
+  "n_samples": 366,
+  "n_samples_with_spans": 366,
+  "recall_at_5pct": 0.0365859198756243,
+  "precision_at_5pct": 0.14197625570417788,
+  "recall_at_10pct": 0.09120019494865,
+  "precision_at_10pct": 0.1624444713640691,
+  "recall_at_20pct": 0.18318201724247896,
+  "precision_at_20pct": 0.16600819197831776,
+  "recall_at_30pct": 0.2797238028463703,
+  "precision_at_30pct": 0.17347827788817521
+}

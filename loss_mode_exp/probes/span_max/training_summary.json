@@ -1,0 +1,140 @@
+{
+  "22": {
+    "attention_h1_t0.25": {
+      "final_train_loss": 0.005392484678678526,
+      "final_val_loss": 0.005697710760708513,
+      "save_path": "loss_mode_exp/probes/span_max/attention_h1_t0.25/layer_22_probe.pt",
+      "loss_mode": "span_max",
+      "hyperparams": {
+        "n_heads": 1,
+        "temperature": 0.25,
+        "name_suffix": "_h1_t0.25"
+      },
+      "train_auroc": 0.5090280849324778
+    },
+    "attention_h2_t0.25": {
+      "final_train_loss": 0.0026888799185704705,
+      "final_val_loss": 0.002834703730440688,
+      "save_path": "loss_mode_exp/probes/span_max/attention_h2_t0.25/layer_22_probe.pt",
+      "loss_mode": "span_max",
+      "hyperparams": {
+        "n_heads": 2,
+        "temperature": 0.25,
+        "name_suffix": "_h2_t0.25"
+      },
+      "train_auroc": 0.5062479395978094
+    },
+    "logistic": {
+      "final_train_loss": 0.006352081959381764,
+      "final_val_loss": 0.005713101091056034,
+      "save_path": "loss_mode_exp/probes/span_max/logistic/layer_22_probe.pt",
+      "loss_mode": "span_max",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5075675953003951
+    },
+    "meandiff": {
+      "final_train_loss": 0.64453125,
+      "final_val_loss": 0.64453125,
+      "save_path": "loss_mode_exp/probes/span_max/meandiff/layer_22_probe.pt",
+      "loss_mode": "span_max",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.6271497420391627
+    }
+  },
+  "36": {
+    "attention_h1_t0.25": {
+      "final_train_loss": 0.0018661314618879927,
+      "final_val_loss": 0.0025893408676673627,
+      "save_path": "loss_mode_exp/probes/span_max/attention_h1_t0.25/layer_36_probe.pt",
+      "loss_mode": "span_max",
+      "hyperparams": {
+        "n_heads": 1,
+        "temperature": 0.25,
+        "name_suffix": "_h1_t0.25"
+      },
+      "train_auroc": 0.4834238374919016
+    },
+    "attention_h2_t0.25": {
+      "final_train_loss": 0.0013782823240602172,
+      "final_val_loss": 0.0014815275696502335,
+      "save_path": "loss_mode_exp/probes/span_max/attention_h2_t0.25/layer_36_probe.pt",
+      "loss_mode": "span_max",
+      "hyperparams": {
+        "n_heads": 2,
+        "temperature": 0.25,
+        "name_suffix": "_h2_t0.25"
+      },
+      "train_auroc": 0.4956412844161577
+    },
+    "logistic": {
+      "final_train_loss": 0.0033119086063269415,
+      "final_val_loss": 0.0035108368972252154,
+      "save_path": "loss_mode_exp/probes/span_max/logistic/layer_36_probe.pt",
+      "loss_mode": "span_max",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5035914210453881
+    },
+    "meandiff": {
+      "final_train_loss": 0.64453125,
+      "final_val_loss": 0.64453125,
+      "save_path": "loss_mode_exp/probes/span_max/meandiff/layer_36_probe.pt",
+      "loss_mode": "span_max",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.641921139328399
+    }
+  },
+  "50": {
+    "attention_h1_t0.25": {
+      "final_train_loss": 0.0010433334636825848,
+      "final_val_loss": 0.0014458052043257088,
+      "save_path": "loss_mode_exp/probes/span_max/attention_h1_t0.25/layer_50_probe.pt",
+      "loss_mode": "span_max",
+      "hyperparams": {
+        "n_heads": 1,
+        "temperature": 0.25,
+        "name_suffix": "_h1_t0.25"
+      },
+      "train_auroc": 0.4936544422057632
+    },
+    "attention_h2_t0.25": {
+      "final_train_loss": 0.000715574316820197,
+      "final_val_loss": 0.0008734231707693517,
+      "save_path": "loss_mode_exp/probes/span_max/attention_h2_t0.25/layer_50_probe.pt",
+      "loss_mode": "span_max",
+      "hyperparams": {
+        "n_heads": 2,
+        "temperature": 0.25,
+        "name_suffix": "_h2_t0.25"
+      },
+      "train_auroc": 0.49449421425905193
+    },
+    "logistic": {
+      "final_train_loss": 0.0016017242255492988,
+      "final_val_loss": 0.0019288556329135236,
+      "save_path": "loss_mode_exp/probes/span_max/logistic/layer_50_probe.pt",
+      "loss_mode": "span_max",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5
+    },
+    "meandiff": {
+      "final_train_loss": 0.63671875,
+      "final_val_loss": 0.63671875,
+      "save_path": "loss_mode_exp/probes/span_max/meandiff/layer_50_probe.pt",
+      "loss_mode": "span_max",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.642779640873866
+    }
+  }
+}

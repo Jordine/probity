@@ -1,0 +1,34 @@
+{
+  "22": {
+    "logistic": {
+      "final_train_loss": 0.364128218546701,
+      "final_val_loss": 0.8221087678108808,
+      "save_path": "loss_mode_exp/probes/test_parallel3/logistic/layer_22_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {},
+      "train_auroc": 0.9668325182665947
+    },
+    "attention_h2_t0.25": {
+      "final_train_loss": 0.5169588395350956,
+      "final_val_loss": 0.526126209318329,
+      "save_path": "loss_mode_exp/probes/test_parallel3/attention_h2_t0.25/layer_22_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "n_heads": 2,
+        "temperature": 0.25
+      },
+      "train_auroc": 0.9350265177779792
+    },
+    "attention_h1_t0.25": {
+      "final_train_loss": 0.5695136351906573,
+      "final_val_loss": 0.5834501750728627,
+      "save_path": "loss_mode_exp/probes/test_parallel3/attention_h1_t0.25/layer_22_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "n_heads": 1,
+        "temperature": 0.25
+      },
+      "train_auroc": 0.9213391378896956
+    }
+  }
+}

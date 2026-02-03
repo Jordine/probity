@@ -1,0 +1,122 @@
+{
+  "22": {
+    "meandiff": {
+      "final_train_loss": 0.55078125,
+      "final_val_loss": 0.55078125,
+      "save_path": "loss_mode_exp/probes/sample_mean/meandiff/layer_22_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {},
+      "train_auroc": 0.8033403834236946
+    },
+    "logistic": {
+      "final_train_loss": 0.3486902245338023,
+      "final_val_loss": 0.8492298818005182,
+      "save_path": "loss_mode_exp/probes/sample_mean/logistic/layer_22_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {},
+      "train_auroc": 0.9725736345557858
+    },
+    "attention_h2_t0.25": {
+      "final_train_loss": 0.5334397073854437,
+      "final_val_loss": 0.5553839965187823,
+      "save_path": "loss_mode_exp/probes/sample_mean/attention_h2_t0.25/layer_22_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "n_heads": 2,
+        "temperature": 0.25
+      },
+      "train_auroc": 0.9366177310095299
+    },
+    "attention_h1_t0.25": {
+      "final_train_loss": 0.5866206826323672,
+      "final_val_loss": 0.5985467940414507,
+      "save_path": "loss_mode_exp/probes/sample_mean/attention_h1_t0.25/layer_22_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "n_heads": 1,
+        "temperature": 0.25
+      },
+      "train_auroc": 0.922982132064801
+    }
+  },
+  "36": {
+    "meandiff": {
+      "final_train_loss": 0.458984375,
+      "final_val_loss": 0.458984375,
+      "save_path": "loss_mode_exp/probes/sample_mean/meandiff/layer_36_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {},
+      "train_auroc": 0.8211413387045954
+    },
+    "logistic": {
+      "final_train_loss": 0.35233768110448216,
+      "final_val_loss": 0.7911456646696892,
+      "save_path": "loss_mode_exp/probes/sample_mean/logistic/layer_36_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {},
+      "train_auroc": 0.9720149269006262
+    },
+    "attention_h2_t0.25": {
+      "final_train_loss": 0.5049208883176813,
+      "final_val_loss": 0.5393411112572862,
+      "save_path": "loss_mode_exp/probes/sample_mean/attention_h2_t0.25/layer_36_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "n_heads": 2,
+        "temperature": 0.25
+      },
+      "train_auroc": 0.9416157693895519
+    },
+    "attention_h1_t0.25": {
+      "final_train_loss": 0.5530996372045013,
+      "final_val_loss": 0.5733719741742228,
+      "save_path": "loss_mode_exp/probes/sample_mean/attention_h1_t0.25/layer_36_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "n_heads": 1,
+        "temperature": 0.25
+      },
+      "train_auroc": 0.9289458169881988
+    }
+  },
+  "50": {
+    "meandiff": {
+      "final_train_loss": 0.46484375,
+      "final_val_loss": 0.46484375,
+      "save_path": "loss_mode_exp/probes/sample_mean/meandiff/layer_50_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {},
+      "train_auroc": 0.7984576842346052
+    },
+    "logistic": {
+      "final_train_loss": 0.4213350454605923,
+      "final_val_loss": 0.7339522445757772,
+      "save_path": "loss_mode_exp/probes/sample_mean/logistic/layer_50_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {},
+      "train_auroc": 0.9571987010637374
+    },
+    "attention_h2_t0.25": {
+      "final_train_loss": 0.5077884417123745,
+      "final_val_loss": 0.5743797183654469,
+      "save_path": "loss_mode_exp/probes/sample_mean/attention_h2_t0.25/layer_50_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "n_heads": 2,
+        "temperature": 0.25
+      },
+      "train_auroc": 0.933031120135201
+    },
+    "attention_h1_t0.25": {
+      "final_train_loss": 0.555383569588933,
+      "final_val_loss": 0.6038539431873381,
+      "save_path": "loss_mode_exp/probes/sample_mean/attention_h1_t0.25/layer_50_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "n_heads": 1,
+        "temperature": 0.25
+      },
+      "train_auroc": 0.9235491113459977
+    }
+  }
+}
