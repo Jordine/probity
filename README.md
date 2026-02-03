@@ -139,10 +139,11 @@ python scripts/probe_training_ntml.py \
 |------|--------------|----------|
 | `sample_mean` | BCE on mean of all token scores | Default, sample-level detection only |
 | `sample_max` | BCE on max of all token scores | Slight localization improvement |
-| `span_max` | BCE on max score per deceptive span | **Recommended for localization** |
-| `token_all` | Per-token BCE on ALL tokens | Best localization, lower sample AUROC |
+| `span_max` | BCE on max score per deceptive span | Good localization, requires labeled spans |
+| `token_all` | Per-token BCE on ALL tokens | Fails without class weighting |
 | `token_spans_only` | Per-token BCE only on labeled spans | Focused token training |
-| `joint` | α×sample_loss + (1-α)×token_loss | Balance detection + localization |
+| `joint` | α×sample_mean + (1-α)×token_all | Detection + localization (token_all) |
+| `joint_span_max` | α×sample_mean + (1-α)×span_max | **Recommended**: Detection + localization |
 | `annealed` | Curriculum: sample_mean → token_all | Progressive training |
 
 **Efficiency Arguments:**
@@ -172,7 +173,11 @@ python scripts/probe_training_ntml.py \
 
 **Recommended Configuration:**
 ```bash
---dishonest_mode all --honest_mode none --loss_mode span_max --anneal_warmup 0.3
+# For localization only:
+--dishonest_mode all --honest_mode none --loss_mode span_max
+
+# For detection + localization (recommended):
+--dishonest_mode all --honest_mode all --loss_mode joint_span_max --joint_alpha 0.5
 ```
 
 **Why `--honest_mode none`?** Using `all` or `diff` causes the probe to overfit on distinguishing honest vs dishonest samples rather than learning deception features. This drops test AUROC from ~0.95 to ~0.72.

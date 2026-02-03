@@ -350,7 +350,7 @@ python scripts/probe_training_ntml.py ... --use_llm_spans always
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--loss_mode` | `sample_mean` | Loss function: `sample_mean`, `span_max`, `token_all`, `joint`, `annealed` |
+| `--loss_mode` | `sample_mean` | Loss function: `sample_mean`, `span_max`, `token_all`, `joint`, `joint_span_max`, `annealed` |
 | `--anneal_warmup` | 0.3 | Fraction of epochs for warmup before loss transition |
 | `--joint_alpha` | 0.5 | For `joint` mode: weight for sample loss (1.0=sample only) |
 | `--sparsity_penalty` | 0.0 | Penalty for high average activation |
@@ -360,10 +360,11 @@ python scripts/probe_training_ntml.py ... --use_llm_spans always
 | Mode | What it does | Notes |
 |------|--------------|-------|
 | `sample_mean` | BCE on mean of all token scores | Best sample AUROC, no localization |
-| `span_max` | Max in spans→1 AND min outside→0 | **Recommended** for localization |
+| `span_max` | Max in spans→1 AND min outside→0 | Good localization, requires labeled spans |
 | `token_all` | Per-token BCE on ALL tokens | ⚠️ Fails without class weighting |
 | `token_spans_only` | Per-token BCE only in spans | Better than token_all |
 | `joint` | α×sample_mean + (1-α)×token_all | Uses wasteful token_all |
+| `joint_span_max` | α×sample_mean + (1-α)×span_max | **Recommended**: detection + localization |
 
 **⚠️ token_all Warning:** Without class weighting, `token_all` fails (AUROC 0.14-0.51) because ~70% of tokens are labeled 0 (truth). The probe learns "predict 0 everywhere." The fix is to add `pos_weight` to `_compute_token_all_loss()` in `probity/training/losses.py`.
 
