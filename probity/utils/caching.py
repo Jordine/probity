@@ -56,7 +56,8 @@ def smart_cache_activations(model: HookedTransformer, dataset, layers: List[int]
                 for layer in layers:
                     store_path = cache_base / f"layer_{layer}.pt"
                     if store_path.exists():
-                        stores[f"blocks.{layer}.hook_resid_pre"] = torch.load(store_path, map_location=device)
+                        # ActivationStore.save() creates a directory, use ActivationStore.load()
+                        stores[f"blocks.{layer}.hook_resid_pre"] = ActivationStore.load(str(store_path))
                         # Ensure correct dtype
                         store = stores[f"blocks.{layer}.hook_resid_pre"]
                         if store.raw_activations.dtype != dtype:
