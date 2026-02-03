@@ -179,10 +179,14 @@ class ActivationStore:
             # Count positions per example to know how many times to repeat each label
             position_counts = [
                 len(ex.token_positions[position_key]) if isinstance(ex.token_positions[position_key], list)
-                else 1 
+                else 1
                 for ex in self.dataset.examples
             ]
-            labels = torch.repeat_interleave(self.labels, torch.tensor(position_counts))
+            # CRITICAL: Put position_counts tensor on same device as labels
+            labels = torch.repeat_interleave(
+                self.labels,
+                torch.tensor(position_counts, device=self.labels.device)
+            )
         else:
             labels = self.labels
             
