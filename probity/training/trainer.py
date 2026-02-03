@@ -252,6 +252,13 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
         # Also precompute token_labels for BCE loss (positive sample tokens in spans)
         self._train_token_labels = self._train_pos_masks.clone()
 
+        # Precompute validation masks for validate_with_probe_loss
+        val_seq_len = X_val.shape[1] if X_val.dim() == 3 else 1
+        self._val_pos_masks, self._val_neg_masks = precompute_span_masks(
+            val_spans, y_val, val_seq_len, device=self.config.device, dtype=torch.float32
+        )
+        self._val_token_labels = self._val_pos_masks.clone()
+
         return train_loader, val_loader, train_spans, val_spans
 
     def prepare_supervised_data(self, activation_store: ActivationStore, position_key: str) -> Tuple[DataLoader, DataLoader]:
@@ -743,7 +750,9 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
 
             if val_loader is not None:
                 # Choose validation method based on training mode
-                if use_legacy_max_aggr:
+                if use_probe_loss and probe_loss_fn is not None:
+                    val_loss = self.validate_with_probe_loss(model, val_loader, probe_loss_fn)
+                elif use_legacy_max_aggr:
                     val_loss = self.validate_with_max_aggr(model, val_loader)
                 else:
                     val_loss = self.validate(model, val_loader, loss_fn, is_multi_class=is_multi_class)
@@ -1005,6 +1014,73 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
                         neg_spans.append([])
 
                 loss = compute_max_aggregation_loss(logits, pos_spans, neg_spans)
+                total_loss += loss.item()
+
+        return total_loss / max(len(val_loader), 1)
+
+    def validate_with_probe_loss(
+        self,
+        model: torch.nn.Module,
+        val_loader: DataLoader,
+        probe_loss: ProbeLoss,
+    ) -> float:
+        """Run validation with ProbeLoss for token-level loss modes (span_max, token_all, etc.)."""
+        model.eval()
+        total_loss = 0.0
+
+        # Check if we have precomputed validation masks
+        has_val_masks = (
+            hasattr(self, '_val_pos_masks') and self._val_pos_masks is not None
+        )
+        has_token_labels = (
+            hasattr(self, '_val_token_labels') and self._val_token_labels is not None
+        )
+
+        if not has_val_masks and self._val_spans is None:
+            raise ValueError("Must call prepare_supervised_data_with_spans() before validating with probe loss")
+
+        cumulative_idx = 0
+        with torch.no_grad():
+            for batch_x, batch_y, _ in val_loader:
+                batch_x = batch_x.to(self.config.device)
+                batch_y = batch_y.to(self.config.device).float().squeeze()
+
+                batch_size = batch_x.shape[0]
+                start_idx = cumulative_idx
+                end_idx = start_idx + batch_size
+
+                # Handle different input shapes (critical for logistic probes)
+                if batch_x.dim() == 3:
+                    B, S, H = batch_x.shape
+                    batch_x_flat = batch_x.view(B * S, H)
+                    logits_flat = model(batch_x_flat)  # (B*S, 1)
+                    logits = logits_flat.view(B, S)  # (B, S)
+                else:
+                    logits = model(batch_x).squeeze(-1)
+
+                # Prepare tensors for loss
+                attention_mask = torch.ones_like(logits)
+
+                token_labels = None
+                span_masks = None
+
+                if has_token_labels and self._val_token_labels is not None:
+                    token_labels = self._val_token_labels[start_idx:end_idx].to(self.config.device)
+
+                if has_val_masks and self._val_pos_masks is not None:
+                    span_masks = self._val_pos_masks[start_idx:end_idx].to(self.config.device)
+
+                cumulative_idx = end_idx
+
+                # Compute loss using ProbeLoss
+                loss = probe_loss(
+                    token_scores=logits,
+                    sample_labels=batch_y,
+                    token_labels=token_labels,
+                    attention_mask=attention_mask,
+                    span_masks=span_masks,
+                )
+
                 total_loss += loss.item()
 
         return total_loss / max(len(val_loader), 1)
