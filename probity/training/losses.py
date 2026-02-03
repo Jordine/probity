@@ -6,12 +6,16 @@ Ported from hallucination_probes with modifications for probity.
 Loss Modes (see LOSS_DESIGN.md for details):
 - sample_mean: BCE on mean of all token scores (default, current behavior)
 - sample_max: BCE on max of all token scores
-- token_all: Per-token BCE on all tokens
-- token_spans_only: Per-token BCE only on tokens near labeled spans
+- token_all: Per-token BCE on all tokens (with class weighting)
+- token_spans_only: Per-token BCE only on tokens near labeled spans (with class weighting)
 - span_mean: BCE on mean score per span
-- span_max: BCE on max score per span (good for localization)
+- span_max: BCE on max score per span + min outside (good for localization)
 - joint: α * sample_loss + (1-α) * token_loss
 - annealed: Curriculum from sample_mean to token_all over epochs
+
+NOTE on class weighting: token_all and token_spans_only use pos_weight to handle
+the class imbalance (~70% truth tokens, ~30% lie tokens). Without this, the probe
+learns "predict 0 everywhere" because the majority class dominates the loss.
 """
 
 from enum import Enum
@@ -117,9 +121,23 @@ class ProbeLoss:
         token_labels: Tensor,
         attention_mask: Tensor,
     ) -> Tensor:
-        """Per-token BCE on all tokens."""
+        """Per-token BCE on all tokens with class weighting.
+
+        Class weighting is CRITICAL for this loss mode. Without it, the ~70% majority
+        class (truth tokens) dominates and the probe learns "predict 0 everywhere."
+
+        See PROJECT_STATUS.md for details on why this matters.
+        """
+        # Calculate pos_weight from class distribution in this batch
+        # This balances the loss so positive (lie) tokens have equal influence
+        num_pos = (token_labels * attention_mask).sum()
+        num_neg = attention_mask.sum() - num_pos
+        pos_weight = (num_neg / (num_pos + 1e-8)).clamp(max=10.0)
+
         loss = F.binary_cross_entropy_with_logits(
-            token_scores, token_labels.float(), reduction='none'
+            token_scores, token_labels.float(),
+            pos_weight=pos_weight,
+            reduction='none'
         )
         # Mask out padding
         masked_loss = loss * attention_mask
@@ -132,12 +150,23 @@ class ProbeLoss:
         attention_mask: Tensor,
         span_masks: Tensor,
     ) -> Tensor:
-        """Per-token BCE only on tokens in/near labeled spans."""
+        """Per-token BCE only on tokens in/near labeled spans with class weighting.
+
+        Class weighting ensures positive (lie) tokens aren't overwhelmed by
+        negative tokens even within the span-masked region.
+        """
         # Combine attention mask with span mask
         combined_mask = attention_mask * span_masks
 
+        # Calculate pos_weight from class distribution within spans
+        num_pos = (token_labels * combined_mask).sum()
+        num_neg = combined_mask.sum() - num_pos
+        pos_weight = (num_neg / (num_pos + 1e-8)).clamp(max=10.0)
+
         loss = F.binary_cross_entropy_with_logits(
-            token_scores, token_labels.float(), reduction='none'
+            token_scores, token_labels.float(),
+            pos_weight=pos_weight,
+            reduction='none'
         )
         masked_loss = loss * combined_mask
         return masked_loss.sum() / combined_mask.sum().clamp(min=1)

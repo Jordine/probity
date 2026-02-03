@@ -555,7 +555,75 @@ def load_contrastive_ntml_dataset(json_path: str,
                 )
                 probing_examples.append(example)
 
-            # Skip the sentence-level processing below
+            # When using LLM spans, we also need to process honest version for negative samples
+            # if honest_mode != 'none'. The truth_version uses sentence-level parsing since
+            # truthful statements don't have "lie spans" to mark.
+            if honest_mode != 'none':
+                truth_messages = create_chat_messages(
+                    conv['truth_version']['system'],
+                    USER_PROMPT,
+                    conv['truth_version']['model']
+                )
+
+                truth_formatted = apply_chat_template_unified(
+                    tokenizer,
+                    truth_messages,
+                    model_type=model_type,
+                    tokenize=False,
+                    add_generation_prompt=False
+                )
+
+                # Check token length
+                truth_tokens = tokenizer(truth_formatted, add_special_tokens=False)['input_ids']
+                truth_len = len(truth_tokens)
+                truncation_stats['total_examples'] += 1
+                truncation_stats['max_original_length'] = max(truncation_stats['max_original_length'], truth_len)
+
+                if truth_len > max_length:
+                    truncation_stats['truncated_examples'] += 1
+                    truncation_stats['truncated_lengths'].append(truth_len)
+                    if warn_on_truncation and truncation_stats['truncated_examples'] <= 5:
+                        print(f"⚠️  Truncating conversation {conv_id} (truth): {truth_len} → {max_length} tokens")
+
+                # Use sentence-level parsing for truth version (no LLM spans for truthful text)
+                truth_statement_positions = find_statement_positions_in_chat(
+                    truth_formatted,
+                    conv['truth_version']['model'],
+                    model_type
+                )
+
+                # Determine which statements to include
+                honest_indices = range(len(truth_statement_positions)) if honest_mode == 'all' else lie_positions
+
+                for i in honest_indices:
+                    if i < len(truth_statement_positions):
+                        position = truth_statement_positions[i]
+
+                        # For LLM span mode with honest samples, use unique group_id
+                        if i in lie_positions:
+                            group_id = f"{conv_id}_llm_contrastive_truth_stmt{i}"
+                        else:
+                            group_id = f"{conv_id}_llm_honest_stmt{i}"
+
+                        example = ProbingExample(
+                            text=truth_formatted,
+                            label=0,  # Always truthful in honest version
+                            label_text="truth",
+                            character_positions=CharacterPositions({"LIE_SPAN": position}),
+                            group_id=group_id,
+                            attributes={
+                                "conversation_id": conv_id,
+                                "version": "honest",
+                                "statement_idx": i,
+                                "is_lie_position": False,  # Never a lie in honest version
+                                "span_source": "sentence_parsing_for_honest",
+                                "original_token_length": truth_len
+                            }
+                        )
+                        probing_examples.append(example)
+                        sentence_span_count += 1
+
+            # Skip the sentence-level processing for lie version below (already used LLM spans)
             continue
 
         # Fall back to sentence-level parsing
