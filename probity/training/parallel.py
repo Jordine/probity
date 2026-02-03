@@ -101,6 +101,7 @@ def _worker_train_probe(
     """Worker function that trains a single probe.
 
     This runs in a separate process with its own CUDA context.
+    Includes OOM fallback: tries original batch_size, then batch_size=1.
     """
     try:
         # Import here to avoid issues with multiprocessing
@@ -157,39 +158,71 @@ def _worker_train_probe(
             hyperparams=hyperparams
         )
         probe_cls = get_probe_class(probe_type)
-        trainer_config = get_trainer_config(probe_type, device, args.batch_size)
-        trainer_cls = get_trainer_class(probe_type)
 
-        # Apply loss mode configuration
-        if hasattr(trainer_config, 'loss_mode'):
-            trainer_config.loss_mode = args.loss_mode
-            trainer_config.joint_alpha = args.joint_alpha
-            trainer_config.anneal_warmup = args.anneal_warmup
-            trainer_config.sparsity_penalty = args.sparsity_penalty
+        # OOM fallback: try original batch_size, then batch_size=1
+        batch_sizes_to_try = [args.batch_size]
+        if args.batch_size > 1:
+            batch_sizes_to_try.append(1)
 
-        # Apply epoch/patience settings
-        trainer_config.num_epochs = args.num_epochs
-        trainer_config.patience = args.patience
+        history = None
+        probe = None
+        used_batch_size = args.batch_size
 
-        # Initialize probe and trainer
-        probe = probe_cls(probe_config).to(device)
-        trainer = trainer_cls(trainer_config)
+        for try_batch_size in batch_sizes_to_try:
+            try:
+                # Clear any previous OOM state
+                torch.cuda.empty_cache()
 
-        # Prepare data
-        token_level_modes = ['token_all', 'token_spans_only', 'joint', 'annealed', 'span_max', 'span_mean']
-        needs_spans = args.loss_mode in token_level_modes
+                trainer_config = get_trainer_config(probe_type, device, try_batch_size)
+                trainer_cls = get_trainer_class(probe_type)
 
-        if needs_spans and hasattr(trainer, 'prepare_supervised_data_with_spans'):
-            train_loader, val_loader, _, _ = trainer.prepare_supervised_data_with_spans(
-                activation_store, "LIE_SPAN"
-            )
-        else:
-            train_loader, val_loader = trainer.prepare_supervised_data(
-                activation_store, "LIE_SPAN"
-            )
+                # Apply loss mode configuration
+                if hasattr(trainer_config, 'loss_mode'):
+                    trainer_config.loss_mode = args.loss_mode
+                    trainer_config.joint_alpha = args.joint_alpha
+                    trainer_config.anneal_warmup = args.anneal_warmup
+                    trainer_config.sparsity_penalty = args.sparsity_penalty
 
-        # Train
-        history = trainer.train(probe, train_loader, val_loader)
+                # Apply epoch/patience settings
+                trainer_config.num_epochs = args.num_epochs
+                trainer_config.patience = args.patience
+
+                # Initialize probe and trainer
+                probe = probe_cls(probe_config).to(device)
+                trainer = trainer_cls(trainer_config)
+
+                # Prepare data
+                token_level_modes = ['token_all', 'token_spans_only', 'joint', 'annealed', 'span_max', 'span_mean']
+                needs_spans = args.loss_mode in token_level_modes
+
+                if needs_spans and hasattr(trainer, 'prepare_supervised_data_with_spans'):
+                    train_loader, val_loader, _, _ = trainer.prepare_supervised_data_with_spans(
+                        activation_store, "LIE_SPAN"
+                    )
+                else:
+                    train_loader, val_loader = trainer.prepare_supervised_data(
+                        activation_store, "LIE_SPAN"
+                    )
+
+                # Train
+                history = trainer.train(probe, train_loader, val_loader)
+                used_batch_size = try_batch_size
+                break  # Success, exit retry loop
+
+            except RuntimeError as e:
+                if "out of memory" in str(e).lower() and try_batch_size > 1:
+                    print(f"  OOM with batch_size={try_batch_size}, retrying with batch_size=1...")
+                    # Clean up
+                    if probe is not None:
+                        del probe
+                        probe = None
+                    torch.cuda.empty_cache()
+                    continue
+                else:
+                    raise  # Re-raise if not OOM or already at batch_size=1
+
+        if history is None:
+            raise RuntimeError("Training failed after all batch_size attempts")
 
         # Save probe
         probe_name = f"{probe_type}{name_suffix}"
@@ -204,6 +237,7 @@ def _worker_train_probe(
             'save_path': str(save_path),
             'loss_mode': args.loss_mode,
             'hyperparams': hyperparams,
+            'batch_size_used': used_batch_size,  # Track if fallback was needed
         }
 
         if hasattr(probe, 'config') and hasattr(probe.config, 'optimal_thresholds'):
