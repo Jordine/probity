@@ -126,14 +126,14 @@ def _worker_train_probe(
         # Load the dataset from the saved path
         dataset = TokenizedProbingDataset.load(activation_store_metadata['dataset_path'])
 
-        # Recreate activation store
+        # Recreate activation store - ensure all tensors are on the same device
         activation_store = ActivationStore(
             raw_activations=raw_activations,
             hook_point=activation_store_metadata['hook_point'],
             labels=labels,
             label_texts=activation_store_metadata['label_texts'],
-            example_indices=torch.tensor(activation_store_metadata['example_indices']),
-            sequence_lengths=torch.tensor(activation_store_metadata['sequence_lengths']),
+            example_indices=torch.tensor(activation_store_metadata['example_indices']).to(device),
+            sequence_lengths=torch.tensor(activation_store_metadata['sequence_lengths']).to(device),
             hidden_size=activation_store_metadata['hidden_size'],
             dataset=dataset,
         )
