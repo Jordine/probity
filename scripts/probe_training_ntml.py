@@ -68,7 +68,7 @@ def train_single_probe_with_hyperparams(
     trainer = trainer_cls(trainer_config)
 
     # Prepare data - use spans for token-level loss modes
-    token_level_modes = ['token_all', 'token_spans_only', 'joint', 'annealed', 'span_max', 'span_mean']
+    token_level_modes = ['token_all', 'token_spans_only', 'joint', 'joint_span_max', 'annealed', 'span_max', 'span_mean']
     needs_spans = args.loss_mode in token_level_modes
 
     if needs_spans and hasattr(trainer, 'prepare_supervised_data_with_spans'):
@@ -258,7 +258,7 @@ Sentence parsing splits by .!? and uses full sentences.''')
     # Loss mode options (see LOSS_DESIGN.md)
     parser.add_argument('--loss_mode', type=str, default='sample_mean',
                        choices=['sample_mean', 'sample_max', 'token_all', 'token_spans_only',
-                                'span_mean', 'span_max', 'joint', 'annealed'],
+                                'span_mean', 'span_max', 'joint', 'joint_span_max', 'annealed'],
                        help='''Loss function mode:
   - sample_mean (default): BCE on mean of all token scores
   - sample_max: BCE on max of all token scores
@@ -266,6 +266,7 @@ Sentence parsing splits by .!? and uses full sentences.''')
   - token_spans_only: Per-token BCE only on tokens in labeled spans
   - span_max: BCE on max score per span (good for localization)
   - joint: α * sample_loss + (1-α) * token_loss
+  - joint_span_max: α * sample_mean + (1-α) * span_max (detection + localization)
   - annealed: Curriculum from sample_mean to token_all over epochs''')
     parser.add_argument('--joint_alpha', type=float, default=0.5,
                        help='Weight for sample loss in joint mode (1.0 = sample only, 0.0 = token only)')

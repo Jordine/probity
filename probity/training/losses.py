@@ -11,6 +11,7 @@ Loss Modes (see LOSS_DESIGN.md for details):
 - span_mean: BCE on mean score per span
 - span_max: BCE on max score per span + min outside (good for localization)
 - joint: α * sample_loss + (1-α) * token_loss
+- joint_span_max: α * sample_mean + (1-α) * span_max (detection + localization)
 - annealed: Curriculum from sample_mean to token_all over epochs
 
 NOTE on class weighting: token_all and token_spans_only use pos_weight to handle
@@ -34,6 +35,7 @@ class LossMode(Enum):
     SPAN_MEAN = "span_mean"          # BCE(mean(span), span_label)
     SPAN_MAX = "span_max"            # BCE(max(span), span_label) - current max_aggr
     JOINT = "joint"                  # α * sample_loss + (1-α) * token_loss
+    JOINT_SPAN_MAX = "joint_span_max"  # α * sample_mean + (1-α) * span_max
     ANNEALED = "annealed"            # sample_mean → token_all over epochs
 
 
@@ -284,6 +286,16 @@ class ProbeLoss:
             token_loss = self._compute_token_all_loss(token_scores, token_labels, attention_mask)
 
             return self.joint_alpha * sample_loss + (1 - self.joint_alpha) * token_loss
+
+        elif self.mode == LossMode.JOINT_SPAN_MAX:
+            # Hybrid: sample_mean for detection + span_max for localization
+            if span_masks is None:
+                raise ValueError("span_masks required for JOINT_SPAN_MAX mode")
+
+            sample_loss = self._compute_sample_mean_loss(token_scores, sample_labels, attention_mask)
+            span_loss = self._compute_span_max_loss(token_scores, attention_mask, span_masks)
+
+            return self.joint_alpha * sample_loss + (1 - self.joint_alpha) * span_loss
 
         elif self.mode == LossMode.ANNEALED:
             if token_labels is None:
