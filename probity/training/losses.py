@@ -37,6 +37,11 @@ class LossMode(Enum):
     JOINT = "joint"                  # α * sample_loss + (1-α) * token_loss
     JOINT_SPAN_MAX = "joint_span_max"  # α * sample_mean + (1-α) * span_max
     ANNEALED = "annealed"            # sample_mean → token_all over epochs
+    # New localization-focused losses
+    MARGIN = "margin"                # Explicit margin between in-span and out-span means
+    RANKING = "ranking"              # Pairwise ranking loss for lie vs truth tokens
+    CONTRASTIVE_INTRA = "contrastive_intra"  # Within-sample contrastive (mean_lie > mean_truth)
+    SOFT_RECALL = "soft_recall"      # Differentiable approximation of R@Oracle
 
 
 class ProbeLoss:
@@ -57,6 +62,9 @@ class ProbeLoss:
         joint_alpha: float = 0.5,
         anneal_warmup: float = 0.3,
         max_clipped_logits: float = 100.0,
+        margin: float = 1.0,
+        temperature: float = 0.5,
+        num_pairs: int = 32,
     ):
         """
         Args:
@@ -64,11 +72,17 @@ class ProbeLoss:
             joint_alpha: Weight for sample loss in joint mode (1.0 = sample only, 0.0 = token only)
             anneal_warmup: Fraction of epochs for warmup in annealed mode
             max_clipped_logits: Clip logits to prevent extreme values
+            margin: Margin for margin/ranking losses
+            temperature: Temperature for soft_recall loss
+            num_pairs: Number of pairs to sample for ranking loss
         """
         self.mode = mode
         self.joint_alpha = joint_alpha
         self.anneal_warmup = anneal_warmup
         self.max_clipped_logits = max_clipped_logits
+        self.margin = margin
+        self.temperature = temperature
+        self.num_pairs = num_pairs
         self.current_epoch = 0
         self.total_epochs = 1
 
@@ -222,6 +236,188 @@ class ProbeLoss:
 
         return torch.cat(losses).mean()
 
+    def _compute_margin_loss(
+        self,
+        token_scores: Tensor,
+        attention_mask: Tensor,
+        span_masks: Tensor,
+    ) -> Tensor:
+        """
+        Margin loss: require explicit gap between in-span and out-span mean scores.
+
+        Loss = ReLU(margin - (mean_in_span - mean_out_span))
+
+        This forces the probe to learn features that actually separate lie tokens
+        from truth tokens, rather than just satisfying BCE thresholds.
+        """
+        device = token_scores.device
+        dtype = token_scores.dtype
+
+        # Get masks for in-span and out-span tokens
+        in_span_mask = span_masks * attention_mask
+        out_span_mask = (1 - span_masks) * attention_mask
+
+        losses = []
+
+        for i in range(token_scores.shape[0]):
+            in_count = in_span_mask[i].sum()
+            out_count = out_span_mask[i].sum()
+
+            # Need both in-span and out-span tokens
+            if in_count > 0 and out_count > 0:
+                mean_in = (token_scores[i] * in_span_mask[i]).sum() / in_count
+                mean_out = (token_scores[i] * out_span_mask[i]).sum() / out_count
+
+                # Hinge loss: want mean_in - mean_out > margin
+                loss = F.relu(self.margin - (mean_in - mean_out))
+                losses.append(loss)
+
+        if not losses:
+            return torch.tensor(0.0, device=device, dtype=dtype)
+
+        return torch.stack(losses).mean()
+
+    def _compute_ranking_loss(
+        self,
+        token_scores: Tensor,
+        attention_mask: Tensor,
+        span_masks: Tensor,
+    ) -> Tensor:
+        """
+        Pairwise ranking loss: sample (lie_token, truth_token) pairs and optimize
+        for lie tokens to score higher than truth tokens.
+
+        This directly optimizes the ranking that R@Oracle measures.
+        """
+        device = token_scores.device
+        dtype = token_scores.dtype
+
+        in_span_mask = span_masks * attention_mask
+        out_span_mask = (1 - span_masks) * attention_mask
+
+        all_pair_losses = []
+
+        for i in range(token_scores.shape[0]):
+            # Get indices of lie and truth tokens
+            lie_indices = torch.where(in_span_mask[i] > 0)[0]
+            truth_indices = torch.where(out_span_mask[i] > 0)[0]
+
+            if len(lie_indices) == 0 or len(truth_indices) == 0:
+                continue
+
+            # Sample pairs (or use all if small enough)
+            n_lie = len(lie_indices)
+            n_truth = len(truth_indices)
+            n_pairs = min(self.num_pairs, n_lie * n_truth)
+
+            if n_pairs <= n_lie * n_truth // 2:
+                # Random sampling
+                lie_sample_idx = torch.randint(0, n_lie, (n_pairs,), device=device)
+                truth_sample_idx = torch.randint(0, n_truth, (n_pairs,), device=device)
+            else:
+                # Use all pairs
+                lie_sample_idx = torch.arange(n_lie, device=device).repeat_interleave(n_truth)[:n_pairs]
+                truth_sample_idx = torch.arange(n_truth, device=device).repeat(n_lie)[:n_pairs]
+
+            lie_scores = token_scores[i, lie_indices[lie_sample_idx]]
+            truth_scores = token_scores[i, truth_indices[truth_sample_idx]]
+
+            # Margin ranking loss: want lie_score > truth_score + margin
+            pair_losses = F.relu(self.margin - (lie_scores - truth_scores))
+            all_pair_losses.append(pair_losses)
+
+        if not all_pair_losses:
+            return torch.tensor(0.0, device=device, dtype=dtype)
+
+        return torch.cat(all_pair_losses).mean()
+
+    def _compute_contrastive_intra_loss(
+        self,
+        token_scores: Tensor,
+        attention_mask: Tensor,
+        span_masks: Tensor,
+    ) -> Tensor:
+        """
+        Within-sample contrastive loss: push mean of lie tokens above mean of truth tokens.
+
+        Loss = BCE(sigmoid(mean_lie - mean_truth), 1.0)
+
+        This explicitly compares lie vs truth tokens within each sample.
+        """
+        device = token_scores.device
+        dtype = token_scores.dtype
+
+        in_span_mask = span_masks * attention_mask
+        out_span_mask = (1 - span_masks) * attention_mask
+
+        losses = []
+
+        for i in range(token_scores.shape[0]):
+            in_count = in_span_mask[i].sum()
+            out_count = out_span_mask[i].sum()
+
+            if in_count > 0 and out_count > 0:
+                mean_lie = (token_scores[i] * in_span_mask[i]).sum() / in_count
+                mean_truth = (token_scores[i] * out_span_mask[i]).sum() / out_count
+
+                # BCE on the difference (want mean_lie > mean_truth)
+                diff = mean_lie - mean_truth
+                loss = F.binary_cross_entropy_with_logits(
+                    diff, torch.ones(1, device=device, dtype=dtype)
+                )
+                losses.append(loss)
+
+        if not losses:
+            return torch.tensor(0.0, device=device, dtype=dtype)
+
+        return torch.stack(losses).mean()
+
+    def _compute_soft_recall_loss(
+        self,
+        token_scores: Tensor,
+        attention_mask: Tensor,
+        span_masks: Tensor,
+    ) -> Tensor:
+        """
+        Soft approximation of R@Oracle.
+
+        R@Oracle uses threshold = mean(lie_token_scores), then counts what fraction
+        of lie tokens are above threshold. We make this differentiable with sigmoid.
+
+        Loss = -log(soft_recall) where soft_recall = mean(sigmoid((lie_scores - threshold) / temp))
+        """
+        device = token_scores.device
+        dtype = token_scores.dtype
+
+        in_span_mask = span_masks * attention_mask
+
+        losses = []
+
+        for i in range(token_scores.shape[0]):
+            lie_mask = in_span_mask[i] > 0
+            if lie_mask.sum() == 0:
+                continue
+
+            lie_scores = token_scores[i, lie_mask]
+
+            # Threshold = mean of lie scores (this is the "oracle" threshold)
+            threshold = lie_scores.mean()
+
+            # Soft count of lie tokens above threshold
+            # Using temperature to control sharpness
+            soft_above = torch.sigmoid((lie_scores - threshold) / self.temperature)
+            soft_recall = soft_above.mean()
+
+            # Maximize recall → minimize -log(recall)
+            # Add small epsilon to prevent log(0)
+            loss = -torch.log(soft_recall + 1e-8)
+            losses.append(loss)
+
+        if not losses:
+            return torch.tensor(0.0, device=device, dtype=dtype)
+
+        return torch.stack(losses).mean()
+
     def __call__(
         self,
         token_scores: Tensor,           # (batch, seq_len)
@@ -307,6 +503,27 @@ class ProbeLoss:
             token_loss = self._compute_token_all_loss(token_scores, token_labels, attention_mask)
 
             return alpha * sample_loss + (1 - alpha) * token_loss
+
+        # Localization-focused losses
+        elif self.mode == LossMode.MARGIN:
+            if span_masks is None:
+                raise ValueError("span_masks required for MARGIN mode")
+            return self._compute_margin_loss(token_scores, attention_mask, span_masks)
+
+        elif self.mode == LossMode.RANKING:
+            if span_masks is None:
+                raise ValueError("span_masks required for RANKING mode")
+            return self._compute_ranking_loss(token_scores, attention_mask, span_masks)
+
+        elif self.mode == LossMode.CONTRASTIVE_INTRA:
+            if span_masks is None:
+                raise ValueError("span_masks required for CONTRASTIVE_INTRA mode")
+            return self._compute_contrastive_intra_loss(token_scores, attention_mask, span_masks)
+
+        elif self.mode == LossMode.SOFT_RECALL:
+            if span_masks is None:
+                raise ValueError("span_masks required for SOFT_RECALL mode")
+            return self._compute_soft_recall_loss(token_scores, attention_mask, span_masks)
 
         else:
             raise ValueError(f"Unknown loss mode: {self.mode}")

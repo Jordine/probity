@@ -58,6 +58,10 @@ def train_single_probe_with_hyperparams(
         trainer_config.joint_alpha = args.joint_alpha
         trainer_config.anneal_warmup = args.anneal_warmup
         trainer_config.sparsity_penalty = args.sparsity_penalty
+        # Localization loss hyperparameters
+        trainer_config.margin = args.margin
+        trainer_config.temperature = args.temperature
+        trainer_config.num_pairs = args.num_pairs
 
     # Apply epoch/patience settings
     trainer_config.num_epochs = args.num_epochs
@@ -68,7 +72,8 @@ def train_single_probe_with_hyperparams(
     trainer = trainer_cls(trainer_config)
 
     # Prepare data - use spans for token-level loss modes
-    token_level_modes = ['token_all', 'token_spans_only', 'joint', 'joint_span_max', 'annealed', 'span_max', 'span_mean']
+    token_level_modes = ['token_all', 'token_spans_only', 'joint', 'joint_span_max', 'annealed', 'span_max', 'span_mean',
+                         'margin', 'ranking', 'contrastive_intra', 'soft_recall']
     needs_spans = args.loss_mode in token_level_modes
 
     if needs_spans and hasattr(trainer, 'prepare_supervised_data_with_spans'):
@@ -258,7 +263,8 @@ Sentence parsing splits by .!? and uses full sentences.''')
     # Loss mode options (see LOSS_DESIGN.md)
     parser.add_argument('--loss_mode', type=str, default='sample_mean',
                        choices=['sample_mean', 'sample_max', 'token_all', 'token_spans_only',
-                                'span_mean', 'span_max', 'joint', 'joint_span_max', 'annealed'],
+                                'span_mean', 'span_max', 'joint', 'joint_span_max', 'annealed',
+                                'margin', 'ranking', 'contrastive_intra', 'soft_recall'],
                        help='''Loss function mode:
   - sample_mean (default): BCE on mean of all token scores
   - sample_max: BCE on max of all token scores
@@ -267,11 +273,21 @@ Sentence parsing splits by .!? and uses full sentences.''')
   - span_max: BCE on max score per span (good for localization)
   - joint: α * sample_loss + (1-α) * token_loss
   - joint_span_max: α * sample_mean + (1-α) * span_max (detection + localization)
-  - annealed: Curriculum from sample_mean to token_all over epochs''')
+  - annealed: Curriculum from sample_mean to token_all over epochs
+  - margin: Explicit margin between in-span and out-span mean scores (LOCALIZATION)
+  - ranking: Pairwise ranking loss for lie vs truth tokens (LOCALIZATION)
+  - contrastive_intra: Within-sample contrastive (mean_lie > mean_truth) (LOCALIZATION)
+  - soft_recall: Differentiable approximation of R@Oracle (LOCALIZATION)''')
     parser.add_argument('--joint_alpha', type=float, default=0.5,
                        help='Weight for sample loss in joint mode (1.0 = sample only, 0.0 = token only)')
     parser.add_argument('--anneal_warmup', type=float, default=0.3,
                        help='Fraction of epochs for warmup in annealed mode (default: 0.3)')
+    parser.add_argument('--margin', type=float, default=1.0,
+                       help='Margin for margin/ranking losses (default: 1.0)')
+    parser.add_argument('--temperature', type=float, default=0.5,
+                       help='Temperature for soft_recall loss (default: 0.5)')
+    parser.add_argument('--num_pairs', type=int, default=32,
+                       help='Number of pairs to sample for ranking loss (default: 32)')
 
     parser.add_argument('--sparsity_penalty', type=float, default=0.0,
                        help='Penalty for high average activation (default: 0.0, off)')

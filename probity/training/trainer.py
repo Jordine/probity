@@ -188,6 +188,10 @@ class SupervisedTrainerConfig(BaseTrainerConfig):
     # New unified loss mode system (see LOSS_DESIGN.md)
     loss_mode: str = "sample_mean"  # sample_mean, sample_max, token_all, joint, annealed, span_max, etc.
     joint_alpha: float = 0.5  # Weight for sample loss in joint mode (1.0 = sample only)
+    # Localization loss hyperparameters
+    margin: float = 1.0  # Margin for margin/ranking losses
+    temperature: float = 0.5  # Temperature for soft_recall loss
+    num_pairs: int = 32  # Number of pairs for ranking loss
 
 
 class SupervisedProbeTrainer(BaseProbeTrainer):
@@ -697,6 +701,9 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
                     mode=loss_mode,
                     joint_alpha=self.config.joint_alpha,
                     anneal_warmup=self.config.anneal_warmup,
+                    margin=getattr(self.config, 'margin', 1.0),
+                    temperature=getattr(self.config, 'temperature', 0.5),
+                    num_pairs=getattr(self.config, 'num_pairs', 32),
                 )
 
         mode_str = ""
