@@ -274,7 +274,8 @@ class ProbeLoss:
                 losses.append(loss)
 
         if not losses:
-            return torch.tensor(0.0, device=device, dtype=dtype)
+            # Return 0 in a way that preserves gradient flow
+            return (token_scores * 0).sum()
 
         return torch.stack(losses).mean()
 
@@ -328,7 +329,8 @@ class ProbeLoss:
             all_pair_losses.append(pair_losses)
 
         if not all_pair_losses:
-            return torch.tensor(0.0, device=device, dtype=dtype)
+            # Return 0 in a way that preserves gradient flow
+            return (token_scores * 0).sum()
 
         return torch.cat(all_pair_losses).mean()
 
@@ -369,7 +371,8 @@ class ProbeLoss:
                 losses.append(loss)
 
         if not losses:
-            return torch.tensor(0.0, device=device, dtype=dtype)
+            # Return 0 in a way that preserves gradient flow
+            return (token_scores * 0).sum()
 
         return torch.stack(losses).mean()
 
@@ -415,7 +418,8 @@ class ProbeLoss:
             losses.append(loss)
 
         if not losses:
-            return torch.tensor(0.0, device=device, dtype=dtype)
+            # Return 0 in a way that preserves gradient flow
+            return (token_scores * 0).sum()
 
         return torch.stack(losses).mean()
 
@@ -489,7 +493,8 @@ class ProbeLoss:
             losses.append(loss + 0.5 * margin_loss)
 
         if not losses:
-            return torch.tensor(0.0, device=device, dtype=dtype)
+            # Return 0 in a way that preserves gradient flow
+            return (token_scores * 0).sum()
 
         return torch.stack(losses).mean()
 
