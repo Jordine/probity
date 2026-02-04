@@ -73,7 +73,7 @@ def train_single_probe_with_hyperparams(
 
     # Prepare data - use spans for token-level loss modes
     token_level_modes = ['token_all', 'token_spans_only', 'joint', 'joint_span_max', 'annealed', 'span_max', 'span_mean',
-                         'margin', 'ranking', 'contrastive_intra', 'soft_recall']
+                         'margin', 'ranking', 'contrastive_intra', 'soft_recall', 'topk_overlap']
     needs_spans = args.loss_mode in token_level_modes
 
     if needs_spans and hasattr(trainer, 'prepare_supervised_data_with_spans'):
@@ -264,7 +264,7 @@ Sentence parsing splits by .!? and uses full sentences.''')
     parser.add_argument('--loss_mode', type=str, default='sample_mean',
                        choices=['sample_mean', 'sample_max', 'token_all', 'token_spans_only',
                                 'span_mean', 'span_max', 'joint', 'joint_span_max', 'annealed',
-                                'margin', 'ranking', 'contrastive_intra', 'soft_recall'],
+                                'margin', 'ranking', 'contrastive_intra', 'soft_recall', 'topk_overlap'],
                        help='''Loss function mode:
   - sample_mean (default): BCE on mean of all token scores
   - sample_max: BCE on max of all token scores
@@ -277,7 +277,8 @@ Sentence parsing splits by .!? and uses full sentences.''')
   - margin: Explicit margin between in-span and out-span mean scores (LOCALIZATION)
   - ranking: Pairwise ranking loss for lie vs truth tokens (LOCALIZATION)
   - contrastive_intra: Within-sample contrastive (mean_lie > mean_truth) (LOCALIZATION)
-  - soft_recall: Differentiable approximation of R@Oracle (LOCALIZATION)''')
+  - soft_recall: Differentiable approximation of R@Oracle (LOCALIZATION)
+  - topk_overlap: Adaptive - top k predictions should match k actual lie tokens (LOCALIZATION)''')
     parser.add_argument('--joint_alpha', type=float, default=0.5,
                        help='Weight for sample loss in joint mode (1.0 = sample only, 0.0 = token only)')
     parser.add_argument('--anneal_warmup', type=float, default=0.3,

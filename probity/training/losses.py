@@ -42,6 +42,7 @@ class LossMode(Enum):
     RANKING = "ranking"              # Pairwise ranking loss for lie vs truth tokens
     CONTRASTIVE_INTRA = "contrastive_intra"  # Within-sample contrastive (mean_lie > mean_truth)
     SOFT_RECALL = "soft_recall"      # Differentiable approximation of R@Oracle
+    TOPK_OVERLAP = "topk_overlap"    # Adaptive: top-k predictions should match k actual lie tokens
 
 
 class ProbeLoss:
@@ -418,6 +419,80 @@ class ProbeLoss:
 
         return torch.stack(losses).mean()
 
+    def _compute_topk_overlap_loss(
+        self,
+        token_scores: Tensor,
+        attention_mask: Tensor,
+        span_masks: Tensor,
+    ) -> Tensor:
+        """
+        Adaptive Top-K Overlap Loss: if there are k lie tokens, the top-k scoring
+        tokens should BE those k lie tokens.
+
+        This directly optimizes for the debate application: "flag the top-k tokens
+        as lies, and those should actually be the lie tokens."
+
+        Uses a differentiable approximation via softmax ranking.
+        """
+        device = token_scores.device
+        dtype = token_scores.dtype
+
+        losses = []
+
+        for i in range(token_scores.shape[0]):
+            valid_mask = attention_mask[i] > 0
+            lie_mask = (span_masks[i] * attention_mask[i]) > 0
+
+            k = lie_mask.sum().int().item()
+            if k == 0 or valid_mask.sum() <= k:
+                continue
+
+            # Get scores for valid tokens only
+            valid_scores = token_scores[i, valid_mask]
+            valid_lie_mask = lie_mask[valid_mask]
+
+            # Soft top-k: use softmax over scores to get "probability of being in top-k"
+            # Higher temperature = softer ranking
+            temp = self.temperature
+
+            # Compute soft ranking weights (higher score = higher weight)
+            soft_weights = F.softmax(valid_scores / temp, dim=0)
+
+            # We want the sum of weights on lie tokens to be high (ideally = k/n * n_lies_weight)
+            # Equivalently: the lie tokens should have the highest scores
+
+            # Loss 1: Mean score of lie tokens should be higher than mean of truth tokens
+            lie_scores = valid_scores[valid_lie_mask]
+            truth_scores = valid_scores[~valid_lie_mask]
+
+            if len(truth_scores) == 0:
+                continue
+
+            # Loss: we want lie tokens to dominate the top-k
+            # Approach: sum of softmax weights on lie tokens should be high
+            lie_weight_sum = soft_weights[valid_lie_mask].sum()
+            target_weight = torch.tensor(k / valid_mask.sum().float(), device=device, dtype=dtype)
+
+            # BCE: want lie_weight_sum to be at least target_weight (ideally higher)
+            # Scale to [0,1] range for BCE
+            normalized_lie_weight = lie_weight_sum.clamp(0, 1)
+            loss = F.binary_cross_entropy(
+                normalized_lie_weight,
+                torch.ones(1, device=device, dtype=dtype).squeeze(),
+            )
+
+            # Additional: margin loss between mean lie score and mean truth score
+            mean_lie = lie_scores.mean()
+            mean_truth = truth_scores.mean()
+            margin_loss = F.relu(self.margin - (mean_lie - mean_truth))
+
+            losses.append(loss + 0.5 * margin_loss)
+
+        if not losses:
+            return torch.tensor(0.0, device=device, dtype=dtype)
+
+        return torch.stack(losses).mean()
+
     def __call__(
         self,
         token_scores: Tensor,           # (batch, seq_len)
@@ -524,6 +599,11 @@ class ProbeLoss:
             if span_masks is None:
                 raise ValueError("span_masks required for SOFT_RECALL mode")
             return self._compute_soft_recall_loss(token_scores, attention_mask, span_masks)
+
+        elif self.mode == LossMode.TOPK_OVERLAP:
+            if span_masks is None:
+                raise ValueError("span_masks required for TOPK_OVERLAP mode")
+            return self._compute_topk_overlap_loss(token_scores, attention_mask, span_masks)
 
         else:
             raise ValueError(f"Unknown loss mode: {self.mode}")
