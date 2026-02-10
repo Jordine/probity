@@ -1,0 +1,7 @@
+{
+  "sklearn_logistic": [
+    {"C": 0.1, "name_suffix": "_C0.1"},
+    {"C": 1.0, "name_suffix": "_C1.0"},
+    {"C": 10.0, "name_suffix": "_C10.0"}
+  ]
+}
