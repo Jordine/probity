@@ -117,7 +117,9 @@ class ProbeLoss:
         count = attention_mask.sum(dim=1).clamp(min=1)
         sample_score = sum_scores / count
 
-        return F.binary_cross_entropy_with_logits(sample_score, sample_labels.float())
+        # Ensure labels have same shape as scores (fixes batch_size=1 scalar issue)
+        labels = sample_labels.float().reshape_as(sample_score)
+        return F.binary_cross_entropy_with_logits(sample_score, labels)
 
     def _compute_sample_max_loss(
         self,
@@ -130,7 +132,9 @@ class ProbeLoss:
         masked_scores = token_scores.masked_fill(~attention_mask.bool(), float('-inf'))
         sample_score = masked_scores.max(dim=1).values
 
-        return F.binary_cross_entropy_with_logits(sample_score, sample_labels.float())
+        # Ensure labels have same shape as scores (fixes batch_size=1 scalar issue)
+        labels = sample_labels.float().reshape_as(sample_score)
+        return F.binary_cross_entropy_with_logits(sample_score, labels)
 
     def _compute_token_all_loss(
         self,
