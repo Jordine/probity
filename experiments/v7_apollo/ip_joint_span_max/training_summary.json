@@ -1,0 +1,74 @@
+{
+  "7": {
+    "logistic": {
+      "final_train_loss": 0.38373538851737976,
+      "final_val_loss": 0.38393402099609375,
+      "save_path": "experiments/v7_apollo/ip_joint_span_max/logistic/layer_7_probe.pt",
+      "loss_mode": "joint_span_max",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5028134300595238
+    }
+  },
+  "10": {
+    "logistic": {
+      "final_train_loss": 0.36458051204681396,
+      "final_val_loss": 0.3819580078125,
+      "save_path": "experiments/v7_apollo/ip_joint_span_max/logistic/layer_10_probe.pt",
+      "loss_mode": "joint_span_max",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5067512052955494
+    }
+  },
+  "14": {
+    "logistic": {
+      "final_train_loss": 0.3557712584733963,
+      "final_val_loss": 0.35768264532089233,
+      "save_path": "experiments/v7_apollo/ip_joint_span_max/logistic/layer_14_probe.pt",
+      "loss_mode": "joint_span_max",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5030458033015578
+    }
+  },
+  "18": {
+    "logistic": {
+      "final_train_loss": 0.35623715817928314,
+      "final_val_loss": 0.3558516502380371,
+      "save_path": "experiments/v7_apollo/ip_joint_span_max/logistic/layer_18_probe.pt",
+      "loss_mode": "joint_span_max",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5051072602145205
+    }
+  },
+  "21": {
+    "logistic": {
+      "final_train_loss": 0.3517802022397518,
+      "final_val_loss": 0.3522564172744751,
+      "save_path": "experiments/v7_apollo/ip_joint_span_max/logistic/layer_21_probe.pt",
+      "loss_mode": "joint_span_max",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5028831845238095
+    }
+  },
+  "24": {
+    "logistic": {
+      "final_train_loss": 0.3589574582874775,
+      "final_val_loss": 0.3610481023788452,
+      "save_path": "experiments/v7_apollo/ip_joint_span_max/logistic/layer_24_probe.pt",
+      "loss_mode": "joint_span_max",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5
+    }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "7": {
+    "logistic": {
+      "final_train_loss": 0.03789329220403413,
+      "final_val_loss": 0.039028544579782797,
+      "save_path": "experiments/v6_apollo/token_all_llm_spans/logistic/layer_7_probe.pt",
+      "loss_mode": "token_all",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5
+    }
+  },
+  "10": {
+    "logistic": {
+      "final_train_loss": 0.03493733847605401,
+      "final_val_loss": 0.035882042300316594,
+      "save_path": "experiments/v6_apollo/token_all_llm_spans/logistic/layer_10_probe.pt",
+      "loss_mode": "token_all",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5
+    }
+  },
+  "14": {
+    "logistic": {
+      "final_train_loss": 0.03437831072655857,
+      "final_val_loss": 0.03603842854499817,
+      "save_path": "experiments/v6_apollo/token_all_llm_spans/logistic/layer_14_probe.pt",
+      "loss_mode": "token_all",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5
+    }
+  },
+  "18": {
+    "logistic": {
+      "final_train_loss": 0.032714547222999275,
+      "final_val_loss": 0.03528488066888625,
+      "save_path": "experiments/v6_apollo/token_all_llm_spans/logistic/layer_18_probe.pt",
+      "loss_mode": "token_all",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5
+    }
+  },
+  "21": {
+    "logistic": {
+      "final_train_loss": 0.02830541237700181,
+      "final_val_loss": 0.03206164029336745,
+      "save_path": "experiments/v6_apollo/token_all_llm_spans/logistic/layer_21_probe.pt",
+      "loss_mode": "token_all",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5
+    }
+  },
+  "24": {
+    "logistic": {
+      "final_train_loss": 0.025517086788523394,
+      "final_val_loss": 0.03410012539355985,
+      "save_path": "experiments/v6_apollo/token_all_llm_spans/logistic/layer_24_probe.pt",
+      "loss_mode": "token_all",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "span_precision": 0.15259371450208253,
+  "span_recall": 0.326792085630879,
+  "span_f1": 0.20804295080274637,
+  "mean_iou": 0.12232268069954746,
+  "max_in_span": 3.4144754464285714,
+  "max_outside_span": 4.891026785714286,
+  "mean_in_span": -0.286067069640569,
+  "mean_outside_span": -0.26626089105148554,
+  "n_samples_with_spans": 350,
+  "n_total_labeled_tokens": 12332
+}

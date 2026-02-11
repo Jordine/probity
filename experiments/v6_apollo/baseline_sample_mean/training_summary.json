@@ -1,0 +1,218 @@
+{
+  "7": {
+    "attention_h1_t0.25": {
+      "final_train_loss": 0.6112636817893401,
+      "final_val_loss": 1.4752666766826923,
+      "save_path": "experiments/v6_apollo/baseline_sample_mean/attention_h1_t0.25/layer_7_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "n_heads": 1,
+        "temperature": 0.25,
+        "name_suffix": "_h1_t0.25"
+      },
+      "train_auroc": 0.9387674758027346
+    },
+    "attention_h2_t0.25": {
+      "final_train_loss": 0.5416765309343434,
+      "final_val_loss": 1.537578125,
+      "save_path": "experiments/v6_apollo/baseline_sample_mean/attention_h2_t0.25/layer_7_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "n_heads": 2,
+        "temperature": 0.25,
+        "name_suffix": "_h2_t0.25"
+      },
+      "train_auroc": 0.9472881543921916
+    },
+    "logistic": {
+      "final_train_loss": 0.5538434359296482,
+      "final_val_loss": 1.133609693877551,
+      "save_path": "experiments/v6_apollo/baseline_sample_mean/logistic/layer_7_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.9634732052578362
+    }
+  },
+  "10": {
+    "attention_h1_t0.25": {
+      "final_train_loss": 0.5880244685913706,
+      "final_val_loss": 1.4476677389705883,
+      "save_path": "experiments/v6_apollo/baseline_sample_mean/attention_h1_t0.25/layer_10_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "n_heads": 1,
+        "temperature": 0.25,
+        "name_suffix": "_h1_t0.25"
+      },
+      "train_auroc": 0.953350101363009
+    },
+    "attention_h2_t0.25": {
+      "final_train_loss": 0.4837634154040404,
+      "final_val_loss": 1.634765625,
+      "save_path": "experiments/v6_apollo/baseline_sample_mean/attention_h2_t0.25/layer_10_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "n_heads": 2,
+        "temperature": 0.25,
+        "name_suffix": "_h2_t0.25"
+      },
+      "train_auroc": 0.9644349199307052
+    },
+    "logistic": {
+      "final_train_loss": 0.5322363771984925,
+      "final_val_loss": 1.1687890625,
+      "save_path": "experiments/v6_apollo/baseline_sample_mean/logistic/layer_10_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.9779131898697117
+    }
+  },
+  "14": {
+    "attention_h1_t0.25": {
+      "final_train_loss": 0.5132057883522727,
+      "final_val_loss": 1.694125306372549,
+      "save_path": "experiments/v6_apollo/baseline_sample_mean/attention_h1_t0.25/layer_14_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "n_heads": 1,
+        "temperature": 0.25,
+        "name_suffix": "_h1_t0.25"
+      },
+      "train_auroc": 0.964900695822928
+    },
+    "attention_h2_t0.25": {
+      "final_train_loss": 0.4029541015625,
+      "final_val_loss": 1.465481505102041,
+      "save_path": "experiments/v6_apollo/baseline_sample_mean/attention_h2_t0.25/layer_14_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "n_heads": 2,
+        "temperature": 0.25,
+        "name_suffix": "_h2_t0.25"
+      },
+      "train_auroc": 0.977010567072679
+    },
+    "logistic": {
+      "final_train_loss": 0.5175290515075377,
+      "final_val_loss": 1.1591996173469388,
+      "save_path": "experiments/v6_apollo/baseline_sample_mean/logistic/layer_14_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.9776887871853547
+    }
+  },
+  "18": {
+    "attention_h1_t0.25": {
+      "final_train_loss": 0.4465123468907035,
+      "final_val_loss": 1.50783203125,
+      "save_path": "experiments/v6_apollo/baseline_sample_mean/attention_h1_t0.25/layer_18_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "n_heads": 1,
+        "temperature": 0.25,
+        "name_suffix": "_h1_t0.25"
+      },
+      "train_auroc": 0.9754461039905274
+    },
+    "attention_h2_t0.25": {
+      "final_train_loss": 0.371170654296875,
+      "final_val_loss": 1.728744818239796,
+      "save_path": "experiments/v6_apollo/baseline_sample_mean/attention_h2_t0.25/layer_18_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "n_heads": 2,
+        "temperature": 0.25,
+        "name_suffix": "_h2_t0.25"
+      },
+      "train_auroc": 0.9765171571123104
+    },
+    "logistic": {
+      "final_train_loss": 0.5059284248737373,
+      "final_val_loss": 1.2920703125,
+      "save_path": "experiments/v6_apollo/baseline_sample_mean/logistic/layer_18_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.987811351248574
+    }
+  },
+  "21": {
+    "attention_h1_t0.25": {
+      "final_train_loss": 0.4108224226601759,
+      "final_val_loss": 1.899140625,
+      "save_path": "experiments/v6_apollo/baseline_sample_mean/attention_h1_t0.25/layer_21_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "n_heads": 1,
+        "temperature": 0.25,
+        "name_suffix": "_h1_t0.25"
+      },
+      "train_auroc": 0.9791128225436658
+    },
+    "attention_h2_t0.25": {
+      "final_train_loss": 0.28812063769035534,
+      "final_val_loss": 2.8421702665441178,
+      "save_path": "experiments/v6_apollo/baseline_sample_mean/attention_h2_t0.25/layer_21_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "n_heads": 2,
+        "temperature": 0.25,
+        "name_suffix": "_h2_t0.25"
+      },
+      "train_auroc": 0.9897531702898551
+    },
+    "logistic": {
+      "final_train_loss": 0.5325274226641414,
+      "final_val_loss": 1.9155177696078431,
+      "save_path": "experiments/v6_apollo/baseline_sample_mean/logistic/layer_21_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.9821003148132392
+    }
+  },
+  "24": {
+    "attention_h1_t0.25": {
+      "final_train_loss": 0.33041427842336685,
+      "final_val_loss": 2.2682080078125,
+      "save_path": "experiments/v6_apollo/baseline_sample_mean/attention_h1_t0.25/layer_24_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "n_heads": 1,
+        "temperature": 0.25,
+        "name_suffix": "_h1_t0.25"
+      },
+      "train_auroc": 0.9870665767404898
+    },
+    "attention_h2_t0.25": {
+      "final_train_loss": 0.25478286428499947,
+      "final_val_loss": 5.151309742647059,
+      "save_path": "experiments/v6_apollo/baseline_sample_mean/attention_h2_t0.25/layer_24_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "n_heads": 2,
+        "temperature": 0.25,
+        "name_suffix": "_h2_t0.25"
+      },
+      "train_auroc": 0.9846917594030364
+    },
+    "logistic": {
+      "final_train_loss": 0.5035905934343434,
+      "final_val_loss": 2.38798828125,
+      "save_path": "experiments/v6_apollo/baseline_sample_mean/logistic/layer_24_probe.pt",
+      "loss_mode": "sample_mean",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.9858985156332245
+    }
+  }
+}

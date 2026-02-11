@@ -1,0 +1,74 @@
+{
+  "7": {
+    "logistic": {
+      "final_train_loss": 0.036720892144502075,
+      "final_val_loss": 0.03736536843436105,
+      "save_path": "experiments/v7_apollo/rp_token_all/logistic/layer_7_probe.pt",
+      "loss_mode": "token_all",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5
+    }
+  },
+  "10": {
+    "logistic": {
+      "final_train_loss": 0.03565082688262497,
+      "final_val_loss": 0.037039450236729214,
+      "save_path": "experiments/v7_apollo/rp_token_all/logistic/layer_10_probe.pt",
+      "loss_mode": "token_all",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5
+    }
+  },
+  "14": {
+    "logistic": {
+      "final_train_loss": 0.034040502528997436,
+      "final_val_loss": 0.03593974113464356,
+      "save_path": "experiments/v7_apollo/rp_token_all/logistic/layer_14_probe.pt",
+      "loss_mode": "token_all",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5
+    }
+  },
+  "18": {
+    "logistic": {
+      "final_train_loss": 0.0327347668994596,
+      "final_val_loss": 0.034584423473903114,
+      "save_path": "experiments/v7_apollo/rp_token_all/logistic/layer_18_probe.pt",
+      "loss_mode": "token_all",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5
+    }
+  },
+  "21": {
+    "logistic": {
+      "final_train_loss": 0.02945726756276428,
+      "final_val_loss": 0.03320369443723133,
+      "save_path": "experiments/v7_apollo/rp_token_all/logistic/layer_21_probe.pt",
+      "loss_mode": "token_all",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5
+    }
+  },
+  "24": {
+    "logistic": {
+      "final_train_loss": 0.02542969054016082,
+      "final_val_loss": 0.032063289412430356,
+      "save_path": "experiments/v7_apollo/rp_token_all/logistic/layer_24_probe.pt",
+      "loss_mode": "token_all",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5
+    }
+  }
+}

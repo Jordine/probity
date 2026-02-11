@@ -1,0 +1,74 @@
+{
+  "7": {
+    "logistic": {
+      "final_train_loss": 0.3382047638297081,
+      "final_val_loss": 0.34227524429071143,
+      "save_path": "experiments/v7_apollo/rp_joint_span_max/logistic/layer_7_probe.pt",
+      "loss_mode": "joint_span_max",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5089049677657272
+    }
+  },
+  "10": {
+    "logistic": {
+      "final_train_loss": 0.33318852881590527,
+      "final_val_loss": 0.3387870163214011,
+      "save_path": "experiments/v7_apollo/rp_joint_span_max/logistic/layer_10_probe.pt",
+      "loss_mode": "joint_span_max",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.6165392535378187
+    }
+  },
+  "14": {
+    "logistic": {
+      "final_train_loss": 0.3314792335033417,
+      "final_val_loss": 0.3840394567270748,
+      "save_path": "experiments/v7_apollo/rp_joint_span_max/logistic/layer_14_probe.pt",
+      "loss_mode": "joint_span_max",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5261121610029839
+    }
+  },
+  "18": {
+    "logistic": {
+      "final_train_loss": 0.3519518800079823,
+      "final_val_loss": 0.42555845760908284,
+      "save_path": "experiments/v7_apollo/rp_joint_span_max/logistic/layer_18_probe.pt",
+      "loss_mode": "joint_span_max",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5030266343825666
+    }
+  },
+  "21": {
+    "logistic": {
+      "final_train_loss": 0.2760861024260521,
+      "final_val_loss": 0.27965982624741853,
+      "save_path": "experiments/v7_apollo/rp_joint_span_max/logistic/layer_21_probe.pt",
+      "loss_mode": "joint_span_max",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5
+    }
+  },
+  "24": {
+    "logistic": {
+      "final_train_loss": 0.23766411729156972,
+      "final_val_loss": 0.2698784719725124,
+      "save_path": "experiments/v7_apollo/rp_joint_span_max/logistic/layer_24_probe.pt",
+      "loss_mode": "joint_span_max",
+      "hyperparams": {
+        "name_suffix": ""
+      },
+      "train_auroc": 0.5
+    }
+  }
+}
