@@ -64,11 +64,11 @@ but could be triggered under specific conditions."""
 
 def load_apps_problems(max_problems, difficulty="introductory"):
     """Load APPS problems using the existing dataset loader."""
-    # Add project root to path
-    project_root = Path(__file__).resolve().parent.parent / "probity"
-    sys.path.insert(0, str(project_root.parent))
+    # Add project root to path (repo root contains debate/ and probity/)
+    project_root = Path(__file__).resolve().parent.parent
+    sys.path.insert(0, str(project_root))
 
-    from probity.debate.dataset_loader import APPSDatasetLoader, SolutionGenerator
+    from debate.dataset_loader import APPSDatasetLoader, SolutionGenerator
 
     loader = APPSDatasetLoader(difficulty=difficulty)
     problems = loader.get_problems_batch(n=max_problems, shuffle=True)
@@ -165,10 +165,19 @@ def format_apps_conversations(dataset, output_dir):
 
 def evaluate_with_probes(model, tokenizer, results, probe_dir, layers, output_dir):
     """Evaluate pre-trained probes on APPS honest vs backdoored solutions."""
-    from probity.scripts.probe_eval_deception_datasets import (
+    # Add repo root to path for imports
+    repo_root = Path(__file__).resolve().parent.parent
+    if str(repo_root) not in sys.path:
+        sys.path.insert(0, str(repo_root))
+
+    from probity.evaluation.span_loader import compute_span_metrics
+    from probity.utils.dataset_loading import detect_model_type
+
+    # Import probe loading from the eval script
+    sys.path.insert(0, str(repo_root / "scripts"))
+    from probe_eval_deception_datasets import (
         load_probe_from_checkpoint, extract_final_assistant_tokens
     )
-    from probity.utils.dataset_loading import detect_model_type
 
     output_dir = Path(output_dir)
     probe_dir = Path(probe_dir)

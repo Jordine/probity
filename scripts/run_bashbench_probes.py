@@ -201,10 +201,18 @@ def evaluate_with_probes(model, tokenizer, results, probe_dir, layers, output_di
     Uses forward hooks to collect activations at specified layers,
     then loads and applies trained probes.
     """
-    from probity.scripts.probe_eval_deception_datasets import (
+    # Add repo root to path for imports
+    repo_root = Path(__file__).resolve().parent.parent
+    if str(repo_root) not in sys.path:
+        sys.path.insert(0, str(repo_root))
+
+    from probity.utils.dataset_loading import detect_model_type
+
+    # Import probe loading from the eval script
+    sys.path.insert(0, str(repo_root / "scripts"))
+    from probe_eval_deception_datasets import (
         load_probe_from_checkpoint, extract_final_assistant_tokens
     )
-    from probity.utils.dataset_loading import detect_model_type
 
     output_dir = Path(output_dir)
     probe_dir = Path(probe_dir)
