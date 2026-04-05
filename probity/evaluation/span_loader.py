@@ -301,10 +301,23 @@ def compute_ranking_metrics(token_scores: List[float], labeled_token_spans: List
     # span_auprc is an alias for span_ap (Average Precision = Area Under PR Curve)
     span_auprc = span_ap
 
+    # Within-sample normalized AUROC: z-score tokens within this sample first
+    # This removes any sample-level mean shift and measures pure localization
+    sample_std = np.std(scores_array)
+    if sample_std > 1e-8 and n_positive > 0 and n_negative > 0:
+        z_scores = (scores_array - np.mean(scores_array)) / sample_std
+        try:
+            norm_auroc = roc_auc_score(in_span_mask.astype(int), z_scores)
+        except ValueError:
+            norm_auroc = 0.5
+    else:
+        norm_auroc = 0.5
+
     return {
         "span_auroc": float(span_auroc),
         "span_ap": float(span_ap),
         "span_auprc": float(span_auprc),
+        "norm_auroc": float(norm_auroc),  # Within-sample normalized (the real localization metric)
         "cohens_d": float(cohens_d),
         "mean_in_span": float(mean_in),
         "mean_out_span": float(mean_out),

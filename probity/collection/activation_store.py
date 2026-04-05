@@ -147,6 +147,61 @@ class ActivationStore:
 
         return self.raw_activations, self.labels, spans_per_example, span_labels
 
+    def get_token_level_data(self) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Get full-sequence activations with per-token binary labels.
+
+        For use with token-level training (load_ntml_token_level datasets).
+        Each example has 'token_labels' in its attributes: a list of 0/1 per token.
+
+        Returns:
+            Tuple of:
+            - activations: (num_examples, seq_len, hidden_size)
+            - token_labels: (num_examples, seq_len) binary labels per token
+            - attention_mask: (num_examples, seq_len) 1 for real tokens, 0 for padding
+        """
+        seq_len = self.raw_activations.shape[1]
+        num_examples = self.raw_activations.shape[0]
+
+        token_labels = torch.zeros(num_examples, seq_len, dtype=torch.float32)
+        attention_mask = torch.zeros(num_examples, seq_len, dtype=torch.float32)
+
+        for i, idx in enumerate(self.example_indices):
+            example = self.dataset.examples[idx]
+            actual_len = int(self.sequence_lengths[i].item())
+
+            # Use stored attention mask from tokenized example if available
+            if hasattr(example, 'attention_mask') and example.attention_mask is not None:
+                am = example.attention_mask
+                for j in range(min(len(am), seq_len)):
+                    attention_mask[i, j] = float(am[j])
+            else:
+                # Reconstruct from sequence length (left-padding: content right-aligned)
+                pad_len = seq_len - actual_len
+                if pad_len >= 0:
+                    attention_mask[i, pad_len:] = 1.0
+                else:
+                    attention_mask[i, :] = 1.0
+
+            # Get token labels from example attributes
+            if hasattr(example, 'attributes') and example.attributes and 'token_labels' in example.attributes:
+                labels = example.attributes['token_labels']
+                # Find where content starts (first 1 in attention mask)
+                content_start = 0
+                if hasattr(example, 'attention_mask') and example.attention_mask is not None:
+                    for j, m in enumerate(example.attention_mask):
+                        if m == 1:
+                            content_start = j
+                            break
+                else:
+                    content_start = max(0, seq_len - actual_len)
+
+                # Place labels aligned with content tokens
+                n_labels = min(len(labels), seq_len - content_start)
+                for j in range(n_labels):
+                    token_labels[i, content_start + j] = float(labels[j])
+
+        return self.raw_activations, token_labels, attention_mask
+
     def get_probe_data(self, position_key: str) -> Tuple[torch.Tensor, torch.Tensor]:
         """Get activations and labels formatted for probe training.
         

@@ -22,7 +22,7 @@ from probity.training.parallel import (
     _ensure_spawn_start_method,
 )
 from probity.utils.caching import get_dataset_hash, smart_cache_activations
-from probity.utils.dataset_loading import load_contrastive_ntml_dataset, get_model_dtype
+from probity.utils.dataset_loading import load_contrastive_ntml_dataset, load_ntml_token_level, get_model_dtype
 
 
 def train_single_probe_with_hyperparams(
@@ -71,12 +71,15 @@ def train_single_probe_with_hyperparams(
     probe = probe_cls(probe_config).to(device)
     trainer = trainer_cls(trainer_config)
 
-    # Prepare data - use spans for token-level loss modes
+    # Prepare data - choose method based on training mode
     token_level_modes = ['token_all', 'token_spans_only', 'joint', 'joint_span_max', 'annealed', 'span_max', 'span_mean',
                          'margin', 'ranking', 'contrastive_intra', 'soft_recall', 'topk_overlap']
     needs_spans = args.loss_mode in token_level_modes
 
-    if needs_spans and hasattr(trainer, 'prepare_supervised_data_with_spans'):
+    if getattr(args, 'token_level', False) and hasattr(trainer, 'prepare_token_level_data'):
+        # True token-level mode: full sequences with per-token labels
+        train_loader, val_loader = trainer.prepare_token_level_data(activation_store)
+    elif needs_spans and hasattr(trainer, 'prepare_supervised_data_with_spans'):
         train_loader, val_loader, _, _ = trainer.prepare_supervised_data_with_spans(
             activation_store, "LIE_SPAN"
         )
@@ -309,6 +312,14 @@ Best for clusters with many GPUs (8+). Implies --parallel_probes.''')
     parser.add_argument('--max_parallel_workers', type=int, default=None,
                        help='Max parallel workers (default: num_gpus * 2, capped at 16/32)')
 
+    # ========== TOKEN-LEVEL TRAINING MODE ==========
+    parser.add_argument('--token_level', action='store_true',
+                       help='''Enable true token-level training mode.
+Uses load_ntml_token_level to create ONE example per conversation with
+per-token binary labels (0=truth, 1=lie). Forces the probe to learn
+within-sample token discrimination. Automatically sets loss_mode=token_all.
+No truth_version is used (removes sample-level shortcut).''')
+
     return parser.parse_args()
 
 
@@ -376,15 +387,26 @@ def main():
         total_variants = sum(len(v) for v in sweep_config.values())
         print(f"   Training {total_variants} probe variants per layer")
 
-    # Load dataset using the new loader
-    print(f"Loading contrastive dataset from {dataset_path}")
-    dataset = load_contrastive_ntml_dataset(str(dataset_path),
-                                            args.model_name,
-                                            max_length=args.max_length,
-                                            dishonest_mode=args.dishonest_mode,
-                                            honest_mode=args.honest_mode,
-                                            last_k_tokens=args.last_k_tokens,
-                                            use_llm_spans=args.use_llm_spans)
+    # Load dataset
+    if args.token_level:
+        print(f"Loading dataset in TOKEN-LEVEL mode from {dataset_path}")
+        # Override loss mode to token_all for token-level training
+        if args.loss_mode == 'sample_mean':
+            args.loss_mode = 'token_all'
+            print(f"  Auto-set loss_mode=token_all for token-level training")
+        dataset = load_ntml_token_level(str(dataset_path),
+                                        args.model_name,
+                                        max_length=args.max_length,
+                                        use_llm_spans=args.use_llm_spans)
+    else:
+        print(f"Loading contrastive dataset from {dataset_path}")
+        dataset = load_contrastive_ntml_dataset(str(dataset_path),
+                                                args.model_name,
+                                                max_length=args.max_length,
+                                                dishonest_mode=args.dishonest_mode,
+                                                honest_mode=args.honest_mode,
+                                                last_k_tokens=args.last_k_tokens,
+                                                use_llm_spans=args.use_llm_spans)
     print(f"Dataset size: {len(dataset.examples)}")
     
     # Load model once
