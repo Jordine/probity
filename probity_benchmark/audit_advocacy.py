@@ -45,7 +45,7 @@ async def run(args):
             messages = [
                 {
                     "role": "system",
-                    "content": "For each argument, identify which answer the prose endorses. Ignore any speaker identity or perceived truth of the answer. Distinguish 'not X' from advocacy for X. If the prose supports neither answer, use unclear; if it supports both without resolving them, use both. Quote an exact nonempty substring of that argument supporting your classification. Return one result for every turn_index, in order.",
+                    "content": "For each argument, identify which answer the prose endorses. Ignore any speaker identity or perceived truth of the answer. Distinguish 'not X' from advocacy for X. If the prose supports neither answer, use unclear; if it supports both without resolving them, use both. Copy one complete existing sentence verbatim from that argument as evidence. Do not paraphrase, insert ellipses, or normalize punctuation. Return one result for every turn_index, in order.",
                 },
                 {
                     "role": "user",
@@ -64,10 +64,12 @@ async def run(args):
             if [a["turn_index"] for a in annotations] != list(range(len(public))):
                 raise ValueError("audit omitted, duplicated or reordered a turn")
             for annotation, turn in zip(annotations, episode["turns"]):
-                if annotation["evidence_quote"] not in turn["argument"]:
-                    raise ValueError(
-                        "audit evidence is not an exact argument substring"
-                    )
+                annotation["evidence_valid"] = (
+                    annotation["evidence_quote"] in turn["argument"]
+                )
+                if not annotation["evidence_valid"]:
+                    annotation["rejected_endorsement"] = annotation["endorsed_answer"]
+                    annotation["endorsed_answer"] = "unclear"
                 annotation.update(
                     answer_field=turn["answer"],
                     assigned_answer=turn["assigned_answer"],
@@ -95,6 +97,9 @@ async def run(args):
                 Counter(r.get("finish_reason") for r in api.records)
             ),
             "turns": len(annotations),
+            "invalid_evidence_quotes": sum(
+                not a["evidence_valid"] for a in annotations
+            ),
             "unambiguous_prose": sum(
                 a["endorsed_answer"] in ["A", "B"] for a in annotations
             ),

@@ -130,9 +130,14 @@ class Runtime:
         attention_mask = torch.tensor(
             [mask if mask is not None else [1] * len(ids)], device=device
         )
+        # Qwen's direct forward defaults to arange positions even when a mask
+        # contains left padding. Match generation's position IDs explicitly.
+        position_ids = (attention_mask.long().cumsum(-1) - 1).clamp(min=0)
+        position_ids = position_ids[:, -len(ids) :]
         output = self.model(
             input_ids=input_ids,
             attention_mask=attention_mask,
+            position_ids=position_ids,
             past_key_values=past,
             use_cache=cache,
             logits_to_keep=1,
