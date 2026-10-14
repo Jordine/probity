@@ -33,7 +33,7 @@ async def run(args):
         }
     )
     schema = object_schema({"turns": {"type": "array", "items": item_schema}})
-    async with BudgetedChat(args.out, [model], args.budget) as api:
+    async with BudgetedChat(args.out, [model], args.budget, schema_retries=2) as api:
         results = []
 
         async def one(episode):
@@ -90,13 +90,17 @@ async def run(args):
                 }
             )
 
-        await asyncio.gather(*(one(e) for e in episodes))
+        outcomes = await asyncio.gather(
+            *(one(e) for e in episodes), return_exceptions=True
+        )
         annotations = [a for r in results for a in r["turns"]]
         summary = {
             "finish_reasons": dict(
                 Counter(r.get("finish_reason") for r in api.records)
             ),
             "turns": len(annotations),
+            "expected_turns": sum(len(e["turns"]) for e in episodes),
+            "errors": [str(x) for x in outcomes if isinstance(x, BaseException)],
             "invalid_evidence_quotes": sum(
                 not a["evidence_valid"] for a in annotations
             ),
@@ -116,6 +120,10 @@ async def run(args):
         )
         (args.out / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
         print(json.dumps(summary, indent=2))
+        if summary["errors"] or summary["turns"] != summary["expected_turns"]:
+            raise RuntimeError(
+                "incomplete advocacy audit; all in-flight receipts retained"
+            )
 
 
 def main():

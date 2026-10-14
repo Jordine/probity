@@ -15,11 +15,14 @@ def main():
         time.sleep(5)
     receipt = json.loads(args.receipt.read_text())
     instance_id = receipt["instance_id"]
-    if receipt["label"] != "probity-qwen-pilot-20261014" or instance_id == 55765816:
+    if receipt["label"] not in {
+        "probity-qwen-pilot-20261014",
+        "probity-iteration2-20261014",
+    } or instance_id in {55765816, 55942119}:
         raise RuntimeError("refusing a rental not owned by this pilot")
     print(json.dumps(receipt), flush=True)
     while time.time() < receipt["destroy_at_unix"]:
-        time.sleep(min(30, receipt["destroy_at_unix"] - time.time()))
+        time.sleep(max(0, min(30, receipt["destroy_at_unix"] - time.time())))
     for attempt in range(10):
         try:
             result = subprocess.run(

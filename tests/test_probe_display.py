@@ -2,6 +2,8 @@ import json
 import unittest
 
 from probity_benchmark.evaluate_debate_transfer import argument_mapping, segments
+from probity_benchmark.export_probe_review import interval_scores
+import numpy as np
 
 
 class ProbeDisplayTests(unittest.TestCase):
@@ -40,6 +42,24 @@ class ProbeDisplayTests(unittest.TestCase):
         ]:
             with self.assertRaises(ValueError):
                 argument_mapping(raw)
+
+    def test_local_interval_uses_exact_occurrence_and_excludes_json_scaffolding(self):
+        raw = json.dumps({"argument": "Blue. Blue.", "answer": "A"})
+        argument, mapping = argument_mapping(raw)
+        offsets = [(i, i + 1) for i in range(len(raw))]
+        values = np.full(len(raw), 1000.0)
+        for start, end in mapping:
+            values[start:end] = 1.0
+        values[mapping[6][0] : mapping[-1][1]] = 3.0
+        result = [
+            interval_scores(
+                offsets, {"pooled": values, "token": values}, mapping, a, b, True, "max"
+            )
+            for a, b in segments(argument)
+        ]
+        self.assertEqual([r["token_head"] for r in result], [1.0, 3.0])
+        self.assertEqual([r["pooled_head"] for r in result], [1.0, 3.0])
+        self.assertEqual(sum(r["end"] - r["start"] for r in result), len(argument))
 
 
 if __name__ == "__main__":

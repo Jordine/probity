@@ -122,14 +122,14 @@ def serialize(tokenizer, messages, response, prefill=PREFILL):
 
 
 class Runtime:
-    def __init__(self):
+    def __init__(self, model_id=MODEL, revision=REVISION):
         if not torch.cuda.is_available():
             raise RuntimeError("this extraction requires the task GPU")
         torch.backends.cuda.matmul.allow_bf16_reduced_precision_reduction = False
-        self.tokenizer = AutoTokenizer.from_pretrained(MODEL, revision=REVISION)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_id, revision=revision)
         self.model = AutoModelForCausalLM.from_pretrained(
-            MODEL,
-            revision=REVISION,
+            model_id,
+            revision=revision,
             dtype=torch.bfloat16,
             device_map={"": "cuda:0"},
             attn_implementation="sdpa",

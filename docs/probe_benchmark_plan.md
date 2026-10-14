@@ -1,5 +1,18 @@
 # Probity probe benchmark: validation plan and first audit
 
+Current update, 2026-10-14: the [second-pilot report](probity_iteration2_results.md)
+supersedes the historical status below. Repeats implicate answer-choice cues;
+local claim labels were independently adjudicated; both Qwen 27B models were
+tested with frozen Apollo/DYL and adapted probes. On eight fresh parent stories,
+the native 4B judge scored 31/32 without probes, 32/32 with the adapted probe,
+and 24/32 with shuffled scores. Local controls remain consequential. All 46
+targeted checks pass. Conservative cumulative accounting is $19.55 of $25;
+both task rentals are destroyed and verified absent. There are 92 untouched
+original stories. Next priority: establish meaningful judge headroom and
+expand reviewed local claims before the debater-feedback 2×2 sweep.
+
+## First-pilot record and original plan (historical)
+
 Status: 2026-10-14. Initial pilot ceiling: **$25 total**, across API calls, GPU rental and storage. OpenRouter is funded and working. Iteration uses **Qwen3.5-27B and Qwen3.8-27B**, not Llama70B. The first pilots are complete; rental `55934564` was destroyed at approximately 14:44 UTC and its absence verified. API charges plus estimated rental total **$2.26**, or about **$2.33** including conservative unpriced-call reservations and cleanup-time allowance, before minor transfer fees. This is an estimate, not a final invoice. **Neither environment validity nor useful local debate detection is established. No uplift sweep has been run.**
 
 Source correction: the first audit used a local base that omitted three commits on [Jordine/probity main](https://github.com/Jordine/probity/commits/main). GitHub `main` at `ca3952e17af8469be6d0b4ea8843727cd98a291f` has now been fetched, its newer token-probe work reviewed, and all three commits merged into this working branch. The updated assessment below includes that evidence.
