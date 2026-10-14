@@ -265,6 +265,68 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
 
         return train_loader, val_loader, train_spans, val_spans
 
+    def prepare_token_level_data(
+        self, activation_store: ActivationStore
+    ) -> Tuple[DataLoader, DataLoader]:
+        """Prepare train/val data for true token-level training.
+
+        Uses ActivationStore.get_token_level_data() which returns per-token
+        binary labels from the example attributes (set by load_ntml_token_level).
+
+        Unlike prepare_supervised_data_with_spans which uses span boundaries,
+        this directly uses the pre-computed per-token labels, and stores them
+        in self._train_token_labels / self._val_token_labels for use by
+        train_epoch_with_probe_loss with TOKEN_ALL loss.
+        """
+        full_acts, token_labels, attention_mask = activation_store.get_token_level_data()
+
+        n_total = len(full_acts)
+        n_train = int(n_total * self.config.train_ratio)
+
+        # Shuffle
+        indices = torch.randperm(n_total)
+        train_indices = indices[:n_train]
+        val_indices = indices[n_train:]
+
+        X_train = full_acts[train_indices]
+        X_val = full_acts[val_indices]
+        y_train = activation_store.labels[train_indices]
+        y_val = activation_store.labels[val_indices]
+        tl_train = token_labels[train_indices]
+        tl_val = token_labels[val_indices]
+        am_train = attention_mask[train_indices]
+        am_val = attention_mask[val_indices]
+
+        # Store token labels and attention masks for the training loop
+        self._train_token_labels = tl_train.to(self.config.device)
+        self._val_token_labels = tl_val.to(self.config.device)
+        # Also set span masks to the token labels (for loss modes that use span_masks)
+        self._train_pos_masks = tl_train.to(self.config.device)
+        self._val_pos_masks = tl_val.to(self.config.device)
+        self._train_neg_masks = ((1 - tl_train) * am_train).to(self.config.device)
+        self._val_neg_masks = ((1 - tl_val) * am_val).to(self.config.device)
+        # Store attention masks for proper masking during training
+        self._train_attention_mask = am_train.to(self.config.device)
+        self._val_attention_mask = am_val.to(self.config.device)
+        # Set spans to non-None so the train() method knows to use probe_loss path
+        self._train_spans = [[] for _ in range(len(train_indices))]  # Dummy, non-None
+        self._val_spans = [[] for _ in range(len(val_indices))]
+
+        # Create DataLoaders
+        train_dataset = TensorDataset(X_train, y_train.unsqueeze(1), X_train)
+        val_dataset = TensorDataset(X_val, y_val.unsqueeze(1), X_val)
+        train_loader = DataLoader(train_dataset, batch_size=self.config.batch_size, shuffle=False)
+        val_loader = DataLoader(val_dataset, batch_size=self.config.batch_size)
+
+        # Print stats
+        n_lie = tl_train.sum().item()
+        n_total_tokens = am_train.sum().item()
+        print(f"Token-level data: {len(train_indices)} train, {len(val_indices)} val")
+        print(f"Train token labels: {n_lie:.0f} lie / {n_total_tokens:.0f} total "
+              f"({100*n_lie/max(n_total_tokens,1):.1f}% lie)")
+
+        return train_loader, val_loader
+
     def prepare_supervised_data(self, activation_store: ActivationStore, position_key: str) -> Tuple[DataLoader, DataLoader]:
         """Prepare train/val splits with DataLoader creation."""
         X_train_all, y_all, X_orig_all = self.prepare_data(activation_store, position_key)
@@ -525,8 +587,11 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
                 # (batch, hidden) - shouldn't happen for token-level modes
                 logits = model(batch_x).squeeze(-1)
 
-            # Prepare tensors for loss
-            attention_mask = torch.ones_like(logits)  # TODO: use actual mask if available
+            # Prepare tensors for loss - use actual mask if available
+            if hasattr(self, '_train_attention_mask') and self._train_attention_mask is not None:
+                attention_mask = self._train_attention_mask[start_idx:end_idx].to(self.config.device)
+            else:
+                attention_mask = torch.ones_like(logits)
 
             token_labels = None
             span_masks = None
@@ -1065,8 +1130,11 @@ class SupervisedProbeTrainer(BaseProbeTrainer):
                 else:
                     logits = model(batch_x).squeeze(-1)
 
-                # Prepare tensors for loss
-                attention_mask = torch.ones_like(logits)
+                # Prepare tensors for loss - use actual mask if available
+                if hasattr(self, '_val_attention_mask') and self._val_attention_mask is not None:
+                    attention_mask = self._val_attention_mask[start_idx:end_idx].to(self.config.device)
+                else:
+                    attention_mask = torch.ones_like(logits)
 
                 token_labels = None
                 span_masks = None

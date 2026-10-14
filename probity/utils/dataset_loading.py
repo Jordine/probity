@@ -844,11 +844,227 @@ def load_contrastive_ntml_dataset(json_path: str,
 
     return tokenized_dataset
 
+def load_ntml_token_level(json_path: str,
+                          tokenizer_name: str = "meta-llama/Llama-3.1-8B-Instruct",
+                          max_length: int = 512,
+                          warn_on_truncation: bool = True,
+                          use_llm_spans: str = 'auto') -> TokenizedProbingDataset:
+    """
+    Load NTML dataset for TRUE token-level training.
+
+    Unlike load_contrastive_ntml_dataset which creates one example per statement,
+    this creates ONE example per conversation (lie_version only) with per-token
+    binary labels across the FULL sequence:
+      - 0 for system/user/truth-statement tokens
+      - 1 for lie-span tokens (using LLM-tagged spans or sentence-level)
+
+    This forces the probe to learn within-sample token discrimination rather
+    than sample-level context detection, because every training example has
+    BOTH 0 and 1 labels mixed together.
+
+    The key difference from contrastive training:
+      - No truth_version at all (removes sample-level shortcut)
+      - Each sample contains mixed 0/1 token labels
+      - Probe must learn to distinguish lie tokens from truth tokens within
+        the SAME conversation context
+    """
+    with open(json_path, 'r') as f:
+        conversations = json.load(f)
+
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_fast=True)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
+    model_type = detect_model_type(tokenizer_name)
+    DEFAULT_USER_PROMPT = "Hello there, please give me a few facts about yourself."
+
+    # Check for LLM spans
+    def has_llm_spans(conv: dict) -> bool:
+        if 'lie_spans' in conv and conv['lie_spans']:
+            return True
+        if 'has_llm_spans' in conv and conv['has_llm_spans']:
+            return True
+        return False
+
+    dataset_has_spans = any(has_llm_spans(conv) for conv in conversations[:10])
+    if use_llm_spans == 'always' and not dataset_has_spans:
+        raise ValueError("use_llm_spans='always' but dataset has no LLM-tagged spans.")
+    using_llm_spans = (use_llm_spans == 'always') or (use_llm_spans == 'auto' and dataset_has_spans)
+
+    def create_chat_messages(system_prompt, user_prompt, model_response):
+        return [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+            {"role": "assistant", "content": model_response}
+        ]
+
+    print(f"Loading NTML for token-level training: {len(conversations)} conversations")
+    print(f"Model type: {model_type}, max_length: {max_length}")
+    print(f"Span mode: {'LLM-tagged' if using_llm_spans else 'sentence-level'}")
+
+    probing_examples = []
+    skipped = 0
+    total_lie_tokens = 0
+    total_truth_tokens = 0
+
+    for conv in conversations:
+        conv_id = conv['id']
+        lie_positions = set(conv.get('lie_response_positions', conv['lie_ids']))
+
+        # Only use lie_version - no truth_version (removes sample-level shortcut)
+        # Use actual user prompt from data if available, otherwise default
+        user_prompt = conv['lie_version'].get('user', DEFAULT_USER_PROMPT)
+        lie_messages = create_chat_messages(
+            conv['lie_version']['system'],
+            user_prompt,
+            conv['lie_version']['model']
+        )
+
+        lie_formatted = apply_chat_template_unified(
+            tokenizer, lie_messages,
+            model_type=model_type,
+            tokenize=False,
+            add_generation_prompt=False
+        )
+
+        # Tokenize without padding first to get accurate positions
+        tokens_no_pad = tokenizer(lie_formatted, add_special_tokens=False)['input_ids']
+        seq_len = len(tokens_no_pad)
+
+        if seq_len > max_length and warn_on_truncation:
+            pass  # Will be truncated during final tokenization
+
+        # Build per-token labels: 0 everywhere, then set lie spans to 1
+        # We work in character space first, then convert to token space
+        char_labels = [0] * len(lie_formatted)
+
+        # Find assistant content boundaries
+        content_start, content_end = find_assistant_boundaries(lie_formatted, model_type)
+        if content_start is None:
+            skipped += 1
+            continue
+
+        if using_llm_spans and has_llm_spans(conv):
+            # Use LLM-tagged spans (fine-grained phrase-level)
+            for span in conv.get('lie_spans', []):
+                char_start = content_start + span.get('char_start', 0)
+                char_end = content_start + span.get('char_end', 0)
+                char_start = max(0, min(char_start, len(lie_formatted)))
+                char_end = max(0, min(char_end, len(lie_formatted)))
+                for c in range(char_start, char_end):
+                    char_labels[c] = 1
+        else:
+            # Fall back to sentence-level: mark entire lie statements
+            model_response = conv['lie_version']['model']
+            statement_positions = find_statement_positions_in_chat(
+                lie_formatted, model_response, model_type
+            )
+            for stmt_idx in lie_positions:
+                if stmt_idx < len(statement_positions):
+                    pos = statement_positions[stmt_idx]
+                    for c in range(pos.start, pos.end):
+                        if c < len(char_labels):
+                            char_labels[c] = 1
+
+        # Convert character-level labels to token-level labels
+        # Use the tokenizer's offset mapping to align characters to tokens
+        encoding = tokenizer(
+            lie_formatted,
+            add_special_tokens=False,
+            return_offsets_mapping=True,
+            max_length=max_length,
+            truncation=True,
+        )
+        offset_mapping = encoding.get('offset_mapping', [])
+        token_ids = encoding['input_ids']
+
+        token_labels = []
+        for start_char, end_char in offset_mapping:
+            if start_char == end_char:
+                # Special token or padding
+                token_labels.append(0)
+            else:
+                # Check if ANY character in this token's span is labeled as lie
+                span_labels = char_labels[start_char:end_char]
+                # Token is lie if majority of its characters are lie-labeled
+                if sum(span_labels) > len(span_labels) / 2:
+                    token_labels.append(1)
+                else:
+                    token_labels.append(0)
+
+        n_lie = sum(token_labels)
+        n_truth = len(token_labels) - n_lie
+        total_lie_tokens += n_lie
+        total_truth_tokens += n_truth
+
+        if n_lie == 0:
+            skipped += 1
+            continue
+
+        # Store token labels in the character_positions field using a special key
+        # We'll use multiple LIE_SPAN positions to mark all lie token indices
+        lie_token_indices = [i for i, l in enumerate(token_labels) if l == 1]
+        truth_token_indices = [i for i, l in enumerate(token_labels) if l == 0]
+
+        # Create the example with label=1 (it contains lies)
+        # Store the full token label list in attributes for the trainer
+        example = ProbingExample(
+            text=lie_formatted,
+            label=1,  # Sample-level: this conversation contains lies
+            label_text="mixed",
+            character_positions=CharacterPositions({
+                "LIE_SPAN": [Position(start=idx, end=idx) for idx in lie_token_indices[:1]],  # Dummy for compatibility
+            }),
+            group_id=f"{conv_id}_token_level",
+            attributes={
+                "conversation_id": conv_id,
+                "version": "dishonest",
+                "token_labels": token_labels,  # The actual per-token binary labels
+                "n_lie_tokens": n_lie,
+                "n_truth_tokens": n_truth,
+                "lie_token_indices": lie_token_indices,
+                "span_source": "llm_tagged" if using_llm_spans else "sentence_parsing",
+            }
+        )
+        probing_examples.append(example)
+
+    # Summary
+    total_tokens = total_lie_tokens + total_truth_tokens
+    print(f"\nCreated {len(probing_examples)} full-conversation examples (skipped {skipped})")
+    print(f"Token-level labels: {total_lie_tokens} lie tokens ({100*total_lie_tokens/max(total_tokens,1):.1f}%), "
+          f"{total_truth_tokens} truth tokens ({100*total_truth_tokens/max(total_tokens,1):.1f}%)")
+
+    probing_dataset = ProbingDataset(
+        examples=probing_examples,
+        dataset_attributes={
+            "description": f"Token-level NTML dataset (lie_version only) in {model_type} chat format",
+            "source_conversations": len(conversations),
+            "total_examples": len(probing_examples),
+            "total_lie_tokens": total_lie_tokens,
+            "total_truth_tokens": total_truth_tokens,
+            "max_length": max_length,
+            "span_mode": "llm_tagged" if using_llm_spans else "sentence_parsing",
+            "training_mode": "token_level",
+        }
+    )
+
+    tokenized_dataset = TokenizedProbingDataset.from_probing_dataset(
+        dataset=probing_dataset,
+        tokenizer=tokenizer,
+        padding="max_length",
+        max_length=max_length,
+        truncation=True,
+        add_special_tokens=False
+    )
+
+    return tokenized_dataset
+
+
 def get_model_dtype(model_name: str) -> torch.dtype:
     """Determine the appropriate dtype for the model"""
     # Models that typically use bfloat16
     bfloat16_models = ['llama', 'mistral', 'gemma', 'phi', 'qwen']
-    
+
     if any(m in model_name.lower() for m in bfloat16_models):
         return torch.bfloat16
     return torch.float32
