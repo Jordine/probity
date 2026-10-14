@@ -102,7 +102,20 @@ async def run(args):
     problems, audit = load_problems(args.dataset)
     if audit["errors"] or audit["duplicate_problem_hashes"]:
         raise RuntimeError("dataset audit failed")
-    selected = select_pilot(problems, args.n, args.seed)
+    excluded = set()
+    exclusion_receipts = []
+    for path in args.exclude_manifest:
+        raw = path.read_text()
+        ids = json.loads(raw)["selected_problem_ids"]
+        if not isinstance(ids, list) or not all(isinstance(x, str) for x in ids):
+            raise ValueError("invalid exclusion manifest")
+        excluded.update(ids)
+        exclusion_receipts.append({"path": str(path.resolve()), "sha256": sha256(raw)})
+    if excluded - {p.problem_id for p in problems}:
+        raise ValueError("exclusion manifest contains unknown problems")
+    selected = select_pilot(
+        [p for p in problems if p.problem_id not in excluded], args.n, args.seed
+    )
     catalog = json.load(
         urllib.request.urlopen("https://openrouter.ai/api/v1/models", timeout=30)
     )
@@ -143,6 +156,8 @@ async def run(args):
         "models": {m: models[m] for m in args.models},
         "seed": args.seed,
         "selected_problem_ids": [p.problem_id for p in selected],
+        "excluded_problem_ids": sorted(excluded),
+        "exclusion_manifests": exclusion_receipts,
         "max_completion_tokens": args.max_tokens,
         "budget_usd": args.budget,
         "purpose": "environment validity pilot; no probes; no final-test claims",
@@ -350,6 +365,7 @@ def main():
     ap.add_argument("--models", nargs="+", required=True)
     ap.add_argument("--n", type=int, default=12)
     ap.add_argument("--seed", type=int, default=20261014)
+    ap.add_argument("--exclude-manifest", type=Path, action="append", default=[])
     ap.add_argument("--budget", type=float, default=2.0)
     ap.add_argument("--max-tokens", type=int, default=8192)
     ap.add_argument("--concurrency", type=int, default=4)
