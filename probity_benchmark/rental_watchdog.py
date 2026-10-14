@@ -1,0 +1,47 @@
+"""Destroy only the task-owned rental at its fixed deadline, from VPS tmux."""
+
+import argparse
+import json
+from pathlib import Path
+import subprocess
+import time
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("receipt", type=Path)
+    args = ap.parse_args()
+    while not args.receipt.exists():
+        time.sleep(5)
+    receipt = json.loads(args.receipt.read_text())
+    instance_id = receipt["instance_id"]
+    if receipt["label"] != "probity-qwen-pilot-20261014" or instance_id == 55765816:
+        raise RuntimeError("refusing a rental not owned by this pilot")
+    print(json.dumps(receipt), flush=True)
+    while time.time() < receipt["destroy_at_unix"]:
+        time.sleep(min(30, receipt["destroy_at_unix"] - time.time()))
+    for attempt in range(10):
+        result = subprocess.run(
+            ["vastai", "destroy", "instance", str(instance_id), "--yes", "--raw"],
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        log = {
+            "attempt": attempt,
+            "time": time.time(),
+            "returncode": result.returncode,
+            "stdout": result.stdout,
+            "stderr": result.stderr,
+        }
+        print(json.dumps(log), flush=True)
+        with args.receipt.with_suffix(".cleanup.jsonl").open("a") as f:
+            f.write(json.dumps(log) + "\n")
+        if result.returncode == 0:
+            return
+        time.sleep(30)
+    raise RuntimeError("rental destruction failed; manual cleanup required")
+
+
+if __name__ == "__main__":
+    main()
