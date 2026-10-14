@@ -2,13 +2,15 @@
 
 Status: 2026-10-14. Initial pilot ceiling: **$25 total**, across API calls, GPU rental and storage. No new GPU has been rented for this task. Model-based validation is blocked by the connected OpenRouter account returning HTTP 402, insufficient credits. Nothing below is a claim of measured probe uplift.
 
+Source correction: the first audit used a local base that omitted three commits on [Jordine/probity main](https://github.com/Jordine/probity/commits/main). GitHub `main` at `ca3952e17af8469be6d0b4ea8843727cd98a291f` has now been fetched, its newer token-probe work reviewed, and all three commits merged into this working branch. The updated assessment below includes that evidence.
+
 The immediate question is whether the debate environment can measure useful detection of knowing falsehoods. Judge accuracy, role adherence, whole-response detection, local lie detection and downstream uplift are separate measurements. A failure in one must not be reported as a failure in another.
 
 The original request is preserved in the [private research brief](https://chatgpt.com/space/page_01b1d87bb01081919db3dd0815fc95ef). The design follows the [debate benchmark spec](https://docs.google.com/document/d/1worLKbiRDYb3q5xOz6WH30VTnfr2-o9RGav_p_RWBNs/edit), with the decisions and remaining gaps below.
 
 ## Work completed
 
-- Created an isolated worktree at `/root/projects/probity-benchmark`, branch `codex/probe-benchmark-20261014`, based on `831c44f4ff4c1d7e71c86f149062e65be24947c3`. The original checkout contains substantial uncommitted changes and a nested older checkout; it has been preserved.
+- Created an isolated worktree at `/root/projects/probity-benchmark`, branch `codex/probe-benchmark-20261014`, initially based on `831c44f4ff4c1d7e71c86f149062e65be24947c3` and now including GitHub `main` through `ca3952e1`. The original checkout contains substantial uncommitted changes and a nested older checkout; it has been preserved.
 - Added a strict dataset preflight and a budgeted API baseline runner. Prompts include only the allowed fields; both answer orders are tested; full requests/responses and run manifests are saved. Errors, malformed answers and incomplete generations stop the pilot. Summary confidence intervals resample stories, not answer-order variants.
 - Fixed an off-by-one in `FastLocalModelProvider`: generation hooks previously attached the state predicting a token to that token. They now capture the state after consuming that token. New metadata marks this as `post_token_v1`; old activation caches must not be mixed with these results.
 - Removed silent output-allowance shrinking in that provider. Context overflow and a generation that ends without EOS now fail. The capture loop supports multiple EOS IDs and validates one activation per returned token.
@@ -31,9 +33,21 @@ Two complete transcripts were read qualitatively: `synthetic_103_Where_did_the_n
 
 The archived prompts and generation termination metadata were not saved, so these records cannot establish whether role failure came from the model, its exact prompt, or an older serialization/mapping bug. Preserve them as audit evidence; do not relabel them into a clean benchmark.
 
-### Local probe performance must be re-established
+### Newer GitHub probe results provide a baseline worth reproducing
 
-`LOCALIZATION_AUDIT_FINDINGS.md` and `PROJECT_STATUS.md` already document historical label/boundary problems and weak within-transcript localization. High sample-level AUROC is not evidence that the probe identifies the false phrase. Treat optimistic older usage-guide claims as unvalidated until replicated with checked labels.
+The three GitHub-only commits were `0b8e2a68` (token-level training and sentence evaluation), `36cb6b47` (validation/leakage checks) and `ca3952e1` (70B validation and saved probes). They add per-token span labels, attention-mask handling, a direct Hugging Face extraction path, and more recent positive results. The earlier characterization based only on `LOCALIZATION_AUDIT_FINDINGS.md` and `PROJECT_STATUS.md` was incomplete.
+
+The [committed 70B run log](https://github.com/Jordine/probity/blob/ca3952e17af8469be6d0b4ea8843727cd98a291f/results/70b_validation_results.log) reports Llama3.3-70B layer 55 IID `nauroc=0.9699` on 60 validation conversations, debate response-mean AUROC `0.7867`, and higher dishonest than honest scores in `14/15` scenario pairs. This is promising evidence for an existing probe baseline. The 93% figure is paired score ranking, not judge accuracy, validated false-span localization or downstream uplift. These are historical reported results, not newly reproduced measurements.
+
+Review of the [70B script](https://github.com/Jordine/probity/blob/ca3952e17af8469be6d0b4ea8843727cd98a291f/scripts/run_70b_hf.py) and new validation scripts identifies concrete checks before reuse:
+
+- The IID metric includes all nonpadding prompt and response tokens; prompt tokens are negative labels. Recompute on assistant content only and on mixed true/false response spans. A positive affine z-score transform preserves each example's AUROC, so the `norm_auroc` name does not independently remove this issue.
+- Large within-turn score variance shows that scores vary; it does not establish that peaks coincide with knowing falsehoods. The generated-debate metric compares role-conditioned response means without independently labelled false spans.
+- The 70B tokenizer calls allow input truncation at 1,024 training tokens and 8,192 debate-input tokens, generation has a 200-token cap without a completion gate, and printed examples are clipped. The 7B validation scripts explicitly cut stories to 2,000–3,000 characters. Their outputs do not establish compliance with the current no-truncation rule.
+- The HF extraction helper does not pass an attention mask; the saved run logs warnings about missing masks. Its hooks read decoder-block outputs, whereas the TransformerLens scripts use `hook_resid_pre`. Preserve and test those distinct layer conventions.
+- The 70B separation bootstrap resamples honest and dishonest arrays independently despite matched scenarios; use paired story resampling. Layer selection uses the same IID validation set as the reported best-layer metric; retain a separate final test.
+
+The plan is to reuse and harden this newer loader/trainer/extraction work, then port the method to the target Qwens with newly matched weights. Do not assume either that local probing has failed or that the logged results already validate this benchmark. Historical label/boundary findings remain relevant to the older paths, not a complete verdict on the April additions.
 
 Additional unresolved code risks: special display tokens can be removed without removing their score/activation positions; word-keyed score dictionaries overwrite repeated words; some probe exceptions are suppressed; some formatting defaults manufacture a neutral 0.5 score. Legacy judge instructions also overstate independence and local reliability. These paths are not approved for the new benchmark yet.
 
@@ -76,7 +90,7 @@ The accessible [Cadenza project plan](https://docs.google.com/document/d/1RjSXfB
 
 ## Track 3 — hillclimb local lie detection
 
-Start with a manually checked diagnostic set covering false assertions, true assertions in dishonest turns, faithful and fabricated quotations, misleading use of true evidence, uncertainty, mistakes and truthful concessions. Annotate factual falsity, evidence of knowledge and deceptive intent separately; preserve uncertain labels. Validate offsets by checking the complete labelled text against the original transcript. An LLM labeler may assist but cannot define ground truth without checks.
+First reproduce the newer GitHub token-level baseline with assistant-only labels, complete contexts and explicit hook/score contracts; reuse its existing training and leakage-control work. Start with a manually checked diagnostic set covering false assertions, true assertions in dishonest turns, faithful and fabricated quotations, misleading use of true evidence, uncertainty, mistakes and truthful concessions. Annotate factual falsity, evidence of knowledge and deceptive intent separately; preserve uncertain labels. Validate offsets by checking the complete labelled text against the original transcript. An LLM labeler may assist but cannot define ground truth without checks.
 
 Train an inexpensive linear token/span baseline first, then test within-response ranking, span pooling and the existing annealing/NTML objectives. Include both true and false spans within the same response so that role identity alone cannot solve the objective. Contrastive source pairs, paraphrases, stories and prompt templates stay in one data partition. Fit scaling and thresholds on train/dev only.
 
