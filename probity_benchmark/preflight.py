@@ -25,7 +25,9 @@ class Problem:
     gold: str
     source_line: int
 
-    def view(self, with_story: bool, swapped: bool) -> tuple[list[dict], str]:
+    def view(
+        self, with_story: bool, swapped: bool, structured: bool = False
+    ) -> tuple[list[dict], str]:
         options = self.options[::-1] if swapped else self.options
         gold = {"A": "B", "B": "A"}[self.gold] if swapped else self.gold
         # Only these explicitly allowed fields enter a model prompt. The source
@@ -38,7 +40,12 @@ class Problem:
                 "content": (
                     "Answer the two-option reading-comprehension question. "
                     "If no story is supplied, make your best choice from the question "
-                    "and options alone. Return exactly A or B, without explanation."
+                    "and options alone. "
+                    + (
+                        'Return only a JSON object with one field, "answer", whose value is "A" or "B".'
+                        if structured
+                        else "Return exactly A or B, without explanation."
+                    )
                 ),
             },
             {"role": "user", "content": body},
@@ -134,7 +141,23 @@ def select_pilot(problems: list[Problem], n: int, seed: int) -> list[Problem]:
     )
 
 
-def parse_answer(text: str) -> str:
+def parse_answer(text: str, structured: bool = False) -> str:
+    if structured:
+
+        def unique_object(pairs):
+            obj = dict(pairs)
+            if len(obj) != len(pairs):
+                raise ValueError("duplicate response fields")
+            return obj
+
+        obj = json.loads(text, object_pairs_hook=unique_object)
+        if (
+            not isinstance(obj, dict)
+            or set(obj) != {"answer"}
+            or obj["answer"] not in ("A", "B")
+        ):
+            raise ValueError("response must contain only an A/B answer field")
+        return obj["answer"]
     answer = text.strip()
     if not re.fullmatch("[AB]", answer):
         raise ValueError(

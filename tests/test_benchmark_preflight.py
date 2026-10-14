@@ -13,6 +13,18 @@ from probity_benchmark.run_baselines import summarize
 
 
 class BenchmarkPreflightTests(unittest.TestCase):
+    def test_structured_answer_does_not_guess_or_accept_duplicate_fields(self):
+        self.assertEqual(parse_answer('{"answer":"B"}', structured=True), "B")
+        for text in [
+            '{"answer":"A","answer":"B"}',
+            '{"answer":"A or B"}',
+            '{"answer":"A","explanation":"guess"}',
+            "A",
+            '["A"]',
+        ]:
+            with self.assertRaises(ValueError):
+                parse_answer(text, structured=True)
+
     def setUp(self):
         self.p = Problem(
             "id",

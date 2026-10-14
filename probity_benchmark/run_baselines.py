@@ -115,7 +115,12 @@ async def run(args):
     # Check every model against the longest selected full-story prompt before
     # opening a paid session. Answer swapping preserves this byte count.
     largest_prompt_bound = max(
-        len(json.dumps(p.view(True, False)[0], ensure_ascii=False).encode()) + 1024
+        len(
+            json.dumps(
+                p.view(True, False, structured=True)[0], ensure_ascii=False
+            ).encode()
+        )
+        + 1024
         for p in selected
     )
     for model in args.models:
@@ -129,6 +134,8 @@ async def run(args):
         ]
         if any(not math.isfinite(rate) or rate < 0 for rate in rates):
             raise ValueError(f"invalid pricing for {model}")
+        if "structured_outputs" not in spec.get("supported_parameters", []):
+            raise ValueError(f"structured answer format unavailable for {model}")
     args.out.mkdir(parents=True)
     manifest = {
         "created_at": datetime.now(timezone.utc).isoformat(),
@@ -140,6 +147,7 @@ async def run(args):
         "budget_usd": args.budget,
         "purpose": "environment validity pilot; no probes; no final-test claims",
         "reasoning": "disabled explicitly; hidden reasoning is not silently clipped",
+        "answer_protocol": "strict_json_schema_ab_v1",
     }
     manifest["git_commit"] = subprocess.check_output(
         ["git", "rev-parse", "HEAD"], text=True
@@ -163,7 +171,7 @@ async def run(args):
 
         async def one(model, problem, with_story, swapped):
             nonlocal spent, reserved, stopped
-            messages, gold = problem.view(with_story, swapped)
+            messages, gold = problem.view(with_story, swapped, structured=True)
             price = models[model]["pricing"]
             input_rate = float(price["prompt"])
             output_rate = float(price["completion"])
@@ -187,6 +195,21 @@ async def run(args):
                 "messages": messages,
                 "max_tokens": args.max_tokens,
                 "reasoning": {"enabled": False},
+                "response_format": {
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "reading_answer",
+                        "strict": True,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "answer": {"type": "string", "enum": ["A", "B"]}
+                            },
+                            "required": ["answer"],
+                            "additionalProperties": False,
+                        },
+                    },
+                },
                 "provider": {
                     "require_parameters": True,
                     "max_price": {
@@ -264,7 +287,9 @@ async def run(args):
                         raise RuntimeError(
                             "completion hit token cap despite stop reason"
                         )
-                    answer = parse_answer(choice["message"].get("content") or "")
+                    answer = parse_answer(
+                        choice["message"].get("content") or "", structured=True
+                    )
                     record.update(answer=answer, correct=answer == gold, valid=True)
                 except Exception as exc:
                     record["error"] = str(exc)
