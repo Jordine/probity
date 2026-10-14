@@ -164,6 +164,9 @@ cython_debug/
 # Cache
 cache/
 
+# Complete experiment receipts and transcripts stay local unless curated.
+/runs/
+
 # Probes
 saved_probes/
 
