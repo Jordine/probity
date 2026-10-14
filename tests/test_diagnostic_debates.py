@@ -3,10 +3,16 @@ import unittest
 from probity_benchmark.api import strict_json
 from probity_benchmark.counterfactuals import swap_entities
 from probity_benchmark.preflight import Problem
-from probity_benchmark.run_debates import judge_messages
+from probity_benchmark.run_debates import judge_messages, debater_messages
 
 
 class DiagnosticDebateTests(unittest.TestCase):
+    def test_named_assignment_tracks_swapped_option(self):
+        p = Problem("id", "Story", "Where?", ("West", "East"), "A", 1)
+        messages = debater_messages(p, True, "Red", "A", [])
+        self.assertIn("answer A: East", messages[0]["content"])
+        self.assertIn("Your position is A: East", messages[1]["content"])
+
     def test_judge_view_uses_only_public_fields(self):
         p = Problem("private_id", "PRIVATE_STORY", "Where?", ("West", "East"), "A", 1)
         turns = [
