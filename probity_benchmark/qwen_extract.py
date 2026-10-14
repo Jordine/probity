@@ -35,6 +35,22 @@ def mask_linear_padding(module, args, kwargs):
     return (masked, *args[1:]), kwargs
 
 
+def overlapping_tokens(offsets, start, end):
+    """Include boundary tokens, including a word merged with leading whitespace."""
+    if not 0 <= start < end:
+        raise ValueError("invalid annotation interval")
+    positions = [
+        i for i, (a, b) in enumerate(offsets) if a < end and b > start and a < b
+    ]
+    if (
+        not positions
+        or offsets[positions[0]][0] > start
+        or offsets[positions[-1]][1] < end
+    ):
+        raise ValueError("token offsets do not cover the complete annotation")
+    return positions
+
+
 def serialize(tokenizer, messages, response):
     prefix = tokenizer.apply_chat_template(
         messages, tokenize=False, add_generation_prompt=True, enable_thinking=False
@@ -172,9 +188,9 @@ class Runtime:
             raise ValueError("nonfinite activations")
         return acts, output.past_key_values
 
-    def alignment_check(self):
+    def alignment_check(self, messages=None):
         t = self.tokenizer
-        messages = [
+        messages = messages or [
             {
                 "role": "user",
                 "content": "Repeat these words exactly: Café blue blue. Blue again.",
@@ -224,6 +240,7 @@ class Runtime:
                     }
                 )
         result = {
+            "prompt_tokens": len(prefix),
             "tokens": response,
             "decoded_tokens": t.convert_ids_to_tokens(response),
             "checks": checks,
@@ -265,6 +282,7 @@ def main():
         "dtype": "bfloat16",
         "layers": LAYERS,
         "hook": "model.layers[k] output, zero-based",
+        "span_pooling_positions": "all response tokens whose character ranges overlap the annotated interval; boundary overhang retained",
         "padding_adapter": "DeltaNet input mask also applied for batch=1; Transformers 5.9 helper otherwise skips it",
         "reasoning": "disabled, explicit empty think block preserved",
         "dyl_question": FOLLOWUP,
@@ -305,6 +323,15 @@ def main():
     print(json.dumps({"alignment": alignment}), flush=True)
     if not alignment["passed"]:
         raise ValueError("real-model token alignment check failed")
+    longest = max(rows, key=lambda row: len(json.dumps(row["messages"])))
+    if len(json.dumps(longest["messages"])) > 4096:
+        long_alignment = runtime.alignment_check(longest["messages"])
+        (args.out / "long_alignment.json").write_text(
+            json.dumps(long_alignment, indent=2) + "\n"
+        )
+        print(json.dumps({"long_alignment": long_alignment}), flush=True)
+        if not long_alignment["passed"]:
+            raise ValueError("long-context alignment check failed")
     started = time.monotonic()
     for row in rows:
         serialized = serialize(runtime.tokenizer, row["messages"], row["response"])
@@ -326,11 +353,9 @@ def main():
         ]
         span_mean, span_last, span_positions = [], [], []
         for span in row["spans"]:
-            local_positions = [
-                i
-                for i, (a, b) in enumerate(relative_offsets)
-                if span["start"] <= a < b <= span["end"]
-            ]
+            local_positions = overlapping_tokens(
+                relative_offsets, span["start"], span["end"]
+            )
             if (
                 not local_positions
                 or row["response"][span["start"] : span["end"]] != span["text"]

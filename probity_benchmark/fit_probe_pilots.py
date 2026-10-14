@@ -12,6 +12,7 @@ from sklearn.preprocessing import StandardScaler
 import torch
 
 from .qwen_extract import LAYERS
+from .preflight import sha256
 
 
 def grouped_ci(values, groups, seed=42):
@@ -108,6 +109,9 @@ def main():
     for path in files:
         cache = torch.load(path, map_location="cpu", weights_only=True)
         r = cache["row"]
+        if r["source"] == "api_qwen35_reviewed_debate":
+            # Frozen transfer diagnostic, never used for head selection.
+            continue
         if r["source"] == "apollo_roleplaying_offpolicy":
             apollo.append(
                 {
@@ -151,6 +155,10 @@ def main():
         if any(len(x) != 1 for x in partitions.values()):
             raise ValueError("group leakage")
     result = {
+        "extraction_manifest": json.loads(
+            (args.features / "manifest.json").read_text()
+        ),
+        "trainer_sha256": sha256(Path(__file__).read_text()),
         "extraction_completion": summary,
         "claim_limit": "Development probe pilot. Atomic labels measure teacher-forced factual consistency; Apollo labels are supplied and not independently verified. No downstream uplift claim.",
         "local_candidates": [],
@@ -265,6 +273,15 @@ def main():
         np.array([r["fibs"] for r in pure_test]),
         np.array([r["group"] for r in pure_test]),
     )
+    saved_heads["__contract__"] = {
+        "model": result["extraction_manifest"]["model"],
+        "model_revision": result["extraction_manifest"]["model_revision"],
+        "extraction_manifest_sha256": sha256(
+            (args.features / "manifest.json").read_text()
+        ),
+        "trainer_sha256": result["trainer_sha256"],
+        "score_type": "raw_logit, higher means false-labelled",
+    }
     torch.save(saved_heads, args.out / "heads.pt")
     (args.out / "results.json").write_text(json.dumps(result, indent=2) + "\n")
     print(

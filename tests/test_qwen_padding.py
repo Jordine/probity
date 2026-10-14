@@ -1,10 +1,18 @@
 import unittest
 import torch
 
-from probity_benchmark.qwen_extract import mask_linear_padding
+from probity_benchmark.qwen_extract import mask_linear_padding, overlapping_tokens
 
 
 class QwenPaddingTests(unittest.TestCase):
+    def test_span_start_keeps_word_token_with_leading_space(self):
+        # ' First. Next.' -> the second word's token also includes its space.
+        offsets = [(0, 6), (6, 7), (7, 12), (12, 13)]
+        self.assertEqual(overlapping_tokens(offsets, 8, 13), [2, 3])
+
+    def test_repeated_word_occurrences_are_selected_by_offsets(self):
+        self.assertEqual(overlapping_tokens([(0, 4), (4, 9)], 5, 9), [1])
+
     def test_single_example_left_padding_is_zeroed_before_recurrence(self):
         hidden = torch.arange(20).reshape(1, 5, 4).float()
         mask = torch.tensor([[0, 0, 1, 1, 1]])
