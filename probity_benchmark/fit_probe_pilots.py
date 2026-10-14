@@ -91,6 +91,7 @@ def linear_fit(x, y, c):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--features", type=Path, required=True)
+    ap.add_argument("--dyl-denials", type=Path, required=True)
     ap.add_argument("--out", type=Path, required=True)
     args = ap.parse_args()
     if args.out.exists():
@@ -102,12 +103,28 @@ def main():
     if not alignment["passed"]:
         raise ValueError("alignment gate failed")
     args.out.mkdir(parents=True)
+    denial_manifest = json.loads((args.dyl_denials / "manifest.json").read_text())
+    if denial_manifest["base_manifest_sha256"] != sha256(
+        (args.features / "manifest.json").read_text()
+    ):
+        raise ValueError("DYL arm comes from a different source cache")
+    denial_summary = json.loads((args.dyl_denials / "summary.json").read_text())
+    if denial_summary["completed"] != summary["rows_expected"]:
+        raise ValueError("DYL arm incomplete")
     local, apollo, pure = [], [], []
     files = sorted(args.features.glob("*.pt"))
     if len(files) != summary["rows_expected"]:
         raise ValueError("cache file count mismatch")
     for path in files:
         cache = torch.load(path, map_location="cpu", weights_only=True)
+        denial = torch.load(
+            args.dyl_denials / path.name, map_location="cpu", weights_only=True
+        )
+        if (
+            denial["id"] != cache["id"]
+            or denial["base_serialized_sha256"] != cache["serialized_text_sha256"]
+        ):
+            raise ValueError("mismatched DYL row")
         r = cache["row"]
         if r["source"] == "api_qwen35_reviewed_debate":
             # Frozen transfer diagnostic, never used for head selection.
@@ -120,8 +137,8 @@ def main():
                     "split": r["split"],
                     "y": r["label"],
                     "response_mean": cache["response_mean"].float().numpy(),
-                    "dyl_features": cache["dyl_features"].float().numpy(),
-                    "fibs": cache["fibs_score"],
+                    "dyl_features": denial["dyl_features"].float().numpy(),
+                    "fibs": denial["fibs_contrast"],
                     "length": len(cache["response_positions"]),
                 }
             )
@@ -131,7 +148,7 @@ def main():
                     "group": r["group"],
                     "split": r["split"],
                     "y": r["label"],
-                    "fibs": cache["fibs_score"],
+                    "fibs": denial["fibs_contrast"],
                 }
             )
         else:
@@ -155,6 +172,7 @@ def main():
         if any(len(x) != 1 for x in partitions.values()):
             raise ValueError("group leakage")
     result = {
+        "dyl_denial_manifest": denial_manifest,
         "extraction_manifest": json.loads(
             (args.features / "manifest.json").read_text()
         ),

@@ -21,23 +21,31 @@ def main():
     while time.time() < receipt["destroy_at_unix"]:
         time.sleep(min(30, receipt["destroy_at_unix"] - time.time()))
     for attempt in range(10):
-        result = subprocess.run(
-            ["vastai", "destroy", "instance", str(instance_id), "--yes", "--raw"],
-            capture_output=True,
-            text=True,
-            timeout=120,
-        )
-        log = {
-            "attempt": attempt,
-            "time": time.time(),
-            "returncode": result.returncode,
-            "stdout": result.stdout,
-            "stderr": result.stderr,
-        }
+        try:
+            result = subprocess.run(
+                ["vastai", "destroy", "instance", str(instance_id), "--yes", "--raw"],
+                capture_output=True,
+                text=True,
+                timeout=45,
+            )
+            log = {
+                "attempt": attempt,
+                "time": time.time(),
+                "returncode": result.returncode,
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+            }
+        except subprocess.TimeoutExpired:
+            log = {
+                "attempt": attempt,
+                "time": time.time(),
+                "returncode": -1,
+                "error": "destruction request timed out; retrying",
+            }
         print(json.dumps(log), flush=True)
         with args.receipt.with_suffix(".cleanup.jsonl").open("a") as f:
             f.write(json.dumps(log) + "\n")
-        if result.returncode == 0:
+        if log["returncode"] == 0:
             return
         time.sleep(30)
     raise RuntimeError("rental destruction failed; manual cleanup required")

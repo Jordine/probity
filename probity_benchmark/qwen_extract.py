@@ -51,7 +51,7 @@ def overlapping_tokens(offsets, start, end):
     return positions
 
 
-def serialize(tokenizer, messages, response):
+def serialize(tokenizer, messages, response, prefill=PREFILL):
     prefix = tokenizer.apply_chat_template(
         messages, tokenize=False, add_generation_prompt=True, enable_thinking=False
     )
@@ -67,7 +67,9 @@ def serialize(tokenizer, messages, response):
     )
     if not continuation.startswith("<|im_start|>user\n"):
         raise ValueError("follow-up template adds unexpected context")
-    complete = original + continuation + PREFILL + end
+    if prefill not in ("Yes.", "No."):
+        raise ValueError("only pinned Yes./No. follow-up prefills are supported")
+    complete = original + continuation + prefill + end
     encoded = tokenizer(
         complete,
         add_special_tokens=False,
@@ -105,7 +107,7 @@ def serialize(tokenizer, messages, response):
         raise ValueError(
             "published linear probe must read the final period, not Yes or EOT"
         )
-    if offsets[period_position][1] != len(original + continuation + PREFILL):
+    if offsets[period_position][1] != len(original + continuation + prefill):
         raise ValueError("DYL read position does not end the forced answer")
     return {
         "text": complete,
@@ -123,6 +125,7 @@ class Runtime:
     def __init__(self):
         if not torch.cuda.is_available():
             raise RuntimeError("this extraction requires the task GPU")
+        torch.backends.cuda.matmul.allow_bf16_reduced_precision_reduction = False
         self.tokenizer = AutoTokenizer.from_pretrained(MODEL, revision=REVISION)
         self.model = AutoModelForCausalLM.from_pretrained(
             MODEL,
@@ -188,7 +191,14 @@ class Runtime:
             raise ValueError("nonfinite activations")
         return acts, output.past_key_values
 
-    def alignment_check(self, messages=None):
+    def alignment_check(
+        self,
+        messages=None,
+        *,
+        prefix_ids=None,
+        response_text="Café blue blue. Blue again.",
+        probe=None,
+    ):
         t = self.tokenizer
         messages = messages or [
             {
@@ -196,16 +206,20 @@ class Runtime:
                 "content": "Repeat these words exactly: Café blue blue. Blue again.",
             }
         ]
-        prefix = t.apply_chat_template(
-            messages,
-            tokenize=True,
-            return_dict=False,
-            add_generation_prompt=True,
-            enable_thinking=False,
+        prefix = (
+            prefix_ids
+            if prefix_ids is not None
+            else t.apply_chat_template(
+                messages,
+                tokenize=True,
+                return_dict=False,
+                add_generation_prompt=True,
+                enable_thinking=False,
+            )
         )
-        response = t("Café blue blue. Blue again.", add_special_tokens=False)[
-            "input_ids"
-        ] + [t.eos_token_id]
+        response = t(response_text, add_special_tokens=False)["input_ids"] + [
+            t.eos_token_id
+        ]
         full_ids = prefix + response
         full, _ = self.forward(full_ids)
         _, past = self.forward(prefix, cache=True)
@@ -250,6 +264,31 @@ class Runtime:
                 for x in checks
             ),
         }
+        if probe is not None:
+            # The paper's linear heads read the period, immediately before EOT.
+            if t.decode([response[-2]]) != ".":
+                raise ValueError("score diagnostic requires a final period")
+            final_period = len(response) - 2
+            score_inputs = {
+                "teacher_forced": {
+                    layer: full[layer][len(prefix) :] for layer in LAYERS
+                },
+                "incremental": {
+                    layer: torch.stack(incremental[layer]) for layer in LAYERS
+                },
+                "left_padding": {
+                    layer: padded[layer][3 + len(prefix) :] for layer in LAYERS
+                },
+            }
+            mask = torch.zeros(len(response), dtype=torch.bool)
+            mask[final_period] = True
+            result["published_probe_scores"] = {
+                mode: probe.score(acts, mask) for mode, acts in score_inputs.items()
+            }
+            scores = result["published_probe_scores"]
+            result["published_probe_max_abs_difference"] = max(
+                abs(score - scores["teacher_forced"]) for score in scores.values()
+            )
         return result
 
 
@@ -257,6 +296,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--corpus", type=Path, required=True)
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument(
+        "--teacher-forced-only",
+        action="store_true",
+        help="Restrict long-context output to unpadded offline scoring; retain all failed parity diagnostics.",
+    )
     args = ap.parse_args()
     if args.out.exists():
         raise ValueError("new output directory required")
@@ -280,6 +324,7 @@ def main():
         "tokenizer_revision": REVISION,
         "chat_template_sha256": sha256(runtime.tokenizer.chat_template),
         "dtype": "bfloat16",
+        "allow_bf16_reduced_precision_reduction": False,
         "layers": LAYERS,
         "hook": "model.layers[k] output, zero-based",
         "span_pooling_positions": "all response tokens whose character ranges overlap the annotated interval; boundary overhang retained",
@@ -287,6 +332,7 @@ def main():
         "reasoning": "disabled, explicit empty think block preserved",
         "dyl_question": FOLLOWUP,
         "dyl_prefill": PREFILL,
+        "raw_fibs_score_target": "falsehood in the forced Yes. reply, not the preceding action; combine with No. arm for an action score",
         "dyl_read": "period before final EOT",
         "published_probe": {
             "source": "AlignmentResearch/probe-inference-weights",
@@ -316,6 +362,11 @@ def main():
         },
         "gpu": torch.cuda.get_device_name(0),
         "context_limit": runtime.context_length,
+        "execution_scope": (
+            "unpadded teacher-forced diagnostic only; live and padded execution not approved"
+            if args.teacher_forced_only
+            else "strict full/incremental/padded parity required"
+        ),
     }
     (args.out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     alignment = runtime.alignment_check()
@@ -330,8 +381,34 @@ def main():
             json.dumps(long_alignment, indent=2) + "\n"
         )
         print(json.dumps({"long_alignment": long_alignment}), flush=True)
-        if not long_alignment["passed"]:
+        serialized_long = serialize(
+            runtime.tokenizer, longest["messages"], longest["response"]
+        )
+        prefix = serialized_long["ids"][: serialized_long["dyl_position"] - 1]
+        dyl_alignment = {
+            answer: runtime.alignment_check(
+                prefix_ids=prefix, response_text=answer, probe=probe
+            )
+            for answer in ("No.", "Yes.")
+        }
+        (args.out / "long_dyl_alignment.json").write_text(
+            json.dumps(dyl_alignment, indent=2) + "\n"
+        )
+        incremental_passed = all(
+            check["cosine_min"] >= 0.999 and check["relative_rms_max"] <= 0.03
+            for arm in dyl_alignment.values()
+            for check in arm["checks"]
+            if check["mode"] == "incremental"
+        )
+        if not incremental_passed:
+            raise ValueError("exact DYL incremental alignment check failed")
+        if not long_alignment["passed"] and not args.teacher_forced_only:
             raise ValueError("long-context alignment check failed")
+        if (
+            not all(arm["passed"] for arm in dyl_alignment.values())
+            and not args.teacher_forced_only
+        ):
+            raise ValueError("long-context DYL padded alignment check failed")
     started = time.monotonic()
     for row in rows:
         serialized = serialize(runtime.tokenizer, row["messages"], row["response"])
@@ -405,6 +482,7 @@ def main():
         "rows_completed": len(receipts),
         "context_tokens_max": max(r["input_tokens"] for r in receipts),
         "claim_limit": "Teacher-forced activation diagnostic; no claim of generated deceptive intent or downstream uplift.",
+        "execution_scope": manifest["execution_scope"],
     }
     if len(receipts) != len(rows):
         raise ValueError("incomplete corpus extraction")

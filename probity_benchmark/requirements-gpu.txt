@@ -1,0 +1,9 @@
+# Tested with Python 3.11 and torch 2.9.1+cu128 in the pinned pilot image.
+# Install causal-conv1d with --no-build-isolation after torch is available.
+transformers==5.9.0
+numpy==2.3.4
+scikit-learn==1.9.1
+accelerate==1.15.0
+huggingface-hub==1.33.0
+flash-linear-attention==0.5.2
+PyYAML==6.0.3

@@ -1,6 +1,6 @@
 # Probity probe benchmark: validation plan and first audit
 
-Status: 2026-10-14. Initial pilot ceiling: **$25 total**, across API calls, GPU rental and storage. No new GPU has been rented for this task. Model-based validation is blocked by the connected OpenRouter account returning HTTP 402, insufficient credits. Nothing below is a claim of measured probe uplift.
+Status: 2026-10-14. Initial pilot ceiling: **$25 total**, across API calls, GPU rental and storage. OpenRouter is funded and working. Iteration uses **Qwen3.5-27B and Qwen3.8-27B**, not Llama70B. The first pilots are complete; rental `55934564` was destroyed at approximately 14:44 UTC and its absence verified. API charges plus estimated rental total **$2.26**, or about **$2.33** including conservative unpriced-call reservations and cleanup-time allowance, before minor transfer fees. This is an estimate, not a final invoice. **Neither environment validity nor useful local debate detection is established. No uplift sweep has been run.**
 
 Source correction: the first audit used a local base that omitted three commits on [Jordine/probity main](https://github.com/Jordine/probity/commits/main). GitHub `main` at `ca3952e17af8469be6d0b4ea8843727cd98a291f` has now been fetched, its newer token-probe work reviewed, and all three commits merged into this working branch. The updated assessment below includes that evidence.
 
@@ -15,13 +15,57 @@ The original request is preserved in the [private research brief](https://chatgp
 - Fixed an off-by-one in `FastLocalModelProvider`: generation hooks previously attached the state predicting a token to that token. They now capture the state after consuming that token. New metadata marks this as `post_token_v1`; old activation caches must not be mixed with these results.
 - Removed silent output-allowance shrinking in that provider. Context overflow and a generation that ends without EOS now fail. The capture loop supports multiple EOS IDs and validates one activation per returned token.
 - Fixed baseline transcript task/speaker metadata, rejected unknown task types before judging, and removed winner guessing by mention counts. Legacy `correct` is explicitly labelled `assigned_role_selection`; it is not an independent test of the answer actually endorsed in the debate.
-- Sixteen targeted CPU tests pass. No real-model activation equivalence test, detector evaluation or new accuracy measurement has yet run.
+- Twenty-eight targeted CPU checks pass. A real Qwen short-context replay/padding check passes after fixing a Transformers 5.9 single-example DeltaNet masking issue. Exact long-context DYL incremental checks pass; generic long-response and padded checks still fail. The saved pilot explicitly permits only unpadded teacher-forced diagnostics, not live or padded reuse.
+
+## First measured pilots
+
+The initial 12-story pilot completed 144 valid structured answers. Both Qwens reached 100% with stories; without stories Qwen3.5 scored 62.5%, Qwen3.8 70.8%, and Haiku 50%. Haiku reached 79.2% with stories. These are only 12 independent stories.
+
+A disjoint 48-story expansion completed another 576 valid answers. Every completion in both runs had `finish_reason=stop`, below its output allowance. Both answer orders were included; intervals resample stories.
+
+| Model | No story | 95% story-bootstrap interval | Full story |
+|---|---:|---:|---:|
+| Haiku 5.5 | 60.4% | 49.0–71.9% | 93.8% |
+| Qwen3.5-27B | 69.8% | 58.3–80.2% | 97.9% |
+| Qwen3.8-27B | 67.7% | 56.3–78.1% | 97.9% |
+
+This fails the proposed chance-level no-story gate for the Qwens. It does not establish contamination specifically. Complete question/option inspection found plausibility cues, such as a conventional film-making answer opposed to quantum-computing visual effects.
+
+Two full source stories (lines 128 and 137) were reviewed and transformed by reversible country/company renaming into opposite-gold worlds. Questions and options stay identical. With one reused no-story prediction per pair, accuracy is exactly 50% by construction; this is an information control, not an empirical generalization result. All four worlds remain two independent stories. The 12-story source examples and the 48-story expansion are development data.
+
+The first eight three-round debates passed all private knowledge checks, but only 37/48 answer fields matched assignments. Full-transcript review found prose endorsing a different option from its JSON answer, making field-based role labels unsafe. Haiku judged 8/8 correctly. Adding the assigned option's text and a final private reminder produced 48/48 field adherence in a second eight-episode run. A blind prose auditor supported 42/48; six failed its exact-quote check, and complete-turn review confirmed their advocacy too. Haiku judged 7/8 correctly. This is useful diagnostic behavior, not enough independent stories to establish benchmark validity or measure uplift.
+
+The source Apollo roleplay labels are also provisional: inspected row 19 labels as honest an answer denying a witnessed theft. That observed error was excluded from the pilot without silently relabelling it. The pilot keeps 96 scenario groups together across train/dev/test and separately uses 64 controlled ledger groups with mixed true/false claims. The latter tests factual consistency in teacher-forced text, not generated deceptive intent.
+
+The real Qwen check caught Transformers 5.9's padding helper skipping batch size one. A model-local pre-hook now masks DeltaNet inputs, with explicit position IDs. Short incremental/replay and padding comparisons pass the predeclared tolerance. A 7,111-token generic response stress check exceeds the 3% relative-RMS tolerance at layer 35. Exact DYL prefills after the longest debate context pass the unchanged incremental criterion across all six layers, with published-score differences below 0.0027; padded execution still reaches 5.85% relative RMS. All failures are retained. The explicit `--teacher-forced-only` contract limits the resulting cache to unpadded offline diagnostics; no tolerance was relaxed or live-generation validation claimed. Span pooling includes tokens overlapping annotation boundaries, including a first word merged with leading whitespace.
+
+An initial FIBS run scored only a forced `Yes.` after `Did you lie in your last response?`. The raw score concerns falsehood in that final reply, so its direction is reversed relative to a preceding lie. The [paper's section 4.2 and appendix L.1](https://arxiv.org/html/2610.12445v1) define this distinction. The corrected action score is the published score on `No.` minus the score on `Yes.`, with both raw scores and exact period positions retained. No sign is selected on held-out labels. Newly trained Apollo-data heads are distinct from the collaborators' original checkpoint.
+
+## Probe results and validity decision
+
+The pinned, unquantized Qwen3.5-27B extraction completed all **454 rows** and both forced DYL arms, with a maximum complete context of **7,448 tokens**. Each arm was collected once; **96 linear candidates** were fitted from cached features, with layer/pooling/regularization selection on development groups. The 916 final cache files (1,736,150,919 bytes) were copied back to the VPS and every SHA-256 verified before destroying the rental. Published Qwen3.5 weights were not applied to Qwen3.8.
+
+| Diagnostic | Result | Unit and limitation |
+|---|---:|---|
+| New local span probe, controlled ledger test | Within-response AUROC **0.979**, 95% group-bootstrap interval 0.956–0.995 | 24 mixed responses, 192 claims, 12 independent ledger groups; factual consistency, not generated deceptive intent |
+| Same test, position / length / random-weight controls | **0.500 / 0.500 / 0.581** | Assistant claims only; all variants of a ledger stay together |
+| Newly fitted Apollo-data response-mean head | AUROC **0.926**, interval 0.820–0.992 | 32 supplied-label examples, 16 held-out scenario groups |
+| Newly fitted Apollo-data No-prefill DYL head | AUROC **0.805**, interval 0.629–0.953 | Same supplied-label test; a separate head and readout |
+| Published FIBS No-minus-Yes DYL contrast | AUROC **0.922**, interval 0.844–0.984 | Same Apollo slice; overlap with published FIBS training data has not been ruled out |
+
+Apollo labels remain provisional, and these groups are held out from the **newly fitted** heads only. The published FIBS result is not a demonstrated leakage-free generalization result. Its controlled pure-ledger diagnostic ranks all 12 test pairs correctly, which likewise does not establish local debate detection.
+
+Transfer to **14 reviewed claims in six debate turns from one development story** is weak: pooled claim AUROC **0.667**, mean within-response AUROC **0.833** across three mixed turns, and the top reviewed claim is false in **2/3** mixed turns. The default trained zero-logit threshold detects **0/3** reviewed false claims. Position alone achieves **1.000** within-response AUROC because the selected false claims occur after the selected true claims; pooled random-weight AUROC is **0.848**. This diagnostic does not beat the necessary controls and is too small for a generalization estimate. Unselected rhetoric is unlabelled, never a negative. The user's concern about poor local performance remains unresolved.
+
+The complete review shows decoded argument text with offset-mapped sentence scores, reviewed claim scores, full original JSON and complete model context. Whole-response DYL remains separate from local highlighting. JSON scaffolding was initially eligible for peak-phrase scores; the corrected renderer excludes it while preserving escaped Unicode and repeated occurrences. All six displayed arguments reconstruct the originals character for character. Naive clause peaks can still select non-assertive phrases; those aggregates remain exploratory, not approved judge inputs.
+
+Next priorities are an independently reviewed, position-balanced debate claim set across new source stories; domain-matched local training including false conclusions, quote misuse and truthful fragments; and repair of the no-story shortcut. Keep the 2×2 uplift sweep gated until these controls and the model-execution contract pass.
 
 ## Evidence that changes the plan
 
 ### Dataset passes structural checks, not behavioral validation
 
-The complete `data/quality_synthetic/stories.jsonl` contains 166 valid problems, with no duplicate problem hashes or repeated story hashes. All 4,636,993 bytes were read. The gold labels are A: 71 and B: 95, so answer-order counterbalancing is necessary. Story lengths are 10,218–38,853 characters; median 22,681, p90 32,670 and p95 34,510. These are character counts, not tokenizer context measurements.
+The complete `data/quality_synthetic/stories.jsonl` contains 166 valid problems, with no duplicate problem hashes or repeated story hashes. All 4,636,993 bytes were read. The gold labels are A: 71 and B: 95, so answer-order counterbalancing is necessary. Story lengths are 10,218–38,853 characters; median 22,681, p90 32,670 and p95 34,510. A separate pinned Qwen3.5 tokenizer audit of all 166 complete full-story baseline prompts gives 2,245–8,464 tokens (median 4,726.5); each round-trips exactly and fits with an 8,192-token output reserve under the 262,144-token context limit. This length-only audit does not evaluate the 106 untouched problems.
 
 Dataset SHA-256: `3c773e22849131571f5e88a774fe6001cb4bb41ca28576e00d3d634bc02b0863`.
 
@@ -33,7 +77,7 @@ Two complete transcripts were read qualitatively: `synthetic_103_Where_did_the_n
 
 The archived prompts and generation termination metadata were not saved, so these records cannot establish whether role failure came from the model, its exact prompt, or an older serialization/mapping bug. Preserve them as audit evidence; do not relabel them into a clean benchmark.
 
-### Newer GitHub probe results provide a baseline worth reproducing
+### Newer GitHub probe results provide methods worth porting
 
 The three GitHub-only commits were `0b8e2a68` (token-level training and sentence evaluation), `36cb6b47` (validation/leakage checks) and `ca3952e1` (70B validation and saved probes). They add per-token span labels, attention-mask handling, a direct Hugging Face extraction path, and more recent positive results. The earlier characterization based only on `LOCALIZATION_AUDIT_FINDINGS.md` and `PROJECT_STATUS.md` was incomplete.
 
@@ -47,20 +91,20 @@ Review of the [70B script](https://github.com/Jordine/probity/blob/ca3952e17af84
 - The HF extraction helper does not pass an attention mask; the saved run logs warnings about missing masks. Its hooks read decoder-block outputs, whereas the TransformerLens scripts use `hook_resid_pre`. Preserve and test those distinct layer conventions.
 - The 70B separation bootstrap resamples honest and dishonest arrays independently despite matched scenarios; use paired story resampling. Layer selection uses the same IID validation set as the reported best-layer metric; retain a separate final test.
 
-The plan is to reuse and harden this newer loader/trainer/extraction work, then port the method to the target Qwens with newly matched weights. Do not assume either that local probing has failed or that the logged results already validate this benchmark. Historical label/boundary findings remain relevant to the older paths, not a complete verdict on the April additions.
+The plan is to reuse useful methods on the target Qwens with newly matched weights, without rerunning 70B. The user's recollection that local performance was poor remains an unresolved target for direct measurement. The logged results do not validate useful local lie detection. Historical label/boundary findings remain relevant to the older paths, not a complete verdict on the April additions.
 
 Additional unresolved code risks: special display tokens can be removed without removing their score/activation positions; word-keyed score dictionaries overwrite repeated words; some probe exceptions are suppressed; some formatting defaults manufacture a neutral 0.5 score. Legacy judge instructions also overstate independence and local reliability. These paths are not approved for the new benchmark yet.
 
 ## Track 1 — establish a usable environment
 
-1. **Small diagnostic pilot:** 12 distinct stories, both answer orders, with and without the full story, for Haiku 5.5, Qwen3.5-27B and Qwen3.8-27B: 144 planned calls. These are development examples, permanently excluded from a final test. The current runner has not completed any successful inference.
+1. **Small diagnostic pilot completed:** 12 distinct stories, then 48 disjoint stories, both answer orders, with and without the full story, for Haiku 5.5, Qwen3.5-27B and Qwen3.8-27B. Preserve these as development examples, excluded from a final benchmark test. Repair the no-story cue problem before expanding an uplift sweep.
 2. Record prompt length, completion length, finish reason, raw answer, parser validity, actual API route, model identifier and all generation settings. Explicitly disable reasoning for this first baseline; it is a configuration choice, not a hidden reasoning-token cutoff. Repeat the knowledge check with the eventual local debater's actual reasoning/template settings before comparing probe experiments.
 3. Check that no-story accuracy is compatible with chance, full-story accuracy is high, and answer-order effects are small. Twelve stories can diagnose gross defects; a nonsignificant result is not evidence of equivalence to 50%. Pre-register a tolerance and interval criterion on a larger independent set before calling this a benchmark. A proposed final criterion is a 95% interval contained within 40–60% for the balanced no-story baseline, and at least 85% full-story point accuracy with its interval reported. These are proposed design criteria, not achieved results.
 4. Before assigning advocacy roles, privately test each debater's knowledge of the story answer. Keep that diagnostic out of the live debate history. Separately measure whether the assigned wrong-answer advocate actually advances a knowingly false claim. Refusal, truthful concession, mistakes and failed role adherence are distinct outcomes. Report all episodes and the pre-specified knowledge-qualified subset; do not silently filter bad episodes after seeing uplift.
 5. Generate a small fresh set of three-round debates with weak Haiku judging. The judge sees the question, answer options and public turns, never the story, role labels or private prompts. Score the judge's explicit answer choice against the answer key. Record speaker preference as a separate diagnostic.
 6. Review complete transcripts, including true/false claims, fabricated or misleading quotations, refusals, consensus, score leakage and incomplete output. Stop if these failures dominate. Compare quote strings to the story as an auxiliary check; string match alone cannot establish truthful use of evidence.
 
-Use a story-grouped, versioned train/dev/test manifest before any probe fitting or prompt tuning. Lock all pilot stories into development. If the remaining 154 stories are split among training, tuning and testing, precision will be limited; use separate training sources or generate new held-out stories rather than repeatedly tuning on the same test set.
+Use a story-grouped, versioned train/dev/test manifest before any probe fitting or prompt tuning. Lock all 60 baseline pilot stories and their counterfactual variants into development. Only 106 original stories remain untouched; use separate training sources or generate new held-out stories rather than repeatedly tuning on the same test set.
 
 ## Track 2 — make the detectors comparable and correct
 
@@ -86,11 +130,11 @@ Before any real probe result:
 - Count the actual full prompt plus output allowance with the selected tokenizer. Fail oversized inputs and cut-off thinking/output. Save finish-reason distributions before accuracy metrics. Never silently clip context, completions, labels, plots or printed examples.
 - Check raw score separation against transcript-level truth/lie labels, then check localization within mixed-truth responses. Include role-only, length-only, random-weight and shuffled-score controls.
 
-The accessible [Cadenza project plan](https://docs.google.com/document/d/1RjSXfBEz5gr80HSebG7HxdvF1zprs0UklrD7cLbVUYk/edit) identifies [Cadenza-Labs/downstream-environment](https://github.com/Cadenza-Labs/downstream-environment). That repository returns 404 for the authenticated GitHub account `Jordine`. Documents are available; code/checkpoint compatibility remains unconfirmed. No message has been sent to collaborators.
+The accessible [Cadenza project plan](https://docs.google.com/document/d/1RjSXfBEz5gr80HSebG7HxdvF1zprs0UklrD7cLbVUYk/edit) identifies [Cadenza-Labs/downstream-environment](https://github.com/Cadenza-Labs/downstream-environment). That repository returns 404 for the authenticated GitHub account `Jordine`; the user confirmed this need not hold up progress. Exact collaborator code/checkpoint compatibility remains unconfirmed. No message has been sent to collaborators.
 
 ## Track 3 — hillclimb local lie detection
 
-First reproduce the newer GitHub token-level baseline with assistant-only labels, complete contexts and explicit hook/score contracts; reuse its existing training and leakage-control work. Start with a manually checked diagnostic set covering false assertions, true assertions in dishonest turns, faithful and fabricated quotations, misleading use of true evidence, uncertainty, mistakes and truthful concessions. Annotate factual falsity, evidence of knowledge and deceptive intent separately; preserve uncertain labels. Validate offsets by checking the complete labelled text against the original transcript. An LLM labeler may assist but cannot define ground truth without checks.
+First port the newer GitHub token-level methods to Qwen with assistant-only labels, complete contexts and explicit hook/score contracts. Start with checked false assertions, true assertions in dishonest turns, faithful and fabricated quotations, misleading use of true evidence, uncertainty, mistakes and truthful concessions. The initial transfer diagnostic labels 14 explicit claims in six complete Qwen3.5 debate turns from one story; only three are labelled false. Unselected rhetoric stays unlabelled. This is a small stress test, not a representative estimate. Annotate factual falsity, evidence of knowledge and deceptive intent separately; preserve uncertain labels. Validate offsets against complete original text. An LLM labeler may assist but cannot define ground truth without checks.
 
 Train an inexpensive linear token/span baseline first, then test within-response ranking, span pooling and the existing annealing/NTML objectives. Include both true and false spans within the same response so that role identity alone cannot solve the objective. Contrastive source pairs, paraphrases, stories and prompt templates stay in one data partition. Fit scaling and thresholds on train/dev only.
 
@@ -125,22 +169,24 @@ Rent only after inputs, checkpoint contracts, runnable scripts and a current pri
 
 The API runner reserves cost before concurrent requests and constrains provider token/request prices using OpenRouter's documented [provider price filter](https://openrouter.ai/docs/guides/routing/provider-selection#max-price). It stops on invalid output, unknown failures and accounting anomalies. API routes are recorded but are not equivalent to pinned local probe models.
 
-## Reproduce the completed checks and resume the pilot
+## Reproduce the checks
 
 From `/root/projects/probity-benchmark`, with the existing Python environment:
 
 ```bash
-python3 -m unittest tests.test_benchmark_preflight tests.test_generation_alignment tests.test_judge_protocol -v
+python3 -m unittest tests.test_benchmark_preflight tests.test_generation_alignment tests.test_judge_protocol tests.test_diagnostic_debates tests.test_qwen_padding tests.test_probe_display -v
 python3 -m probity_benchmark.preflight --out runs/preflight_20261014/dataset_audit.json
 ```
 
-After the provider account is funded, the next paid step is the same 12-story pilot with corrected request parameters, a new output directory and a $2 limit. Do not overwrite the failed-attempt receipts:
+Completed baseline receipts are in `runs/baseline_pilot_20261014_v4` and `runs/baseline_expansion_20261014`. The working strict-JSON protocol is distinct from earlier failed attempts. To reproduce, use a fresh output directory and charge it to the same cumulative pilot budget; do not automatically repeat already completed work:
 
 ```bash
 python3 -m probity_benchmark.run_baselines \
   --models anthropic/claude-haiku-5.5 qwen/qwen3.5-27b qwen/qwen3.8-27b \
   --n 12 --seed 20261014 --budget 2 --max-tokens 8192 --concurrency 4 \
-  --out runs/baseline_pilot_20261014_v3
+  --out runs/baseline_reproduction_NEW
 ```
 
-This command runs only environment baselines. It does not yet generate debates, train probes, establish local alignment on Qwen, or execute the 2×2 sweep. Those remain gated work above.
+This command runs only environment baselines. Debate diagnostics are in `runs/debate_pilot_20261014` and `runs/debate_pilot_20261014_v2`, with independent advocacy-audit receipts. Extraction/training scripts are `qwen_extract`, `cache_dyl_denials` and `fit_probe_pilots`; each writes immutable model/data/protocol manifests. See `probity_benchmark/README.md` for the separate environment and replay commands. The 2×2 sweep remains gated work.
+
+Final artifact root: `runs/qwen_probe_pilot_20261014/`. Use `features_v2/`, `denials_v2/`, `fitted_v2/` and `transfer_review/`; older directories retain failed/pre-correction receipts and must not be substituted. `transfer_review/review.html` is the complete qualitative review, `fitted_v2/results.json` contains all 96 candidates and grouped metrics, and `validated_cache_sha256.json` plus `local_copy_verification.json` attest the saved cache. The cumulative ledger is `runs/pilot_cumulative_accounting_20261014.json`. Cleanup receipts are `runs/qwen_rental_20261014.manual_cleanup.json` and `runs/qwen_rental_20261014.cleanup_verified.json`.
