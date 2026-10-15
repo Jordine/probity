@@ -6,12 +6,14 @@ from .base import BaseModelProvider, AsyncModelProvider, GenerationResult
 from .openai import OpenAIProvider
 from .anthropic import AnthropicProvider
 from .openrouter import OpenRouterProvider
-from .openrouter_async import AsyncOpenRouterProvider
 
 # Lazy imports for torch-dependent providers
 def __getattr__(name):
     """Lazy load local providers only when accessed"""
-    if name == 'LocalModelProvider':
+    if name == 'AsyncOpenRouterProvider':
+        from .openrouter_async import AsyncOpenRouterProvider
+        return AsyncOpenRouterProvider
+    elif name == 'LocalModelProvider':
         from .local import LocalModelProvider
         return LocalModelProvider
     elif name == 'FastLocalModelProvider':

@@ -1,0 +1,38 @@
+{
+  "schema": "probity_corrected_source_control_display_v1",
+  "created_at_utc": "2026-10-15T12:49:54.943287+00:00",
+  "report": "runs/iteration3/final/source_control_corrected_all_v1.json",
+  "report_sha256": "c3fae5c280c5078d922436d8441d2934cf7cbd0ed3a9001ac8b2e1ce7ff3b932",
+  "renderer": "/root/projects/probity-benchmark/runs/iteration3/judge_controls/plot_corrected_source_controls_v1.py",
+  "renderer_sha256": "20948b4a3d2161844055447a9732d16c4be4f7001bbb0916332ab78afe8211cf",
+  "dataset": "runs/iteration3/coordinator/holdout_families_source_v5.jsonl",
+  "dataset_sha256": "57788f14021d2c6f2e75313b2b0d36c22f3a3d74572ec57d9b4189a5f1b7e45c",
+  "rows_in": 30,
+  "rows_out": 30,
+  "model_order": [
+    "Qwen/Qwen3.5-4B",
+    "anthropic/claude-haiku-5.5",
+    "qwen/qwen3.5-27b",
+    "qwen/qwen3.8-27b",
+    "anthropic/claude-opus-5.5"
+  ],
+  "subgroup_order": [
+    "all",
+    "short",
+    "descriptive"
+  ],
+  "projection": "All 30 audited aggregate cells copied in fixed order, without recalculating statistics or selecting outcomes.",
+  "outputs_sha256": {
+    "runs/iteration3/final/source_controls_corrected_v1/source_control_cells.csv": "7ccf9647a132c21cf36338daf6eabb2afdc4662b59a73bd82f9f54b48dba73dd",
+    "runs/iteration3/final/source_controls_corrected_v1/source_controls.png": "6d0030e24ee76dd56426ccd4a10ac8d27b5b5bc9f8627c8b57085c1f47eac9cd",
+    "runs/iteration3/final/source_controls_corrected_v1/source_controls.svg": "5ecad362b00695e70954152953d048077cbc879a107f06fd32678eeceeb7686b",
+    "runs/iteration3/final/source_controls_corrected_v1/source_controls.pdf": "12b492c6e1600ae458ba8cf912c87f61784654f4692b1b04f5f19f1c21febbce"
+  },
+  "limits": [
+    "A source-only bug correction occurred after original control outcomes were observed; chronology is explicit in global_freeze_v2.",
+    "Parent 114 followup uses later requests; model IDs/settings are unchanged, but catalog price filters, provider routing and stochastic variation may differ. Its old/new answer difference alone is not a causal estimate.",
+    "Both answer orders share one source family. Existing 10,000-draw family bootstrap and seed are retained.",
+    "These are source-reading controls, not debate-judge performance or probe-assistance uplift.",
+    "Perfect finite-sample accuracy does not establish perfect population accuracy."
+  ]
+}

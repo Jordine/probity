@@ -1,0 +1,264 @@
+{
+  "fixture": false,
+  "input": "runs/iteration3/final/local_sentence_evaluation_v1/results.json",
+  "input_sha256": "f41db3151646b6fd1f6a1d525b0093ddd1903b670b42e05ace3c35d828402694",
+  "script_sha256": "34df8773c5337e5db30addb35508fcbaf8d416867dc8aac2a131f666f7c8472c",
+  "granularity": "sentence",
+  "selection": "All frozen score tracks in a fixed order; no outcome-based sorting or filtering.",
+  "plotted_statistics": [
+    {
+      "model": "qwen/qwen3.5-27b",
+      "track": "local3",
+      "metric": {
+        "parent_macro_mean": 0.8714285714285713,
+        "parent_bootstrap_95_ci": [
+          0.7000000000000001,
+          1.0
+        ]
+      }
+    },
+    {
+      "model": "qwen/qwen3.5-27b",
+      "track": "frozen_local2",
+      "metric": {
+        "parent_macro_mean": 0.8785714285714287,
+        "parent_bootstrap_95_ci": [
+          0.7571428571428572,
+          0.9714285714285715
+        ]
+      }
+    },
+    {
+      "model": "qwen/qwen3.5-27b",
+      "track": "fixed_word_tfidf",
+      "metric": {
+        "parent_macro_mean": 0.6797619047619047,
+        "parent_bootstrap_95_ci": [
+          0.4952380952380953,
+          0.8642857142857142
+        ]
+      }
+    },
+    {
+      "model": "qwen/qwen3.5-27b",
+      "track": "random_direction",
+      "metric": {
+        "parent_macro_mean": 0.8539682539682539,
+        "parent_bootstrap_95_ci": [
+          0.7356944444444444,
+          0.9573214285714292
+        ]
+      }
+    },
+    {
+      "model": "qwen/qwen3.5-27b",
+      "track": "length",
+      "metric": {
+        "parent_macro_mean": 0.6666666666666666,
+        "parent_bootstrap_95_ci": [
+          0.3714285714285714,
+          0.9214285714285715
+        ]
+      }
+    },
+    {
+      "model": "qwen/qwen3.5-27b",
+      "track": "negative_length",
+      "metric": {
+        "parent_macro_mean": 0.3333333333333333,
+        "parent_bootstrap_95_ci": [
+          0.07857142857142858,
+          0.6285714285714284
+        ]
+      }
+    },
+    {
+      "model": "qwen/qwen3.5-27b",
+      "track": "position",
+      "metric": {
+        "parent_macro_mean": 0.6420634920634922,
+        "parent_bootstrap_95_ci": [
+          0.4920634920634921,
+          0.8
+        ]
+      }
+    },
+    {
+      "model": "qwen/qwen3.5-27b",
+      "track": "negative_position",
+      "metric": {
+        "parent_macro_mean": 0.35793650793650794,
+        "parent_bootstrap_95_ci": [
+          0.2,
+          0.5079365079365079
+        ]
+      }
+    },
+    {
+      "model": "qwen/qwen3.5-27b",
+      "track": "response_broadcast",
+      "metric": {
+        "parent_macro_mean": 0.5,
+        "parent_bootstrap_95_ci": [
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "model": "qwen/qwen3.5-27b",
+      "track": "published_dyl_broadcast",
+      "metric": {
+        "parent_macro_mean": 0.5,
+        "parent_bootstrap_95_ci": [
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "model": "qwen/qwen3.8-27b",
+      "track": "local3",
+      "metric": {
+        "parent_macro_mean": 0.7027777777777777,
+        "parent_bootstrap_95_ci": [
+          0.42777777777777776,
+          0.9166666666666667
+        ]
+      }
+    },
+    {
+      "model": "qwen/qwen3.8-27b",
+      "track": "frozen_local2",
+      "metric": {
+        "parent_macro_mean": 0.9194444444444445,
+        "parent_bootstrap_95_ci": [
+          0.8083333333333333,
+          1.0
+        ]
+      }
+    },
+    {
+      "model": "qwen/qwen3.8-27b",
+      "track": "fixed_word_tfidf",
+      "metric": {
+        "parent_macro_mean": 0.711111111111111,
+        "parent_bootstrap_95_ci": [
+          0.5555555555555556,
+          0.8555555555555555
+        ]
+      }
+    },
+    {
+      "model": "qwen/qwen3.8-27b",
+      "track": "random_direction",
+      "metric": {
+        "parent_macro_mean": 0.5388888888888889,
+        "parent_bootstrap_95_ci": [
+          0.2111111111111111,
+          0.8555555555555555
+        ]
+      }
+    },
+    {
+      "model": "qwen/qwen3.8-27b",
+      "track": "length",
+      "metric": {
+        "parent_macro_mean": 0.4916666666666666,
+        "parent_bootstrap_95_ci": [
+          0.26388888888888884,
+          0.7612500000000005
+        ]
+      }
+    },
+    {
+      "model": "qwen/qwen3.8-27b",
+      "track": "negative_length",
+      "metric": {
+        "parent_macro_mean": 0.5083333333333333,
+        "parent_bootstrap_95_ci": [
+          0.23875000000000002,
+          0.736111111111111
+        ]
+      }
+    },
+    {
+      "model": "qwen/qwen3.8-27b",
+      "track": "position",
+      "metric": {
+        "parent_macro_mean": 0.2444444444444444,
+        "parent_bootstrap_95_ci": [
+          0.11111111111111109,
+          0.37777777777777777
+        ]
+      }
+    },
+    {
+      "model": "qwen/qwen3.8-27b",
+      "track": "negative_position",
+      "metric": {
+        "parent_macro_mean": 0.7555555555555555,
+        "parent_bootstrap_95_ci": [
+          0.6222222222222221,
+          0.888888888888889
+        ]
+      }
+    },
+    {
+      "model": "qwen/qwen3.8-27b",
+      "track": "response_broadcast",
+      "metric": {
+        "parent_macro_mean": 0.5,
+        "parent_bootstrap_95_ci": [
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "model": "qwen/qwen3.8-27b",
+      "track": "published_dyl_broadcast",
+      "metric": null
+    }
+  ],
+  "coverage": {
+    "qwen/qwen3.5-27b": {
+      "all_units": 967,
+      "accepted_units": 548,
+      "fraction": 0.5667011375387797,
+      "all_responses": 144,
+      "all_families": 24,
+      "rejection_reasons": {
+        "label_disagreement": 187,
+        "unknown": 405,
+        "invalid_assertion_scope": 179,
+        "missing_evidence": 378,
+        "interpretation_or_advocacy": 238
+      }
+    },
+    "qwen/qwen3.8-27b": {
+      "all_units": 1010,
+      "accepted_units": 635,
+      "fraction": 0.6287128712871287,
+      "all_responses": 144,
+      "all_families": 24,
+      "rejection_reasons": {
+        "unknown": 367,
+        "interpretation_or_advocacy": 208,
+        "invalid_assertion_scope": 134,
+        "missing_evidence": 347,
+        "label_disagreement": 176
+      }
+    }
+  },
+  "outputs": [
+    {
+      "path": "reports/figures/iteration3/local_sentence_results.png",
+      "sha256": "64c065c81ca62c956ac83e84dac87a917d9ecaac09419c673b6b3ff2d628a788"
+    },
+    {
+      "path": "reports/figures/iteration3/local_sentence_results.svg",
+      "sha256": "7a59bacb990040cc7fc1121803ddc930d34e86265ee40306cf45154ce08be23f"
+    }
+  ]
+}

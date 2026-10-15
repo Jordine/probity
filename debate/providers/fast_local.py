@@ -226,8 +226,11 @@ class FastLocalModelProvider(BaseModelProvider):
 
         # Context length protection
         if prompt_len + max_new + SAFETY_MARGIN > MAX_CONTEXT:
-            max_new = max(1, MAX_CONTEXT - prompt_len - SAFETY_MARGIN)
-            print(f"[FastLocalModelProvider] Truncating max_new_tokens to {max_new}")
+            raise ValueError(
+                f"Prompt ({prompt_len}) + requested output ({max_new}) + safety "
+                f"margin ({SAFETY_MARGIN}) exceeds context limit {MAX_CONTEXT}. "
+                "Refusing to shorten an experimental rollout."
+            )
 
         generation_activations = None
         generated_tokens = []
@@ -255,10 +258,15 @@ class FastLocalModelProvider(BaseModelProvider):
                 top_p=top_p if do_sample else None,
                 top_k=top_k if do_sample else None,
                 pad_token_id=self.tokenizer.pad_token_id,
-                eos_token_id=self.tokenizer.eos_token_id,
+                eos_token_id=sorted(self._eos_token_ids()),
                 use_cache=True,
             )
             generated_tokens = outputs[0, prompt_len:].tolist()
+            eos_ids = self._eos_token_ids()
+            if not generated_tokens or generated_tokens[-1] not in eos_ids:
+                raise RuntimeError(
+                    "Generation did not reach an EOS token; refusing a truncated rollout."
+                )
 
         # Decode
         completion_str = self.tokenizer.decode(
@@ -283,12 +291,15 @@ class FastLocalModelProvider(BaseModelProvider):
             "dtype": str(self.model_dtype),
             "generation_count": self.generation_count,
             "provider": "fast_local",
+            "finish_reason": "stop",
+            "truncated": False,
         }
 
         # Add activations if captured
         if generation_activations is not None:
             metadata['generation_activations'] = generation_activations
             metadata['generation_token_ids'] = torch.tensor(generated_tokens)
+            metadata['activation_alignment'] = 'post_token_v1'
 
         return completion_str, metadata
 
@@ -317,7 +328,11 @@ class FastLocalModelProvider(BaseModelProvider):
         current_input_ids = input_ids
         current_attention_mask = attention_mask
 
-        for step in range(max_new_tokens):
+        # The prefill state predicts the first response token; it is not that
+        # token's state. Consume each sampled token on the following forward
+        # pass before capturing its activation. One final pass permits EOS
+        # immediately after exactly max_new_tokens response tokens.
+        for step in range(max_new_tokens + 1):
             # Set up hook to capture hidden states
             hidden_state_captured = [None]
 
@@ -357,6 +372,11 @@ class FastLocalModelProvider(BaseModelProvider):
             finally:
                 handle.remove()
 
+            if step > 0:
+                if hidden_state_captured[0] is None:
+                    raise RuntimeError("No hidden state captured for generated token")
+                captured_activations.append(hidden_state_captured[0])
+
             # Sample next token
             logits = outputs.logits[:, -1, :]
 
@@ -389,13 +409,17 @@ class FastLocalModelProvider(BaseModelProvider):
             next_token_id = next_token.item()
 
             # Check for EOS
-            if next_token_id == self.tokenizer.eos_token_id:
+            if next_token_id in self._eos_token_ids():
                 break
+
+            if step == max_new_tokens:
+                raise RuntimeError(
+                    "Generation exhausted max_new_tokens before EOS; "
+                    "refusing a truncated rollout."
+                )
 
             # Store token and activation
             generated_tokens.append(next_token_id)
-            if hidden_state_captured[0] is not None:
-                captured_activations.append(hidden_state_captured[0])
 
             # Update for next iteration
             current_input_ids = torch.cat([current_input_ids, next_token], dim=-1)
@@ -410,7 +434,19 @@ class FastLocalModelProvider(BaseModelProvider):
         else:
             generation_activations = torch.empty(0, self.hidden_size)
 
+        if generation_activations.shape[0] != len(generated_tokens):
+            raise RuntimeError("Generated token and activation counts differ")
+
         return generation_activations, generated_tokens
+
+    def _eos_token_ids(self):
+        generation_config = getattr(self.model, "generation_config", None)
+        eos = getattr(generation_config, "eos_token_id", None)
+        if eos is None:
+            eos = self.tokenizer.eos_token_id
+        if eos is None:
+            raise ValueError("An EOS token is required for complete experimental rollouts")
+        return set(eos if isinstance(eos, (list, tuple)) else [eos])
 
     def is_available(self) -> bool:
         return self.model is not None and self.tokenizer is not None

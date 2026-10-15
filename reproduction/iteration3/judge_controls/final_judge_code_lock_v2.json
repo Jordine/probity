@@ -1,0 +1,226 @@
+{
+  "locked_at_utc": "2026-10-14T19:49:49.157013+00:00",
+  "status": "Frozen judge code/runtime and detector scope before fresh debate/probe/judge outcomes. Root selected the validated fixed-public evidence environment before repaired public-thinking judge results.",
+  "selected_development_environment": "runs/iteration3/environment/evidence_dev4_v1",
+  "environment_selection_basis": "Complete generation, source knowledge, prose/decisive factual support, oracle usability and provider reliability; native13/16 and exact Haiku14/16 on4development families. No repaired-public-thinking judge outcome used.",
+  "files": {
+    "probity_benchmark/judge3_ablate.py": "54835e57e37ef689d30250c2990997e79666b4fc563968cbcc9c2081fcfb1ded",
+    "probity_benchmark/judge3_protocol.py": "8edc5db4355d36ce85f5d604011bdc70a1a20985f8fefaf8dc3b5fac0a8815b0",
+    "probity_benchmark/judge3_protocol.md": "a81378cfc5083876d58e0f7be21ffc90cdcd3693b7417b43b12efdafb03e52c2",
+    "probity_benchmark/judge3_final.py": "00dc7fb63a9f3a59cf5065409ac47090f2ce2e9d4205b3f33fd730155765160c",
+    "probity_benchmark/judge3_final.md": "32ca4ac7a369f3379d55000af342779eed26b3e118f91da2335825f2ca9c378c",
+    "probity_benchmark/judge3_compare.py": "3486f31f5d132b06d9ea8d648fa576c87597497950ea7dc17bb7a9f123c7208c",
+    "probity_benchmark/judge3_context.py": "c79825c408ec27489da6ae1320ef1fddcdef7ee617aae5097e5260bbdf93497d",
+    "probity_benchmark/api.py": "17b1a32470172aedc5bfb93ad53c20c43bd9019e03ba1b963775c6377bb3693d",
+    "probity_benchmark/run_local_judge.py": "e798394d5436ba81dffc38dd105fc8935bd9d5fd9cc46fc4574af4966815b499",
+    "tests/test_judge3_controls.py": "113d777deb1f3cc30c9de68bc98fcfa0b84cbb6d0b97a6fb1a36198253c349dd"
+  },
+  "verified_judge_tests": 12,
+  "frozen_detector_references": [
+    {
+      "detector": "local2_frozen_sentence",
+      "participant_models": [
+        "qwen/qwen3.5-27b",
+        "qwen/qwen3.8-27b"
+      ],
+      "head_sha256": "eec8a9b3f10547cd132c34b75182ef5046a810998f305563d9bc79fdeabd82e9",
+      "reference_sha256": "f978c668c1457752baab503c6400359c1c974417ae33532e25eb75b5eacbaca1",
+      "reference_artifact": "runs/iteration3/local_probes/references_local2_v1/sentence_references.json",
+      "reference_artifact_sha256": "7f66e9ff546caad5987cac0cdbed748d5d0538795865ff1028445cd39f593ea0",
+      "target": "local_factual_contradiction",
+      "granularity": "sentence",
+      "reference_population": "All fixed text-only segments from original-source dev response rows in the verified natural-twin cache, matching participant model. Response rows were selected because at least one name-bearing claim passed source-flip verification; individual reference segments are never selected by labels. No fresh test rows or judged-episode outcomes used.",
+      "reference_units": {
+        "qwen/qwen3.5-27b": 137,
+        "qwen/qwen3.8-27b": 120
+      }
+    },
+    {
+      "detector": "local3_clause",
+      "participant_models": [
+        "qwen/qwen3.5-27b",
+        "qwen/qwen3.8-27b"
+      ],
+      "head_sha256": "bee06b0325fbd43baf6dbf7d004a3c087a674f4a6d8c6a825ae04c4e0bb08ec0",
+      "reference_sha256": "30844bbf7846a3c4cc50ad28dc9659f23fc7d14b64231bed2d09c91f97a64351",
+      "reference_artifact": "runs/iteration3/local_probes/references_local3_v1/clause_references.json",
+      "reference_artifact_sha256": "60b7b55ecb2c0bf7828eaeba2ff25cae3c5a6fc1568a741281e3094343a4f8d9",
+      "target": "local_factual_contradiction",
+      "granularity": "clause",
+      "reference_population": "All fixed text-only segments from original-source dev response rows in the verified natural-twin cache, matching participant model. Response rows were selected because at least one name-bearing claim passed source-flip verification; individual reference segments are never selected by labels. No fresh test rows or judged-episode outcomes used.",
+      "reference_units": {
+        "qwen/qwen3.5-27b": 333,
+        "qwen/qwen3.8-27b": 295
+      }
+    },
+    {
+      "detector": "local3_sentence",
+      "participant_models": [
+        "qwen/qwen3.5-27b",
+        "qwen/qwen3.8-27b"
+      ],
+      "head_sha256": "bee06b0325fbd43baf6dbf7d004a3c087a674f4a6d8c6a825ae04c4e0bb08ec0",
+      "reference_sha256": "af03acca2284b85dc316e54631d7d3021145c72eb4ae7fd26d9a6e422fecb148",
+      "reference_artifact": "runs/iteration3/local_probes/references_local3_v1/sentence_references.json",
+      "reference_artifact_sha256": "96c2d312a522c208f75d73ec7a7fc03f07e18b330c3a6c5bf5e7f6518f6d2e17",
+      "target": "local_factual_contradiction",
+      "granularity": "sentence",
+      "reference_population": "All fixed text-only segments from original-source dev response rows in the verified natural-twin cache, matching participant model. Response rows were selected because at least one name-bearing claim passed source-flip verification; individual reference segments are never selected by labels. No fresh test rows or judged-episode outcomes used.",
+      "reference_units": {
+        "qwen/qwen3.5-27b": 137,
+        "qwen/qwen3.8-27b": 120
+      }
+    },
+    {
+      "detector": "adapted_primary",
+      "participant_models": [
+        "qwen/qwen3.5-27b",
+        "qwen/qwen3.8-27b"
+      ],
+      "head_sha256": "48e3077ebeffaa388231a5716049e3adb2bd39741b8648fe93c39088d677a278",
+      "reference_sha256": "78a1fd2cf01d96c8631988a21cdc5826b49f2e0ae75c0b1ff07fc8ba961a6064",
+      "reference_artifact": "runs/iteration3/coordinator/response_bundle_smoke/adapted_primary.json",
+      "reference_artifact_sha256": "efa40cc70a2f580f9f94196179c0bdd5f07b4d78462cfd14346b101424a26f0b",
+      "target": "wrong_answer_advocacy",
+      "granularity": "response",
+      "reference_population": "All old iteration-2 development debate turns for the matching participant; fixed before iteration-3 outcomes.",
+      "reference_units": {
+        "qwen/qwen3.5-27b": 48,
+        "qwen/qwen3.8-27b": 48
+      }
+    },
+    {
+      "detector": "apollo_dyl_difference",
+      "participant_models": [
+        "qwen/qwen3.5-27b",
+        "qwen/qwen3.8-27b"
+      ],
+      "head_sha256": "48e3077ebeffaa388231a5716049e3adb2bd39741b8648fe93c39088d677a278",
+      "reference_sha256": "ae2ffe23aff45b602101d2d79b7b7389aa9545f267a2b63a838ce7ceeb5e811b",
+      "reference_artifact": "runs/iteration3/coordinator/response_bundle_smoke/apollo_dyl_difference.json",
+      "reference_artifact_sha256": "ddf7c8852b1cdeb9b4e2ccfb505eb7f1119612f7bf6c2796371b70e08aa67f56",
+      "target": "wrong_answer_advocacy",
+      "granularity": "response",
+      "reference_population": "All old iteration-2 development debate turns for the matching participant; fixed before iteration-3 outcomes.",
+      "reference_units": {
+        "qwen/qwen3.5-27b": 48,
+        "qwen/qwen3.8-27b": 48
+      }
+    },
+    {
+      "detector": "apollo_response_mean",
+      "participant_models": [
+        "qwen/qwen3.5-27b",
+        "qwen/qwen3.8-27b"
+      ],
+      "head_sha256": "48e3077ebeffaa388231a5716049e3adb2bd39741b8648fe93c39088d677a278",
+      "reference_sha256": "67b02ca0dc535ed2a4ad891a27cd8106742c8e379ce3313b1ef700aba28ba708",
+      "reference_artifact": "runs/iteration3/coordinator/response_bundle_smoke/apollo_response_mean.json",
+      "reference_artifact_sha256": "15def746b937f2e27424ac59967856827aa777207f1a9439b19a377424a93bc1",
+      "target": "wrong_answer_advocacy",
+      "granularity": "response",
+      "reference_population": "All old iteration-2 development debate turns for the matching participant; fixed before iteration-3 outcomes.",
+      "reference_units": {
+        "qwen/qwen3.5-27b": 48,
+        "qwen/qwen3.8-27b": 48
+      }
+    },
+    {
+      "detector": "published_fibs_dyl",
+      "participant_models": [
+        "qwen/qwen3.5-27b"
+      ],
+      "head_sha256": "a93602803789c7b88c6ffdfbd3ba011ef418e0fa529b4af4876a41fb1a966781",
+      "reference_sha256": "af9c3b0aaf119ee7f47cab9a4272c39462cf21b890b188399f583185d05af6d8",
+      "reference_artifact": "runs/iteration3/coordinator/response_bundle_smoke/published_fibs_dyl.json",
+      "reference_artifact_sha256": "542af10228ef979de4b16c3ef56ef2d0f743c7501a67692d9db0fdfeab2ed32f",
+      "target": "wrong_answer_advocacy",
+      "granularity": "response",
+      "reference_population": "All old iteration-2 development debate turns for the matching participant; fixed before iteration-3 outcomes.",
+      "reference_units": {
+        "qwen/qwen3.5-27b": 48
+      }
+    }
+  ],
+  "packages": {
+    "full": {
+      "judges": [
+        "Qwen/Qwen3.5-4B",
+        "anthropic/claude-haiku-5.5"
+      ],
+      "episodes": 48,
+      "families": 24,
+      "detectors": [
+        "adapted_primary",
+        "apollo_response_mean",
+        "apollo_dyl_difference",
+        "published_fibs_dyl",
+        "local3_sentence",
+        "local3_clause",
+        "local2_frozen_sentence"
+      ],
+      "jobs_expected": 1032
+    },
+    "opus_primary": {
+      "judges": [
+        "anthropic/claude-opus-5.5"
+      ],
+      "episodes": 48,
+      "families": 24,
+      "detectors": [
+        "adapted_primary",
+        "local3_sentence"
+      ],
+      "jobs_expected": 384
+    }
+  },
+  "api_runtimes": {
+    "anthropic/claude-haiku-5.5": {
+      "reasoning": {
+        "enabled": false
+      },
+      "max_output_tokens": 8192,
+      "request_timeout_seconds": 300,
+      "concurrency": 4
+    },
+    "anthropic/claude-opus-5.5": {
+      "reasoning": {
+        "effort": "low"
+      },
+      "max_output_tokens": 32768,
+      "request_timeout_seconds": 900,
+      "concurrency": 1,
+      "interpretation": "Requested low effort; smoke returned0reported reasoning tokens. No inference about hidden reasoning."
+    }
+  },
+  "native_runtime": {
+    "model": "Qwen/Qwen3.5-4B",
+    "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+    "dtype": "bfloat16",
+    "backend": "transformers native generate, unpadded, greedy, thinking disabled",
+    "template_sha256": "a4aee8afcf2e0711942cf848899be66016f8d14a889ff9ede07bca099c28f715",
+    "max_new_tokens": 8192,
+    "runner_sha256": "e798394d5436ba81dffc38dd105fc8935bd9d5fd9cc46fc4574af4966815b499",
+    "answer_only": true
+  },
+  "execution_gate": "Root supplies complete final episodes/validity evidence/features, releases separatelyhashed packages, and assigns budgets. Exact Opus prompt cost recount precedes its up-to$12 reservation.",
+  "prespecified_reports": [
+    "real minus matched neutral with family-paired uncertainty",
+    "raw/neutral formatting effects and fixes/harms",
+    "shuffled minus neutral and real minus shuffled",
+    "labelled oracle usability/headroom",
+    "crossjudge interactions on exact shared conditions only",
+    "repeated identical-message disagreement, with request hashes and reported routing metadata separately"
+  ],
+  "claim_limits": [
+    "No final outcome-dependent exclusions or detector selection.",
+    "Local segments use frozen text-only boundaries, no annotation-selected excerpts.",
+    "Correct-answer speaker roles are not blanket local factual labels.",
+    "API/native runtime differences remain explicit."
+  ],
+  "supersedes": {
+    "path": "runs/iteration3/judge_controls/final_judge_code_lock_v1.json",
+    "sha256": "d9dd06de71c04e70d6a3d80f80f407e5129f7dbaa44a3bf6b908cd59d40c9f46"
+  },
+  "revision_note": "Necessary pre-global-freeze optional per-model reasoning map in shared API; default behavior and all judge request bodies/settings unchanged. Root reports34 combined API/control/judge/environment/reasoning tests pass. Every other locked file is byte-identical to v1."
+}

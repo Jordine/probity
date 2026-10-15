@@ -1,0 +1,113 @@
+{
+  "schema": "probity_final_report_semantic_review_v2",
+  "created_at_utc": "2026-10-15T14:44:01.163790+00:00",
+  "report": "docs/probity_iteration3_results.md",
+  "report_sha256": "98885372f7054a7152253273230cce8591be9eda0992911761c52152db96965c",
+  "status": "reviewed_corrected_no_remaining_numeric_or_scope_errors_found_in_reviewed_final_sections",
+  "scope": "Complete report read; independent verification of updated main judge comparisons, secondary clauses, final budget, retention claims and future scaffold. Earlier sections retain the prior semantic review and immutable experiment receipts. No inference or metric recomputation.",
+  "root_authorized_edits": [
+    "Separate completed final judge comparisons from the independently completed secondary clause annotation diagnostic; Opus received no clause-display condition.",
+    "Correct source83 qualitative description from excluding a second attack to excluding a third attack.",
+    "Add one future-only quote/honorific scaffold paragraph bound to its final proposal/test/dry-run receipts."
+  ],
+  "verified": {
+    "main_judge": {
+      "raw_correct": [
+        37,
+        43,
+        45
+      ],
+      "adapted_neutral_correct": [
+        39,
+        45,
+        46
+      ],
+      "adapted_real_correct": [
+        47,
+        44,
+        47
+      ],
+      "presentations_per_pooled_cell": 48,
+      "independent_families": 24,
+      "native_response_fixes_harms": [
+        8,
+        0
+      ],
+      "native_sentence_fixes_harms": [
+        0,
+        9
+      ],
+      "native_clause_fixes_harms": [
+        0,
+        6
+      ],
+      "all_reported_primary_CIs_and_crossjudge_differences_match": true,
+      "stronger_comparison_scope": "Paired observed runs with matching primary conditions; runtimes and inference contracts differ, and Opus has the predeclared reduced package."
+    },
+    "clauses": {
+      "selected_units": 771,
+      "selected_responses": 48,
+      "all_turn_displayed_clause_units": 5598,
+      "supported": 64,
+      "contradicted": 214,
+      "unknown": 493,
+      "eligible_mixed_responses": [
+        14,
+        11
+      ],
+      "all_reported_AUROCs_CIs_paired_differences_and_flag_denominators_match": true,
+      "original_valid_jobs_reused": 48,
+      "original_lossless_qwen_completion": 1,
+      "new_paid_opus_jobs": 1,
+      "combined_stage_cost_usd": 3.344310664,
+      "scope": "Descriptive-only first wrong-assigned opening sample; no inference from its ranking quality to whole-debate judge uplift."
+    },
+    "budget": {
+      "settled_entries": 103,
+      "unsettled_entries": 0,
+      "total_usd_rounded_to_report": 68.0954558278,
+      "remaining_usd_rounded_to_report": 6.9045441722,
+      "cap_usd": 75,
+      "accounting": "Conservative reservations/settlements, not an exact provider invoice."
+    },
+    "retention": {
+      "fresh_archive_parts_independently_verified": 8,
+      "fresh_archives": 2,
+      "raw_provenance_independent_readback": true,
+      "transient_full_token_caches_not_claimed_retained": true,
+      "Drive_identifiers_not_in_this_report_or_review": true
+    },
+    "future_units": {
+      "old_development_rows": 45,
+      "families": 4,
+      "old_units": 257,
+      "new_units": 274,
+      "changed_responses": 29,
+      "test_methods": 8,
+      "boundary_fixtures": 12,
+      "invalid_contract_mutations": 9,
+      "seeded_conservation_cases": 80,
+      "paid_calls": 0,
+      "truth_labels_created": 0,
+      "improvement_claimed": false
+    }
+  },
+  "source_artifact_hashes": {
+    "reports/data/iteration3/judges/accuracies.csv": "124c8b8de93808e127bd45f70453f209efd34bdf55484e1428509ea2b589ae41",
+    "reports/data/iteration3/judges/real_minus_neutral.csv": "f32e387469dbf36cc4d0ba3719a9f4b630f9595faa34f8ac0a07baa812955026",
+    "reports/data/iteration3/judges/cross_judge/comparison_summary.json": "fea9f7c9f404f9ff8753f942c9d9b7b2c1c3ca18df99c487cbaac03954282544",
+    "runs/iteration3/final/local_opening_clause_evaluation_v1/results.json": "c7bf4d4efd6993101f1ca2c174245ab4c610e2cd6d0143b98c872f5b3e52e152",
+    "runs/iteration3/final/local_clause_annotation_completion_audit_v2.json": "1875d23e7e5d5d5a8fc03e86378a7358d117dfd715faa89ae377c193ae854aae",
+    "runs/iteration3/final/local_clause_recovered_evaluation_scope_v1.json": "79ac894b561008303c12415a0c60317a765dfc2a7137e65850f402e7f2bb4d4b",
+    "runs/iteration3/local_probes/clause_lossless_recovery_preparation_v1/offline_checks.json": "c367cb07426c4d9983b8c6359542bb353a275105505cce602264628c0d55bdcd",
+    "runs/iteration3/environment/local_qualitative_review_v1.json": "197d721e5b33795194dfaecf896e409e0c71dae643cb4eb0912e65ddbe3c747c",
+    "runs/iteration3/local_probes/future_units_v1/proposal.json": "a3b0e694622250db4f87e2a2a059fde0665d119590df4296b01b92e13d48908d",
+    "runs/iteration3/local_probes/future_units_v1/test_receipt.json": "482207b605c28bf04a8281f41f17738f05b0398045e0d444e2369a382914a308",
+    "runs/iteration3/local_probes/future_units_v1/dry_run_v1/summary.json": "fac6f4d1a329f5a61b98f49f0277ef56b967b19f095b69b6cfb37afd02414316",
+    "runs/pilot_budget.json": "efcdd151fcdf1dc49a1e01d1dacb7384580ea88a3c8267e0fdb733cafc858e1e",
+    "runs/iteration3/final/drive_retained_features_qwen35_v1.json": "ea59fd0afa83eb5527541ffd4e540e8a3b2babfc36d038b8aecdd0e5a42399e2",
+    "runs/iteration3/final/drive_retained_features_qwen38_v1.json": "30cacad2788dd48b5bdc8596fed2d65abf296d272b1592909d3bc9abd77ff43e",
+    "runs/iteration3/final/drive_retention_metadata_readback_v1.json": "9ef1f65af81ad2d906783c57e7a811070f672d50da21d1af1cf51f7afc56f818"
+  },
+  "limits": "This review checks reported quantities and interpretation against their retained records; it is not independent human reannotation or new model execution. Future external-storage offload prose or other report edits after this hash require another review record."
+}

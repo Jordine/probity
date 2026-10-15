@@ -1,0 +1,94 @@
+{
+  "locked_at_unix": 1792060588.708081,
+  "status": "metadata_cleaned_source_inputs_frozen_before_public_debates",
+  "dataset": "runs/iteration3/coordinator/holdout_families_source_v5.jsonl",
+  "sha256": "57788f14021d2c6f2e75313b2b0d36c22f3a3d74572ec57d9b4189a5f1b7e45c",
+  "rows": 24,
+  "families": 24,
+  "parent_lock": "holdout_family_lock_v2.json",
+  "repairs_source_lines": [
+    41,
+    80,
+    116,
+    165
+  ],
+  "source_reviews": [
+    "source_repairs_approved_v2.json",
+    "../judge_controls/source_validity_review_new_families_v1.json"
+  ],
+  "validation_runs": [
+    "source_validation_v1",
+    "source_validation_v2",
+    "source_validation_v3"
+  ],
+  "subgroups": {
+    "short_options_max_words_each": 6,
+    "short_source_lines": [
+      165,
+      124,
+      97,
+      114,
+      89,
+      145,
+      15,
+      116,
+      83,
+      80,
+      85,
+      161,
+      126
+    ]
+  },
+  "constructed_chance": false,
+  "note": "All24 original families and complete narrative characters preserved. Only source114 generator QA/answer-key footer removed. No narrative/question/options/gold/schedule change or outcome selection.",
+  "previous_lock_sha256": "694530dbd511dbf70def59c96edb8a0faa902315909b06de5bb44413bf6efeca",
+  "schedule_amendment": {
+    "reason": "Pre-outcome exact display gold by first-speaker balance; source/question/options/gold unchanged.",
+    "selection": "Smallest SHA256(iteration3-balance-v1:parentid) within prescribed B/firstspeaker cells.",
+    "changes": [
+      {
+        "parent_problem_id": "1ab711f1bfb634a1129a757951334eac9d9ab90310c6da50e33ca481140eca37",
+        "parent_source_line": 62,
+        "old_schedule_parent_index": 19,
+        "new_schedule_parent_index": 40,
+        "first_speaker_unchanged": "Red",
+        "displayed_gold_before": "B",
+        "displayed_gold_after": "A"
+      },
+      {
+        "parent_problem_id": "85f4f56f39c7d7339c7197a966f8e47358de5e674a69b7d1cde028360f2b1d52",
+        "parent_source_line": 46,
+        "old_schedule_parent_index": 2,
+        "new_schedule_parent_index": 25,
+        "first_speaker_unchanged": "Blue",
+        "displayed_gold_before": "B",
+        "displayed_gold_after": "A"
+      },
+      {
+        "parent_problem_id": "3ac14659399a9a6d290f95e26e132f93a6d447e395c31de581e1eec122c45121",
+        "parent_source_line": 116,
+        "old_schedule_parent_index": 13,
+        "new_schedule_parent_index": 38,
+        "first_speaker_unchanged": "Blue",
+        "displayed_gold_before": "B",
+        "displayed_gold_after": "A"
+      }
+    ],
+    "before": {
+      "('B', 'Red')": 7,
+      "('B', 'Blue')": 8,
+      "('A', 'Red')": 5,
+      "('A', 'Blue')": 4
+    },
+    "after": {
+      "('B', 'Red')": 6,
+      "('B', 'Blue')": 6,
+      "('A', 'Blue')": 6,
+      "('A', 'Red')": 6
+    }
+  },
+  "locked_at_utc": "2026-10-15T10:36:28.708081+00:00",
+  "source_metadata_cleanup": "runs/iteration3/coordinator/source_metadata_cleanup_v1.json",
+  "source_metadata_cleanup_sha256": "7429ed589933b944ec8f034348e0cdd293f2064be5c0c5eafae9d72851672c4c",
+  "previous_locked_at_unix": 1792005551.2956114
+}

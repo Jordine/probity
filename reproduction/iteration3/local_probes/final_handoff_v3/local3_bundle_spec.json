@@ -1,0 +1,20 @@
+{
+  "models": [
+    {
+      "participant": "qwen/qwen3.5-27b",
+      "head": "runs/iteration3/local_probes/fitted_qwen35_v2/heads.pt",
+      "reference_features": "runs/iteration3/local_probes/verified_features_qwen35_v2",
+      "evaluation_features": [
+        "runs/iteration3/final/features_qwen35"
+      ]
+    },
+    {
+      "participant": "qwen/qwen3.8-27b",
+      "head": "runs/iteration3/local_probes/fitted_qwen38_v2/heads.pt",
+      "reference_features": "runs/iteration3/local_probes/verified_features_qwen38_v2",
+      "evaluation_features": [
+        "runs/iteration3/final/features_qwen38"
+      ]
+    }
+  ]
+}

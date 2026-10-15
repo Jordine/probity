@@ -1,0 +1,15 @@
+{
+  "created_at_utc": "2026-10-15T11:54:46.511458+00:00",
+  "kind": "observational_scope_clarification_only",
+  "global_freeze": "runs/iteration3/final/global_freeze_v2.json",
+  "global_freeze_sha256": "35ce913f3837eb295d21eb118bfdafa7d9224f2c202aec7890741918e33a522c",
+  "context_alias_amendment": "runs/iteration3/environment/final_context_alias_amendment_v1.json",
+  "context_alias_amendment_sha256": "df43481584c3bff87ce2cd5a0c51919f1293771d2565d08c10a619abd2cbd547",
+  "scope_review": "runs/iteration3/final/context_diagnostic_scope_review_v1.json",
+  "scope_review_sha256": "40d98e161a71ff5e1bc489e797179dd24268df105588bf765ed6b1e306a07209",
+  "effect": "Clarifies the already frozen diagnostic's removal of the original explicit verified-answer cue, its before-final-turn non-system scope, and the limits of interpreting two retained wrong answers. All 24 families, 48 episodes and 288 public turns remain primary.",
+  "no_inference_or_output_changes": true,
+  "no_new_api_calls": true,
+  "original_strict_failures_raw_attempts_charges_and_valid_wrong_answers_retained": true,
+  "fresh_judge_or_probe_outcomes_used": false
+}

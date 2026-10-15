@@ -1,0 +1,30 @@
+{
+  "schema": "local3_frozen_reference_authority_release_v1",
+  "status": "released",
+  "created_at_utc": "2026-10-15T13:28:10.161828+00:00",
+  "adapter_sha256": "d4c4f901a9e8993b692725bbb6ee2e7115e9eca0ee178291aa3d6da81ca82143",
+  "frozen_arrays_authoritative": true,
+  "fresh_score_substitution_permitted": false,
+  "input_sha256": {
+    "runs/iteration3/final/global_freeze_v2.json": "35ce913f3837eb295d21eb118bfdafa7d9224f2c202aec7890741918e33a522c",
+    "runs/iteration3/final/local_feature_completion_audit_v1.json": "aaf8e4b85a614bcc01845567e85c19c15a5f6e05a40510ed9cee6b053c3d1137",
+    "runs/iteration3/final/root_feature_review_v1.json": "f7edd1f108334e2da632d3e7776ca357bdfe9f1e1568685e3e05c5c18081db4e",
+    "runs/iteration3/local_probes/restored_reference_identity_audit_v1.json": "0a733bab70e60790ac0c1d24a92780741beaaecc42a4988d35e8ed30f66659df",
+    "runs/iteration3/local_probes/reference_roundoff_scope_diagnosis_v1.json": "bfe06cf0cb9eef1863781f50e551484e2def2fd409e6734cc72a99338bd07475",
+    "runs/iteration3/local_probes/frozen_reference_adapter_offline_checks_v1.json": "041aa809ea57307907c30505842c2c05d3fc76b3a9a6a1ee1253edce2b3b3e8a",
+    "runs/iteration3/local_probes/references_local3_v1/sentence_references.json": "96c2d312a522c208f75d73ec7a7fc03f07e18b330c3a6c5bf5e7f6518f6d2e17",
+    "runs/iteration3/local_probes/references_local3_v1/clause_references.json": "60b7b55ecb2c0bf7828eaeba2ff25cae3c5a6fc1568a741281e3094343a4f8d9",
+    "runs/iteration3/local_probes/references_local2_v1/sentence_references.json": "7f66e9ff546caad5987cac0cdbed748d5d0538795865ff1028445cd39f593ea0",
+    "runs/iteration3/local_probes/references_local2_v1/clause_references.json": "605d91e18616191d54ced6e252397a8f317815d1b6f0b4cac2a422cda0479239",
+    "runs/iteration3/local_probes/restored_local3_reference_replay_v1/sentence_references.json": "5787e600869d8142fea325def60070b1c998fc32c55a5286f78f1be319f223f7",
+    "runs/iteration3/local_probes/restored_local3_reference_replay_v1/clause_references.json": "a0c0f1593d817571e04046de36a57fe2b74ed921e36afbac763c6f732d0009fb",
+    "runs/iteration3/local_probes/restored_local2_reference_replay_v1/sentence_references.json": "8b81ad212947bbe3582c775e6d4469388da7b0e4c067058a1290d8cb6f5b0a7f",
+    "runs/iteration3/local_probes/restored_local2_reference_replay_v1/clause_references.json": "42c726b45e622526c06c374a32714706460a26ec29aecf8b13bf4f1b0dbdfab4"
+  },
+  "review": "Root read the complete versioned adapter and independent judge review. All frozen non-score fields and heads match; original development score differences are bounded by the observed1.7763568394002505e-15 but no tolerance is introduced. Adapter requires exact replay equality, substitutes only original frozen development reference return values, verifies complete original row/segment population, and leaves every fresh scoring call unchanged. Original failed audit, replay arrays and frozen modules remain preserved. No fresh local metrics have been read or used to choose this operation. CPU/BLAS accumulation order is a possible cause, not an established diagnosis.",
+  "required_next_checks": [
+    "Complete unchanged export audit including raw fresh score parity and exact original normalizer identity",
+    "Full sentence evaluation and selected-cache retention",
+    "Judge package checks must bind this receipt and completed export audit"
+  ]
+}

@@ -1,0 +1,149 @@
+{
+  "created_at_utc": "2026-10-14T19:21:24.309243+00:00",
+  "schema": "judge3_frozen_reference_inventory_v1",
+  "scope": "Available development-frozen artifacts; root still selects final inclusion before fresh outcomes. No new outcome measurements.",
+  "references": [
+    {
+      "detector": "local2_frozen_clause",
+      "participant_models": [
+        "qwen/qwen3.5-27b",
+        "qwen/qwen3.8-27b"
+      ],
+      "head_sha256": "eec8a9b3f10547cd132c34b75182ef5046a810998f305563d9bc79fdeabd82e9",
+      "reference_sha256": "a5cc46e17c8339d58f7de5c19d648cee59be3b14256048de7487d123bbde6a1f",
+      "reference_artifact": "runs/iteration3/local_probes/references_local2_v1/clause_references.json",
+      "reference_artifact_sha256": "605d91e18616191d54ced6e252397a8f317815d1b6f0b4cac2a422cda0479239",
+      "target": "local_factual_contradiction",
+      "granularity": "clause",
+      "reference_population": "All fixed text-only segments from original-source dev response rows in the verified natural-twin cache, matching participant model. Response rows were selected because at least one name-bearing claim passed source-flip verification; individual reference segments are never selected by labels. No fresh test rows or judged-episode outcomes used.",
+      "reference_units": {
+        "qwen/qwen3.5-27b": 333,
+        "qwen/qwen3.8-27b": 295
+      }
+    },
+    {
+      "detector": "local2_frozen_sentence",
+      "participant_models": [
+        "qwen/qwen3.5-27b",
+        "qwen/qwen3.8-27b"
+      ],
+      "head_sha256": "eec8a9b3f10547cd132c34b75182ef5046a810998f305563d9bc79fdeabd82e9",
+      "reference_sha256": "f978c668c1457752baab503c6400359c1c974417ae33532e25eb75b5eacbaca1",
+      "reference_artifact": "runs/iteration3/local_probes/references_local2_v1/sentence_references.json",
+      "reference_artifact_sha256": "7f66e9ff546caad5987cac0cdbed748d5d0538795865ff1028445cd39f593ea0",
+      "target": "local_factual_contradiction",
+      "granularity": "sentence",
+      "reference_population": "All fixed text-only segments from original-source dev response rows in the verified natural-twin cache, matching participant model. Response rows were selected because at least one name-bearing claim passed source-flip verification; individual reference segments are never selected by labels. No fresh test rows or judged-episode outcomes used.",
+      "reference_units": {
+        "qwen/qwen3.5-27b": 137,
+        "qwen/qwen3.8-27b": 120
+      }
+    },
+    {
+      "detector": "local3_clause",
+      "participant_models": [
+        "qwen/qwen3.5-27b",
+        "qwen/qwen3.8-27b"
+      ],
+      "head_sha256": "bee06b0325fbd43baf6dbf7d004a3c087a674f4a6d8c6a825ae04c4e0bb08ec0",
+      "reference_sha256": "30844bbf7846a3c4cc50ad28dc9659f23fc7d14b64231bed2d09c91f97a64351",
+      "reference_artifact": "runs/iteration3/local_probes/references_local3_v1/clause_references.json",
+      "reference_artifact_sha256": "60b7b55ecb2c0bf7828eaeba2ff25cae3c5a6fc1568a741281e3094343a4f8d9",
+      "target": "local_factual_contradiction",
+      "granularity": "clause",
+      "reference_population": "All fixed text-only segments from original-source dev response rows in the verified natural-twin cache, matching participant model. Response rows were selected because at least one name-bearing claim passed source-flip verification; individual reference segments are never selected by labels. No fresh test rows or judged-episode outcomes used.",
+      "reference_units": {
+        "qwen/qwen3.5-27b": 333,
+        "qwen/qwen3.8-27b": 295
+      }
+    },
+    {
+      "detector": "local3_sentence",
+      "participant_models": [
+        "qwen/qwen3.5-27b",
+        "qwen/qwen3.8-27b"
+      ],
+      "head_sha256": "bee06b0325fbd43baf6dbf7d004a3c087a674f4a6d8c6a825ae04c4e0bb08ec0",
+      "reference_sha256": "af03acca2284b85dc316e54631d7d3021145c72eb4ae7fd26d9a6e422fecb148",
+      "reference_artifact": "runs/iteration3/local_probes/references_local3_v1/sentence_references.json",
+      "reference_artifact_sha256": "96c2d312a522c208f75d73ec7a7fc03f07e18b330c3a6c5bf5e7f6518f6d2e17",
+      "target": "local_factual_contradiction",
+      "granularity": "sentence",
+      "reference_population": "All fixed text-only segments from original-source dev response rows in the verified natural-twin cache, matching participant model. Response rows were selected because at least one name-bearing claim passed source-flip verification; individual reference segments are never selected by labels. No fresh test rows or judged-episode outcomes used.",
+      "reference_units": {
+        "qwen/qwen3.5-27b": 137,
+        "qwen/qwen3.8-27b": 120
+      }
+    },
+    {
+      "detector": "adapted_primary",
+      "participant_models": [
+        "qwen/qwen3.5-27b",
+        "qwen/qwen3.8-27b"
+      ],
+      "head_sha256": "48e3077ebeffaa388231a5716049e3adb2bd39741b8648fe93c39088d677a278",
+      "reference_sha256": "78a1fd2cf01d96c8631988a21cdc5826b49f2e0ae75c0b1ff07fc8ba961a6064",
+      "reference_artifact": "runs/iteration3/coordinator/response_bundle_smoke/adapted_primary.json",
+      "reference_artifact_sha256": "efa40cc70a2f580f9f94196179c0bdd5f07b4d78462cfd14346b101424a26f0b",
+      "target": "wrong_answer_advocacy",
+      "granularity": "response",
+      "reference_population": "All old iteration-2 development debate turns for the matching participant; fixed before iteration-3 outcomes.",
+      "reference_units": {
+        "qwen/qwen3.5-27b": 48,
+        "qwen/qwen3.8-27b": 48
+      }
+    },
+    {
+      "detector": "apollo_dyl_difference",
+      "participant_models": [
+        "qwen/qwen3.5-27b",
+        "qwen/qwen3.8-27b"
+      ],
+      "head_sha256": "48e3077ebeffaa388231a5716049e3adb2bd39741b8648fe93c39088d677a278",
+      "reference_sha256": "ae2ffe23aff45b602101d2d79b7b7389aa9545f267a2b63a838ce7ceeb5e811b",
+      "reference_artifact": "runs/iteration3/coordinator/response_bundle_smoke/apollo_dyl_difference.json",
+      "reference_artifact_sha256": "ddf7c8852b1cdeb9b4e2ccfb505eb7f1119612f7bf6c2796371b70e08aa67f56",
+      "target": "wrong_answer_advocacy",
+      "granularity": "response",
+      "reference_population": "All old iteration-2 development debate turns for the matching participant; fixed before iteration-3 outcomes.",
+      "reference_units": {
+        "qwen/qwen3.5-27b": 48,
+        "qwen/qwen3.8-27b": 48
+      }
+    },
+    {
+      "detector": "apollo_response_mean",
+      "participant_models": [
+        "qwen/qwen3.5-27b",
+        "qwen/qwen3.8-27b"
+      ],
+      "head_sha256": "48e3077ebeffaa388231a5716049e3adb2bd39741b8648fe93c39088d677a278",
+      "reference_sha256": "67b02ca0dc535ed2a4ad891a27cd8106742c8e379ce3313b1ef700aba28ba708",
+      "reference_artifact": "runs/iteration3/coordinator/response_bundle_smoke/apollo_response_mean.json",
+      "reference_artifact_sha256": "15def746b937f2e27424ac59967856827aa777207f1a9439b19a377424a93bc1",
+      "target": "wrong_answer_advocacy",
+      "granularity": "response",
+      "reference_population": "All old iteration-2 development debate turns for the matching participant; fixed before iteration-3 outcomes.",
+      "reference_units": {
+        "qwen/qwen3.5-27b": 48,
+        "qwen/qwen3.8-27b": 48
+      }
+    },
+    {
+      "detector": "published_fibs_dyl",
+      "participant_models": [
+        "qwen/qwen3.5-27b"
+      ],
+      "head_sha256": "a93602803789c7b88c6ffdfbd3ba011ef418e0fa529b4af4876a41fb1a966781",
+      "reference_sha256": "af9c3b0aaf119ee7f47cab9a4272c39462cf21b890b188399f583185d05af6d8",
+      "reference_artifact": "runs/iteration3/coordinator/response_bundle_smoke/published_fibs_dyl.json",
+      "reference_artifact_sha256": "542af10228ef979de4b16c3ef56ef2d0f743c7501a67692d9db0fdfeab2ed32f",
+      "target": "wrong_answer_advocacy",
+      "granularity": "response",
+      "reference_population": "All old iteration-2 development debate turns for the matching participant; fixed before iteration-3 outcomes.",
+      "reference_units": {
+        "qwen/qwen3.5-27b": 48
+      }
+    }
+  ]
+}

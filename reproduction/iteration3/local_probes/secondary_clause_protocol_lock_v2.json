@@ -1,0 +1,102 @@
+{
+  "frozen_at_utc": "2026-10-14T19:50:00.573076+00:00",
+  "schema": "local3_secondary_clause_protocol_v2",
+  "primary_sentence_protocol_unchanged": "runs/iteration3/local_probes/fresh_annotation_protocol_lock_v2.json",
+  "primary_protocol_sha256": "5b5cc656e619e3f3e033910a6e05f1c17a645a853e699f2b091646d1793d2978",
+  "supersedes_only": "Earlier clause-label exclusion: add this secondary diagnostic; primary sentence hypothesis, heads, references, threshold and all 288 turns remain unchanged.",
+  "source_sha256": {
+    "local3_secondary_clauses.py": "ee86fffdfbaf44e918b88d3deb8de9b6cec9c5ab3908c3fa9a8283ca833e1852",
+    "local3_annotate_units.py": "4ce67a348ba48db0dc5e100dff725bebb813238fbac417474aef7fe16640c6bb",
+    "local3_evaluate_units.py": "562a3b3a794818f7caf99d7310659025469013d93f770a14bb5108cd3d0346ca",
+    "local3_final_runner.py": "9dd634ca9e4de1a4d0f1dc870fcad501cf28a18fc104070ec08a6083e15b4c23",
+    "judge3_protocol.py": "8edc5db4355d36ce85f5d604011bdc70a1a20985f8fefaf8dc3b5fac0a8815b0",
+    "api.py": "17b1a32470172aedc5bfb93ad53c20c43bd9019e03ba1b963775c6377bb3693d"
+  },
+  "rules_sha256": "20aed750ebbfa01bac3c4fa514f34679d44fda6ed54244570dc99758a641f766",
+  "selection": "First turn assigned the wrong answer in each of all 48 final episodes, irrespective of knowledge checks, probe scores, actual claim labels or judge outcomes. 24 source families x 2 models. Complete frozen clause partition per selected argument.",
+  "expected_responses": 48,
+  "expected_source_families": 24,
+  "granularity": "clause",
+  "models": [
+    "qwen/qwen3.8-27b",
+    "anthropic/claude-opus-5.5"
+  ],
+  "max_units_per_chunk": 48,
+  "max_output_tokens": 16384,
+  "concurrency": 2,
+  "budget_cap_usd": 4,
+  "expected_cost_usd": 2.6,
+  "estimate_basis": {
+    "old_dev_openings": 8,
+    "old_dev_clause_units": 106,
+    "projected_fresh_clause_units": 636,
+    "actual_old_opus_prompt_tokens_per_request_byte": 0.33206377651217595,
+    "actual_old_opus_output_tokens_per_check": 92.05084745762711,
+    "full_source_and_arguments": true
+  },
+  "scope": "Full story once per source chunk; every full argument nested directly above its own indexed clauses. No cross-argument scope transfer. Complete units and full source always preserved.",
+  "acceptance": "Independent two-model supported/contradicted agreement, checkable fact, valid literal assertion scope, nonempty evidence. Disagreement, unsupported, mixed, interpretation and unresolved fragments remain unknown, never truthful negatives.",
+  "metrics": "Secondary within-response family-macro AUROC and paired frozen local3-minus-controls with exact coverage/eligibility. Same sentence-reference frozen thresholds are descriptive only on clauses; no fresh calibration or head selection.",
+  "annotation_out": "runs/iteration3/final/local_opening_clause_annotations_v1",
+  "score_subset_out": "runs/iteration3/final/local_opening_clause_score_subset_v1",
+  "evaluation_out": "runs/iteration3/final/local_opening_clause_evaluation_v1",
+  "commands": {
+    "plan": "python3 -m probity_benchmark.local3_secondary_clauses plan",
+    "annotate": "python3 -m probity_benchmark.local3_secondary_clauses annotate",
+    "evaluate": "python3 -m probity_benchmark.local3_secondary_clauses evaluate"
+  },
+  "release_gate": "Root explicit release plus global_freeze status frozen_before_fresh_outcomes and complete 48 episodes/288 turns required. Shared PROBITY_PILOT_LEDGER always required.",
+  "supersedes": "runs/iteration3/local_probes/secondary_clause_protocol_lock_v1.json",
+  "runtime_amendment": "Same proven per-model request settings as primary; no changes to fixed48-opening selection, complete clauses, schema, acceptance, budget or output allowance.",
+  "requested_reasoning_by_model": {
+    "qwen/qwen3.8-27b": {
+      "enabled": false
+    },
+    "anthropic/claude-opus-5.5": {
+      "effort": "low"
+    }
+  },
+  "api_source_sha256": "17b1a32470172aedc5bfb93ad53c20c43bd9019e03ba1b963775c6377bb3693d",
+  "provider_limitation": "Opus catalog advertises mandatory reasoning. The request explicitly sets low effort; no claim that hidden reasoning is disabled. Preserve raw reasoning fields, token usage, stop/native-finish and exposed truncation flags.",
+  "pilot_evidence": {
+    "mixed_verifier": {
+      "path": "runs/iteration3/local_probes/mixed_twins_opus_v1/requests.jsonl",
+      "calls": 22,
+      "requested_reasoning": {
+        "effort": "low"
+      },
+      "max_tokens": 16384,
+      "reported_reasoning_tokens": {
+        "0": 22
+      },
+      "returned_reasoning": {
+        "null": 22
+      },
+      "finish_reason": {
+        "stop": 22
+      },
+      "native_finish_reason": {
+        "end_turn": 22
+      }
+    },
+    "natural_generation": {
+      "path": "runs/iteration3/local_probes/natural_twins_v1/requests.jsonl",
+      "calls": 12,
+      "requested_reasoning": {
+        "effort": "low"
+      },
+      "max_tokens": 32768,
+      "reported_reasoning_tokens": {
+        "0": 11,
+        "767": 1
+      },
+      "returned_reasoning_nonempty_calls": 1,
+      "finish_reason": {
+        "stop": 12
+      },
+      "native_finish_reason": {
+        "end_turn": 12
+      }
+    }
+  }
+}

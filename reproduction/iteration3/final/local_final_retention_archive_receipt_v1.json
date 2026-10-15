@@ -1,0 +1,1238 @@
+{
+  "schema": "local3_final_retention_archive_receipt_v1",
+  "status": "both_exact_archives_created_and_all_members_verified",
+  "score_export_audit_sha256": "f4aedcaccde66fc9b6ce0b03af22bcdc40ddee22160729675a8c933d752fe7d3",
+  "source_sha256": "d55f250541d4ef51f830e3ebb7063095cf0482d88ff433dd2cd8b3cea8dddb92",
+  "archives": [
+    {
+      "path": "runs/iteration3/final/retained_features_qwen35_v1.tar.gz",
+      "sha256": "00e8500ddf9bdb1c4fa49e0f4f428a0395d1b4d06adb494dd50d8d739019367b",
+      "bytes": 255416055,
+      "members": {
+        "retained_features_qwen35_v1/debate2-01815af2d3bea2459fe55bb5897756158c5fdd86788317d256bcfd8e69142c2a-0.pt": {
+          "sha256": "975d1cecf473b409485dba8f2b4f5a9cd63e897d075a9bd6e68fcaa870b0c581",
+          "bytes": 6061625
+        },
+        "retained_features_qwen35_v1/debate2-01815af2d3bea2459fe55bb5897756158c5fdd86788317d256bcfd8e69142c2a-1.pt": {
+          "sha256": "b1e61b70b37fc1d7fb09c68bf1acc7a3d2c6d35ad730dcd64e53d7f45cea8831",
+          "bytes": 2378361
+        },
+        "retained_features_qwen35_v1/debate2-01815af2d3bea2459fe55bb5897756158c5fdd86788317d256bcfd8e69142c2a-2.pt": {
+          "sha256": "a1fa07690098339defdf642cd894ed26167312164032e217d516818fe6776fdc",
+          "bytes": 2874937
+        },
+        "retained_features_qwen35_v1/debate2-01815af2d3bea2459fe55bb5897756158c5fdd86788317d256bcfd8e69142c2a-3.pt": {
+          "sha256": "7758ab8c46665ff25f6604a29fc2ab3c25b28e78fb9938d177ea9f1d4c3b868a",
+          "bytes": 2382137
+        },
+        "retained_features_qwen35_v1/debate2-01815af2d3bea2459fe55bb5897756158c5fdd86788317d256bcfd8e69142c2a-4.pt": {
+          "sha256": "ce40f7fe082adf01dbb60eb551445c689f75ec2c718b274124bfbeb1a6d71156",
+          "bytes": 2878521
+        },
+        "retained_features_qwen35_v1/debate2-01815af2d3bea2459fe55bb5897756158c5fdd86788317d256bcfd8e69142c2a-5.pt": {
+          "sha256": "81f85abadb23ca4db0296796b584e07c5ac05e90144927049d4077182e5c982f",
+          "bytes": 2385721
+        },
+        "retained_features_qwen35_v1/debate2-08bc19d9c5431ada2c461b6d550dc0dd56ea3957d846c9775c31374727e77aaa-0.pt": {
+          "sha256": "5370c25f1d9feaef58459838db50b1fc98ad104936e33a44e97c44d1967277e8",
+          "bytes": 1891385
+        },
+        "retained_features_qwen35_v1/debate2-08bc19d9c5431ada2c461b6d550dc0dd56ea3957d846c9775c31374727e77aaa-1.pt": {
+          "sha256": "ea0ec1e20ffc3a70fb56b96a8ff30c7a9272e966af2945ac2d2586196a163f5d",
+          "bytes": 4595001
+        },
+        "retained_features_qwen35_v1/debate2-08bc19d9c5431ada2c461b6d550dc0dd56ea3957d846c9775c31374727e77aaa-2.pt": {
+          "sha256": "bdf7a02efb49beeffdde29b343c210ce3d9cfd6050504700647ba63cab9ae4fd",
+          "bytes": 1895097
+        },
+        "retained_features_qwen35_v1/debate2-08bc19d9c5431ada2c461b6d550dc0dd56ea3957d846c9775c31374727e77aaa-3.pt": {
+          "sha256": "de980223c9c07e9155a9f19c7ae564a678344f00c3ba8fae549f68ab67fcd66b",
+          "bytes": 1402937
+        },
+        "retained_features_qwen35_v1/debate2-08bc19d9c5431ada2c461b6d550dc0dd56ea3957d846c9775c31374727e77aaa-4.pt": {
+          "sha256": "8f35398391ac58041ad3c47b770deaab8015d63980c473fe2bb99553367faeb0",
+          "bytes": 1897977
+        },
+        "retained_features_qwen35_v1/debate2-08bc19d9c5431ada2c461b6d550dc0dd56ea3957d846c9775c31374727e77aaa-5.pt": {
+          "sha256": "4bb30c95156df3638dba6dedfed18c59d0421e8a13c9132fe883c96ab0dbfb5c",
+          "bytes": 1405945
+        },
+        "retained_features_qwen35_v1/debate2-0de00d86b8cf398edccc563ae4f62b998249f8a15c646f44f6140e8753dd4b1b-0.pt": {
+          "sha256": "6dbd48f5baa10480786aa26eaa5f005db45f6566515e93230bfe002b2885b47f",
+          "bytes": 2124665
+        },
+        "retained_features_qwen35_v1/debate2-0de00d86b8cf398edccc563ae4f62b998249f8a15c646f44f6140e8753dd4b1b-1.pt": {
+          "sha256": "1c3bd802c06247b02b214876fca09dc634d2d99c3c4cae17c82222d2ff0108ae",
+          "bytes": 6303289
+        },
+        "retained_features_qwen35_v1/debate2-0de00d86b8cf398edccc563ae4f62b998249f8a15c646f44f6140e8753dd4b1b-2.pt": {
+          "sha256": "15344db7ec771cd71586c52468075994ab2fb3925ed6dafc123ddb43461750be",
+          "bytes": 2373817
+        },
+        "retained_features_qwen35_v1/debate2-0de00d86b8cf398edccc563ae4f62b998249f8a15c646f44f6140e8753dd4b1b-3.pt": {
+          "sha256": "ab5e509754426c98669896b9c45125181754c87d47224d3e51610fce2428b2ca",
+          "bytes": 2373689
+        },
+        "retained_features_qwen35_v1/debate2-0de00d86b8cf398edccc563ae4f62b998249f8a15c646f44f6140e8753dd4b1b-4.pt": {
+          "sha256": "583f7a76f6b632580ebe7b21ab36873019d802b20ddf67bcc1b55325aa9149c4",
+          "bytes": 2376249
+        },
+        "retained_features_qwen35_v1/debate2-0de00d86b8cf398edccc563ae4f62b998249f8a15c646f44f6140e8753dd4b1b-5.pt": {
+          "sha256": "7e9014bb5424649ee619df12fc170042b1ea8529c9886d71bb90e0def700b016",
+          "bytes": 2376377
+        },
+        "retained_features_qwen35_v1/debate2-300179c839f553757a33f8809e8fcf1f0a78dd2a5910943c95e792b06edd2a18-0.pt": {
+          "sha256": "d9548e3ddb018484d1f4c752532b5c9a08716606bc3e4ba00533b476fc549cd1",
+          "bytes": 7054329
+        },
+        "retained_features_qwen35_v1/debate2-300179c839f553757a33f8809e8fcf1f0a78dd2a5910943c95e792b06edd2a18-1.pt": {
+          "sha256": "5d03d0efec75522b87f16cc016e27ffc0d2c7e77b5c04fc5ad8cf8524d3bef22",
+          "bytes": 2388281
+        },
+        "retained_features_qwen35_v1/debate2-300179c839f553757a33f8809e8fcf1f0a78dd2a5910943c95e792b06edd2a18-2.pt": {
+          "sha256": "eadab7bb092fb334400c04cf4cf2175a530c124b012cd6ba1911e06c30fbef21",
+          "bytes": 2882361
+        },
+        "retained_features_qwen35_v1/debate2-300179c839f553757a33f8809e8fcf1f0a78dd2a5910943c95e792b06edd2a18-3.pt": {
+          "sha256": "9e31e335d54a82095a2933198660bcf9e709eff3de895f01b6b23539d512ec64",
+          "bytes": 2392249
+        },
+        "retained_features_qwen35_v1/debate2-300179c839f553757a33f8809e8fcf1f0a78dd2a5910943c95e792b06edd2a18-4.pt": {
+          "sha256": "ad98acad6b4f811c531bce32cd2913bcb977fcdb06d9b32a0fe0cf9308e1feff",
+          "bytes": 2145913
+        },
+        "retained_features_qwen35_v1/debate2-300179c839f553757a33f8809e8fcf1f0a78dd2a5910943c95e792b06edd2a18-5.pt": {
+          "sha256": "56421d556c1de7c2f49ac7cdc3ecb60d8b4d831ff2fda40968911f518f543906",
+          "bytes": 2395769
+        },
+        "retained_features_qwen35_v1/debate2-38e7660e5bbe619e78f6f148b9792223369241f0959db264e37706c2412f50a2-0.pt": {
+          "sha256": "e429ad66f1b86bb48bc2322fddd5a6cffb8bbc02c7fdea77b88a84d564027596",
+          "bytes": 2122361
+        },
+        "retained_features_qwen35_v1/debate2-38e7660e5bbe619e78f6f148b9792223369241f0959db264e37706c2412f50a2-1.pt": {
+          "sha256": "4b963c8f7f457bd2693f8bc76dce531add5ea639ad03166a66eb3a83403d37e1",
+          "bytes": 7777337
+        },
+        "retained_features_qwen35_v1/debate2-38e7660e5bbe619e78f6f148b9792223369241f0959db264e37706c2412f50a2-2.pt": {
+          "sha256": "6e0237e872afac5820c9835f9dcda1a56bc1b9248c64e1121d49bc331074f39e",
+          "bytes": 2371321
+        },
+        "retained_features_qwen35_v1/debate2-38e7660e5bbe619e78f6f148b9792223369241f0959db264e37706c2412f50a2-3.pt": {
+          "sha256": "3878d7a6433e550484ee9e5085205e1e93f610549e2cb96a135575bbaa624e76",
+          "bytes": 2373305
+        },
+        "retained_features_qwen35_v1/debate2-38e7660e5bbe619e78f6f148b9792223369241f0959db264e37706c2412f50a2-4.pt": {
+          "sha256": "5f215382cda0764b9689081fc6e91651e202e55b3acfe1bb0d47ec2c9c4002ac",
+          "bytes": 2373625
+        },
+        "retained_features_qwen35_v1/debate2-38e7660e5bbe619e78f6f148b9792223369241f0959db264e37706c2412f50a2-5.pt": {
+          "sha256": "7488a4b9fa6d7ad5ff3dfc6cdda11100bb16630637f70ac4e768c7e201d883a2",
+          "bytes": 2375865
+        },
+        "retained_features_qwen35_v1/debate2-450dc49d85926f525a66731742e964abd02d63bb5a2487436b50a5c790841e01-0.pt": {
+          "sha256": "3750b89f39e795ca4802d972ca504273cb293dd89c0a4a89645b2417f04d60db",
+          "bytes": 1885945
+        },
+        "retained_features_qwen35_v1/debate2-450dc49d85926f525a66731742e964abd02d63bb5a2487436b50a5c790841e01-1.pt": {
+          "sha256": "be69b362ae38fe129096a94a71828da1fdd50da3b62cca6629ea1caee88276ed",
+          "bytes": 8770809
+        },
+        "retained_features_qwen35_v1/debate2-450dc49d85926f525a66731742e964abd02d63bb5a2487436b50a5c790841e01-2.pt": {
+          "sha256": "d463e6c996c6c9020bfb0c9f9561adf835be3ca281c2ba7c322d1f80bc38644c",
+          "bytes": 2627321
+        },
+        "retained_features_qwen35_v1/debate2-450dc49d85926f525a66731742e964abd02d63bb5a2487436b50a5c790841e01-3.pt": {
+          "sha256": "fae5686925c9d612f6986f55242e96292866e952497801c9a60758d42627fc1f",
+          "bytes": 1891897
+        },
+        "retained_features_qwen35_v1/debate2-450dc49d85926f525a66731742e964abd02d63bb5a2487436b50a5c790841e01-4.pt": {
+          "sha256": "a755834364f3391f1dec4cb21d0bacec9ca44f08d28ea2690a562dbfb4ff5e01",
+          "bytes": 2630009
+        },
+        "retained_features_qwen35_v1/debate2-450dc49d85926f525a66731742e964abd02d63bb5a2487436b50a5c790841e01-5.pt": {
+          "sha256": "020e066b430009a4493df5f37ceef583e3135f86ae4ceffad96ed53d0ed3be64",
+          "bytes": 1894585
+        },
+        "retained_features_qwen35_v1/debate2-53dffbf58e902f1253b71e4f247c28cb4c1dd21cf885452b47e2d688e5b8096a-0.pt": {
+          "sha256": "e9816279b129110a81061b76c40431569d0caa9f3b375316919f7d8d2a80e6d6",
+          "bytes": 1395705
+        },
+        "retained_features_qwen35_v1/debate2-53dffbf58e902f1253b71e4f247c28cb4c1dd21cf885452b47e2d688e5b8096a-1.pt": {
+          "sha256": "c47c610bdd2d6661342180a24a48ed94cb746805d0a8621b0bf2eee82baa938b",
+          "bytes": 6315961
+        },
+        "retained_features_qwen35_v1/debate2-53dffbf58e902f1253b71e4f247c28cb4c1dd21cf885452b47e2d688e5b8096a-2.pt": {
+          "sha256": "b3b03153e686f9552ac0d3436799e08a73ddd9654dcb60936c618b0834d8f24e",
+          "bytes": 1400185
+        },
+        "retained_features_qwen35_v1/debate2-53dffbf58e902f1253b71e4f247c28cb4c1dd21cf885452b47e2d688e5b8096a-3.pt": {
+          "sha256": "49c7055d679bc0ddce089a40c283e58ec8f822d94ea652974be09bf8c20864e2",
+          "bytes": 2139769
+        },
+        "retained_features_qwen35_v1/debate2-53dffbf58e902f1253b71e4f247c28cb4c1dd21cf885452b47e2d688e5b8096a-4.pt": {
+          "sha256": "46a0a5b2691cdf0daebf8142a392f8cba0e3b5db020a291e45b29f20f28b846a",
+          "bytes": 1899961
+        },
+        "retained_features_qwen35_v1/debate2-53dffbf58e902f1253b71e4f247c28cb4c1dd21cf885452b47e2d688e5b8096a-5.pt": {
+          "sha256": "1a07d5b741770bdd6ee03bd1ea2fce6cfc1e2603acc048076abf4bfee9e2fa7d",
+          "bytes": 2143673
+        },
+        "retained_features_qwen35_v1/debate2-57d1d7752307d1acd5dbeb32b600fb2ebfb2420a1e07a15c1805024f0526ad22-0.pt": {
+          "sha256": "0dce4e1f2262a7a9b0b17d9093e37f3f8e56334d7c500db23f17c1eec84d6443",
+          "bytes": 5830073
+        },
+        "retained_features_qwen35_v1/debate2-57d1d7752307d1acd5dbeb32b600fb2ebfb2420a1e07a15c1805024f0526ad22-1.pt": {
+          "sha256": "2569de2e41a193dedc956b124e36053469c0ae1acd05dd859d969820b45adf5f",
+          "bytes": 2145081
+        },
+        "retained_features_qwen35_v1/debate2-57d1d7752307d1acd5dbeb32b600fb2ebfb2420a1e07a15c1805024f0526ad22-2.pt": {
+          "sha256": "f8bd8c2294e723cac44b193ef79e38b6027d2254899a9cca21d21c35d6187ff7",
+          "bytes": 2391993
+        },
+        "retained_features_qwen35_v1/debate2-57d1d7752307d1acd5dbeb32b600fb2ebfb2420a1e07a15c1805024f0526ad22-3.pt": {
+          "sha256": "4d71187aa96a394874bf0a3a869d21613c0ecdb731f4ddeb9ecddbd4daa5e349",
+          "bytes": 1901369
+        },
+        "retained_features_qwen35_v1/debate2-57d1d7752307d1acd5dbeb32b600fb2ebfb2420a1e07a15c1805024f0526ad22-4.pt": {
+          "sha256": "f0f668ba5ce3cc36137a6540e4cc04b06c02d5e2896997450b5946f2fc06b5e7",
+          "bytes": 2394617
+        },
+        "retained_features_qwen35_v1/debate2-57d1d7752307d1acd5dbeb32b600fb2ebfb2420a1e07a15c1805024f0526ad22-5.pt": {
+          "sha256": "46c23dbe0b632bf90bffa4c98cb73f9236bcad3811236b339d4a576b85ff0aaf",
+          "bytes": 1903993
+        },
+        "retained_features_qwen35_v1/debate2-6b49fe88957cc2a95cea1acf4c82e2216766bb6b4531ead2474bdaebf0622283-0.pt": {
+          "sha256": "29781a5534b5d5d65aa3df72be5c2329fde6261cb70a3480adc72b0ffd183a3f",
+          "bytes": 6559161
+        },
+        "retained_features_qwen35_v1/debate2-6b49fe88957cc2a95cea1acf4c82e2216766bb6b4531ead2474bdaebf0622283-1.pt": {
+          "sha256": "d41c725adcc6e0d8f5c7cfe1ad7ad5b5e73d69026ecd01952837783ea001d51c",
+          "bytes": 2878777
+        },
+        "retained_features_qwen35_v1/debate2-6b49fe88957cc2a95cea1acf4c82e2216766bb6b4531ead2474bdaebf0622283-2.pt": {
+          "sha256": "f72cfb6b710c8eed767a8531d36ced1b9ad15019b993fae6b2cceca05f1a95f4",
+          "bytes": 2631161
+        },
+        "retained_features_qwen35_v1/debate2-6b49fe88957cc2a95cea1acf4c82e2216766bb6b4531ead2474bdaebf0622283-3.pt": {
+          "sha256": "83a2f4b2e61f1e1ff50ef823d132beeadf006fcc3bd97fb17163b3a1b6c42246",
+          "bytes": 2881977
+        },
+        "retained_features_qwen35_v1/debate2-6b49fe88957cc2a95cea1acf4c82e2216766bb6b4531ead2474bdaebf0622283-4.pt": {
+          "sha256": "a041851c78b2d8343250ccb5eb530a19043482122d913059796e98dbd97e5c83",
+          "bytes": 2634297
+        },
+        "retained_features_qwen35_v1/debate2-6b49fe88957cc2a95cea1acf4c82e2216766bb6b4531ead2474bdaebf0622283-5.pt": {
+          "sha256": "7d1a6fece5d0f8aa80d2e644fd4d650e819ca898112ac213ce9192e6ef5349d1",
+          "bytes": 2885113
+        },
+        "retained_features_qwen35_v1/debate2-717ec30cd85fd5680264dd33a3b53596a9ce77de3e40a1a0dbc270d02945734e-0.pt": {
+          "sha256": "d7d42c829c70f93922dfa687e8a98a127a0302026389440614548a87f5a79f29",
+          "bytes": 5827385
+        },
+        "retained_features_qwen35_v1/debate2-717ec30cd85fd5680264dd33a3b53596a9ce77de3e40a1a0dbc270d02945734e-1.pt": {
+          "sha256": "3cd494df93870253337ea9f08f9be48879b1a8a159a0df63e5e8bb95170a4b87",
+          "bytes": 2143545
+        },
+        "retained_features_qwen35_v1/debate2-717ec30cd85fd5680264dd33a3b53596a9ce77de3e40a1a0dbc270d02945734e-2.pt": {
+          "sha256": "cd0fdb199f90104a3ad2b6d1a125b418b394ea51ef1e7a25959c9c246783816f",
+          "bytes": 1899321
+        },
+        "retained_features_qwen35_v1/debate2-717ec30cd85fd5680264dd33a3b53596a9ce77de3e40a1a0dbc270d02945734e-3.pt": {
+          "sha256": "f1e1be30505f1a2eb1304c871e2f26e1ea87ccee33f49ea0b2bef6ebb5e515e1",
+          "bytes": 2146489
+        },
+        "retained_features_qwen35_v1/debate2-717ec30cd85fd5680264dd33a3b53596a9ce77de3e40a1a0dbc270d02945734e-4.pt": {
+          "sha256": "10289258bf6557d1270db2fb3d548d185c54396932726c39959b18b88708aa56",
+          "bytes": 1902265
+        },
+        "retained_features_qwen35_v1/debate2-717ec30cd85fd5680264dd33a3b53596a9ce77de3e40a1a0dbc270d02945734e-5.pt": {
+          "sha256": "f89b8e40d2a62844ce1d65b82777d1c2ae405884d824a074b0d5e3cf90bde27b",
+          "bytes": 2149369
+        },
+        "retained_features_qwen35_v1/debate2-79e3bf1d9a1f0112435dc84d85873f8760b7c0240069ea3e920fbf22984cbabc-0.pt": {
+          "sha256": "2ffc3aed668b83a7490769b8e556b33d64cdf316438495068ff295016504215d",
+          "bytes": 1646841
+        },
+        "retained_features_qwen35_v1/debate2-79e3bf1d9a1f0112435dc84d85873f8760b7c0240069ea3e920fbf22984cbabc-1.pt": {
+          "sha256": "e4246984c553ba666059744bd3bde1cf4de3f635cb371840620a5fae53db7105",
+          "bytes": 6072441
+        },
+        "retained_features_qwen35_v1/debate2-79e3bf1d9a1f0112435dc84d85873f8760b7c0240069ea3e920fbf22984cbabc-2.pt": {
+          "sha256": "33acbce1af6c910dc1308bc54b2922ab7778b3d34ce1ddc62288fc9a1e1e3b39",
+          "bytes": 1404217
+        },
+        "retained_features_qwen35_v1/debate2-79e3bf1d9a1f0112435dc84d85873f8760b7c0240069ea3e920fbf22984cbabc-3.pt": {
+          "sha256": "2a4b6564e80598e52625cfb03d2c0717e9c0b0a46723c3fecb556c0c397b512d",
+          "bytes": 2389497
+        },
+        "retained_features_qwen35_v1/debate2-79e3bf1d9a1f0112435dc84d85873f8760b7c0240069ea3e920fbf22984cbabc-4.pt": {
+          "sha256": "0682b25f58da5a9aa4195f66cad32a9554341ee7a649be480c8afba1716f624d",
+          "bytes": 1653433
+        },
+        "retained_features_qwen35_v1/debate2-79e3bf1d9a1f0112435dc84d85873f8760b7c0240069ea3e920fbf22984cbabc-5.pt": {
+          "sha256": "2448aa947385fab95457a72991c9eb5d3160e26b2b354f93513035e812b51700",
+          "bytes": 2392185
+        },
+        "retained_features_qwen35_v1/debate2-7ee09eef0005e39f6f689793d08057904f3f68942448dbca61f2872cbfacee92-0.pt": {
+          "sha256": "f35f3f52f0c438ac6863254e478bfb06cf05a4e9b261be5fcbd54f9961ef2ce9",
+          "bytes": 1395705
+        },
+        "retained_features_qwen35_v1/debate2-7ee09eef0005e39f6f689793d08057904f3f68942448dbca61f2872cbfacee92-1.pt": {
+          "sha256": "14c0198855834e3049efc2c6b9e62853b722890d98a18a2e3e713e945e155684",
+          "bytes": 6808761
+        },
+        "retained_features_qwen35_v1/debate2-7ee09eef0005e39f6f689793d08057904f3f68942448dbca61f2872cbfacee92-2.pt": {
+          "sha256": "782c0cdb52a025e94a9592202e3a4273b667ddadf9eaca236d2f2650d8f21476",
+          "bytes": 1646841
+        },
+        "retained_features_qwen35_v1/debate2-7ee09eef0005e39f6f689793d08057904f3f68942448dbca61f2872cbfacee92-3.pt": {
+          "sha256": "f7d8b636db03c3c5a7e86b3df62ffbcf9d624b7055406a2b584f416940e4f6da",
+          "bytes": 1894649
+        },
+        "retained_features_qwen35_v1/debate2-7ee09eef0005e39f6f689793d08057904f3f68942448dbca61f2872cbfacee92-4.pt": {
+          "sha256": "01672ade35ea92daca926e625f60542341c0792fb1cbaf58689d58a7100a21e7",
+          "bytes": 1650425
+        },
+        "retained_features_qwen35_v1/debate2-7ee09eef0005e39f6f689793d08057904f3f68942448dbca61f2872cbfacee92-5.pt": {
+          "sha256": "67dc3a186a22bb45a7bfba368bc20df67d96f968e11c9799c4bdda2b180d70d9",
+          "bytes": 1898297
+        },
+        "retained_features_qwen35_v1/debate2-89c5e97aa0027d6fe44b3e03f3c851d4d466091c945abf094a65a07f1d3d4eb3-0.pt": {
+          "sha256": "1ca4157434b9c02163e00d41a3d3a5e7aa734c78aa32ae89bae48991c957b3b7",
+          "bytes": 2372409
+        },
+        "retained_features_qwen35_v1/debate2-89c5e97aa0027d6fe44b3e03f3c851d4d466091c945abf094a65a07f1d3d4eb3-1.pt": {
+          "sha256": "1487cc29b8fdaebf398da9e02de119b14dde4d72d359616f54f1c8c2325c6fc9",
+          "bytes": 9995513
+        },
+        "retained_features_qwen35_v1/debate2-89c5e97aa0027d6fe44b3e03f3c851d4d466091c945abf094a65a07f1d3d4eb3-2.pt": {
+          "sha256": "a6d711e3ce2d51ff5b99981c16219468777775cdbe10fb5117ef2653af3b6834",
+          "bytes": 1636025
+        },
+        "retained_features_qwen35_v1/debate2-89c5e97aa0027d6fe44b3e03f3c851d4d466091c945abf094a65a07f1d3d4eb3-3.pt": {
+          "sha256": "c92aa9f3e7bfb15cab8446cbf0d47f662c08395db39cb25d693a09c60a4490c5",
+          "bytes": 3117177
+        },
+        "retained_features_qwen35_v1/debate2-89c5e97aa0027d6fe44b3e03f3c851d4d466091c945abf094a65a07f1d3d4eb3-4.pt": {
+          "sha256": "999bc33f7123e2a77f4f695da06646a1f2d021218b3fadff83326f015be0ac93",
+          "bytes": 2626041
+        },
+        "retained_features_qwen35_v1/debate2-89c5e97aa0027d6fe44b3e03f3c851d4d466091c945abf094a65a07f1d3d4eb3-5.pt": {
+          "sha256": "8ad487e2aef8aa9b0f4129af3f8bb181bc9a7d672420f36fc34723c037672dbd",
+          "bytes": 3120953
+        },
+        "retained_features_qwen35_v1/debate2-8b6a78abf5ec7a1178f5e561afc2fc4039f3b95073f073eaccbe1eb23e61fe96-0.pt": {
+          "sha256": "edfa33ab61a1ea37307ffbb648d47f7903079daa7f6e9927b3bbea5935688a02",
+          "bytes": 4090873
+        },
+        "retained_features_qwen35_v1/debate2-8b6a78abf5ec7a1178f5e561afc2fc4039f3b95073f073eaccbe1eb23e61fe96-1.pt": {
+          "sha256": "c83f9dded499311c557b003c5f49b78b54419a17ae5b9dbaa70a70ddd6f70ee7",
+          "bytes": 1390009
+        },
+        "retained_features_qwen35_v1/debate2-8b6a78abf5ec7a1178f5e561afc2fc4039f3b95073f073eaccbe1eb23e61fe96-2.pt": {
+          "sha256": "6af37539173f93bef8e7e22da203fae95f68d5ac33603e0a2d1540b47c89de01",
+          "bytes": 1636409
+        },
+        "retained_features_qwen35_v1/debate2-8b6a78abf5ec7a1178f5e561afc2fc4039f3b95073f073eaccbe1eb23e61fe96-3.pt": {
+          "sha256": "a47d8914731c622db1c869ee365e7af6c62252b7fa54d85296a11200bbec126d",
+          "bytes": 1638585
+        },
+        "retained_features_qwen35_v1/debate2-8b6a78abf5ec7a1178f5e561afc2fc4039f3b95073f073eaccbe1eb23e61fe96-4.pt": {
+          "sha256": "7cb71dba8406d7b43ffe86702a59879d52fb5fdae13d6b41ded42c5aec07cc48",
+          "bytes": 1393145
+        },
+        "retained_features_qwen35_v1/debate2-8b6a78abf5ec7a1178f5e561afc2fc4039f3b95073f073eaccbe1eb23e61fe96-5.pt": {
+          "sha256": "6deab5167c7595850325c9cbe4d4ca511220076fd3d3f5c4e91134201c9868e4",
+          "bytes": 1641273
+        },
+        "retained_features_qwen35_v1/debate2-95b24c07480c567c6ec61fa9fdbf0e65272dea46bcb6703a9a5dea3b9b67c30d-0.pt": {
+          "sha256": "1cfa091c6834723179b8a11f70782ed12cc0fde2c5ee9dae07f5c3a0e9a0c2b6",
+          "bytes": 5812985
+        },
+        "retained_features_qwen35_v1/debate2-95b24c07480c567c6ec61fa9fdbf0e65272dea46bcb6703a9a5dea3b9b67c30d-1.pt": {
+          "sha256": "216c9e7dbcccd8a46dbb1dc47845c00ba593604fcd1aded6253b7debc25a10d4",
+          "bytes": 2375225
+        },
+        "retained_features_qwen35_v1/debate2-95b24c07480c567c6ec61fa9fdbf0e65272dea46bcb6703a9a5dea3b9b67c30d-2.pt": {
+          "sha256": "22e0ce7c0fd6fb9ad3a496724319e6c5823bfa7f4ae6f0c9237a4246cae6ddb4",
+          "bytes": 1638713
+        },
+        "retained_features_qwen35_v1/debate2-95b24c07480c567c6ec61fa9fdbf0e65272dea46bcb6703a9a5dea3b9b67c30d-3.pt": {
+          "sha256": "ccb31c771649dd72ab8473f566dcec656c2afa9788b23d9556bd4b0552bac5ef",
+          "bytes": 2377849
+        },
+        "retained_features_qwen35_v1/debate2-95b24c07480c567c6ec61fa9fdbf0e65272dea46bcb6703a9a5dea3b9b67c30d-4.pt": {
+          "sha256": "7c6fada23227c65ad4f9cd04bf7aed02fbbdeb81401250e23c525b04a3ef3924",
+          "bytes": 1641785
+        },
+        "retained_features_qwen35_v1/debate2-95b24c07480c567c6ec61fa9fdbf0e65272dea46bcb6703a9a5dea3b9b67c30d-5.pt": {
+          "sha256": "ce16f41a7c957e0b00b009e4887fc9e1f6eaba3d210d5f065d0afdd291b9951a",
+          "bytes": 2380537
+        },
+        "retained_features_qwen35_v1/debate2-986a272f5405f38d4ac6bdd4385c8dad85193a8ae30dee5f3d76105f1ce8ad60-0.pt": {
+          "sha256": "46febc2957d39a26a606173a8a898f2d8b50f0d53de942d7a39aee0d4934b573",
+          "bytes": 5320505
+        },
+        "retained_features_qwen35_v1/debate2-986a272f5405f38d4ac6bdd4385c8dad85193a8ae30dee5f3d76105f1ce8ad60-1.pt": {
+          "sha256": "c0cf110384ee32e6121b1308ccaefb4cf5e137bd96cfb8b97e2d5a95a1ba858f",
+          "bytes": 2376889
+        },
+        "retained_features_qwen35_v1/debate2-986a272f5405f38d4ac6bdd4385c8dad85193a8ae30dee5f3d76105f1ce8ad60-2.pt": {
+          "sha256": "ef0bb022f8ed2b3e95432a81f4da5eedaad3fabf5f57547ff8f53b7959de691a",
+          "bytes": 2378361
+        },
+        "retained_features_qwen35_v1/debate2-986a272f5405f38d4ac6bdd4385c8dad85193a8ae30dee5f3d76105f1ce8ad60-3.pt": {
+          "sha256": "b74d40bd51ff8ab5bb8d26d499069de2e53fa7b811c6f1d6f73e3513e0ddad4e",
+          "bytes": 2380089
+        },
+        "retained_features_qwen35_v1/debate2-986a272f5405f38d4ac6bdd4385c8dad85193a8ae30dee5f3d76105f1ce8ad60-4.pt": {
+          "sha256": "42ba5e9dc080290dabc4752960efc9c0d89bae3fb3eab4bb7d1f510c9692401c",
+          "bytes": 2381561
+        },
+        "retained_features_qwen35_v1/debate2-986a272f5405f38d4ac6bdd4385c8dad85193a8ae30dee5f3d76105f1ce8ad60-5.pt": {
+          "sha256": "5d10fa32fcc603cf3e1cdd78b883fece439ccf8203db8d8480ef3bf294e705df",
+          "bytes": 2383289
+        },
+        "retained_features_qwen35_v1/debate2-a1e6b2d2ac0c16c1df010b46c4c72c9609d335bc32ea9ed46bf58ae238ef48b8-0.pt": {
+          "sha256": "a30a67012833c456ce2ab466d0e7645dc0b6994abe69c04684543e76d20f01ca",
+          "bytes": 4840825
+        },
+        "retained_features_qwen35_v1/debate2-a1e6b2d2ac0c16c1df010b46c4c72c9609d335bc32ea9ed46bf58ae238ef48b8-1.pt": {
+          "sha256": "aa43d8e054c3e428848899848c8293c2157227d352fdd294f3474df68e19b91f",
+          "bytes": 1895609
+        },
+        "retained_features_qwen35_v1/debate2-a1e6b2d2ac0c16c1df010b46c4c72c9609d335bc32ea9ed46bf58ae238ef48b8-2.pt": {
+          "sha256": "7ff48a87f1ef3c4f50ceffd819ebc2d2614865c831adbbc533839bf3c08c87d5",
+          "bytes": 2143097
+        },
+        "retained_features_qwen35_v1/debate2-a1e6b2d2ac0c16c1df010b46c4c72c9609d335bc32ea9ed46bf58ae238ef48b8-3.pt": {
+          "sha256": "a40fde4f46cefbae6aa80b2ea712aaf00ad641248019007c1dbcfa0f1c17fd41",
+          "bytes": 2146489
+        },
+        "retained_features_qwen35_v1/debate2-a1e6b2d2ac0c16c1df010b46c4c72c9609d335bc32ea9ed46bf58ae238ef48b8-4.pt": {
+          "sha256": "93e88354dba2b3aae8f5958010a6b5ccce01a90796d98eca069d4dd146f546fc",
+          "bytes": 2147449
+        },
+        "retained_features_qwen35_v1/debate2-a1e6b2d2ac0c16c1df010b46c4c72c9609d335bc32ea9ed46bf58ae238ef48b8-5.pt": {
+          "sha256": "8cecde53a3c658589be2129977cb147b9b806bb5e9f6a06f6404609162b26071",
+          "bytes": 2150137
+        },
+        "retained_features_qwen35_v1/debate2-a9c27cf2ac6eeea3454f73083711124ca9ae12fd37052bd4ce1069e9d7f4bfa2-0.pt": {
+          "sha256": "b4082ccaad400ea1735025494048803ba2771c7fb9065e687c657dbfbb68c870",
+          "bytes": 1892793
+        },
+        "retained_features_qwen35_v1/debate2-a9c27cf2ac6eeea3454f73083711124ca9ae12fd37052bd4ce1069e9d7f4bfa2-1.pt": {
+          "sha256": "e2ac78e00a914e0d222b463b312e064cfafbcdee3c44e92d5c68b0d7a63535f8",
+          "bytes": 4843449
+        },
+        "retained_features_qwen35_v1/debate2-a9c27cf2ac6eeea3454f73083711124ca9ae12fd37052bd4ce1069e9d7f4bfa2-2.pt": {
+          "sha256": "e08da42fdc92208ad48bd88bac394e3f3f10227f34677854d4fe18f01e0fff12",
+          "bytes": 1896057
+        },
+        "retained_features_qwen35_v1/debate2-a9c27cf2ac6eeea3454f73083711124ca9ae12fd37052bd4ce1069e9d7f4bfa2-3.pt": {
+          "sha256": "64ec0df74aed85ee0c078f6a7a813f7651a242ea9f851b6d64a2f9b565cd1ba1",
+          "bytes": 1405177
+        },
+        "retained_features_qwen35_v1/debate2-a9c27cf2ac6eeea3454f73083711124ca9ae12fd37052bd4ce1069e9d7f4bfa2-4.pt": {
+          "sha256": "49bcfd54b38ca44890bb19949b5d0067fba4279b0f785c1c7174b19fe528448d",
+          "bytes": 1898297
+        },
+        "retained_features_qwen35_v1/debate2-a9c27cf2ac6eeea3454f73083711124ca9ae12fd37052bd4ce1069e9d7f4bfa2-5.pt": {
+          "sha256": "0be6ebb16db6071a9d9585b844995b900dae70809a54181daa09ca1339718589",
+          "bytes": 1407609
+        },
+        "retained_features_qwen35_v1/debate2-c108e58b5a2615f284e0a9451ee8de960bab8d6cfeb55edca1b75377d15a9887-0.pt": {
+          "sha256": "96e93a8abed2eaa289f820ece0f4fbaf9645dcb43b93badf84e4ee4d8678bd3b",
+          "bytes": 3611769
+        },
+        "retained_features_qwen35_v1/debate2-c108e58b5a2615f284e0a9451ee8de960bab8d6cfeb55edca1b75377d15a9887-1.pt": {
+          "sha256": "7a72aeb78f21847d535f603270b3a9d9ded47d8176f420da85ec9ce3c54462af",
+          "bytes": 2145209
+        },
+        "retained_features_qwen35_v1/debate2-c108e58b5a2615f284e0a9451ee8de960bab8d6cfeb55edca1b75377d15a9887-2.pt": {
+          "sha256": "ed2c3d7a0b12e892c5705e854a8740433328bcfc808d3b61d20f4981ffcc5a5b",
+          "bytes": 1403385
+        },
+        "retained_features_qwen35_v1/debate2-c108e58b5a2615f284e0a9451ee8de960bab8d6cfeb55edca1b75377d15a9887-3.pt": {
+          "sha256": "98c9f45d9faf05e43cd8ea267424863ce04193448f10a5215ede1dcaba5571cd",
+          "bytes": 2147129
+        },
+        "retained_features_qwen35_v1/debate2-c108e58b5a2615f284e0a9451ee8de960bab8d6cfeb55edca1b75377d15a9887-4.pt": {
+          "sha256": "bb6f3944b8c855281eaf5115e1d486122a9cdecd5afb4e6af940bed87f849808",
+          "bytes": 1901497
+        },
+        "retained_features_qwen35_v1/debate2-c108e58b5a2615f284e0a9451ee8de960bab8d6cfeb55edca1b75377d15a9887-5.pt": {
+          "sha256": "40a351b899e50aec4d5a4d5439ee11b97813c3cbe23f5b8d26cb28725c045ca4",
+          "bytes": 2150713
+        },
+        "retained_features_qwen35_v1/debate2-c411321d1bca31f4896e2350fa7d4daa5791ea9817ca24550f3b30f2ed35f431-0.pt": {
+          "sha256": "b4534e8c1c8549a43ca70c5a9017b6a6a694b770c1d00d18800215c71ad1304d",
+          "bytes": 5328761
+        },
+        "retained_features_qwen35_v1/debate2-c411321d1bca31f4896e2350fa7d4daa5791ea9817ca24550f3b30f2ed35f431-1.pt": {
+          "sha256": "8455951849479e21d7debaffd23772fc0ca5f4b033dc44ed574679ec3df313d4",
+          "bytes": 1888313
+        },
+        "retained_features_qwen35_v1/debate2-c411321d1bca31f4896e2350fa7d4daa5791ea9817ca24550f3b30f2ed35f431-2.pt": {
+          "sha256": "e90c93714340732920a5cf11b4944d4964fb5be71c1cb9fea1f136b7422c903d",
+          "bytes": 1892857
+        },
+        "retained_features_qwen35_v1/debate2-c411321d1bca31f4896e2350fa7d4daa5791ea9817ca24550f3b30f2ed35f431-3.pt": {
+          "sha256": "10f593a83610224ab35b2804047b1a169232d1e6bf2aaea117708acbb3d08696",
+          "bytes": 1646585
+        },
+        "retained_features_qwen35_v1/debate2-c411321d1bca31f4896e2350fa7d4daa5791ea9817ca24550f3b30f2ed35f431-4.pt": {
+          "sha256": "3d27bd6e7d9c0bd9348544a559980a5c0b90ea3d71d2d8aca83f4a504a2b6b70",
+          "bytes": 1650425
+        },
+        "retained_features_qwen35_v1/debate2-c411321d1bca31f4896e2350fa7d4daa5791ea9817ca24550f3b30f2ed35f431-5.pt": {
+          "sha256": "4c80c45d03d81b3f2bf6ca1d156e294ed044075875f0b1bfb0a6de1289d43419",
+          "bytes": 1649785
+        },
+        "retained_features_qwen35_v1/debate2-d07374f61bcea66883256a0fd9c52ef6055408d1e3874bd9131c7c4619c98753-0.pt": {
+          "sha256": "ff97aecbacf47d3545a034217bbad6160bb9b3ffa97df71e4f7cdf79d36bce83",
+          "bytes": 4345913
+        },
+        "retained_features_qwen35_v1/debate2-d07374f61bcea66883256a0fd9c52ef6055408d1e3874bd9131c7c4619c98753-1.pt": {
+          "sha256": "0660e499f66c3ff771e23b2efefc7657fdc73a0cec9d926a2db540308955519d",
+          "bytes": 1399993
+        },
+        "retained_features_qwen35_v1/debate2-d07374f61bcea66883256a0fd9c52ef6055408d1e3874bd9131c7c4619c98753-2.pt": {
+          "sha256": "d4a04d8f9308b968dcbf10d27238202c69b504e16075cbf0c4ba745d5d9373bd",
+          "bytes": 1401593
+        },
+        "retained_features_qwen35_v1/debate2-d07374f61bcea66883256a0fd9c52ef6055408d1e3874bd9131c7c4619c98753-3.pt": {
+          "sha256": "e8901393f38e65b2aa35703e5891e31edb21b92bc701be549173d4aa1ffb3c0a",
+          "bytes": 1403769
+        },
+        "retained_features_qwen35_v1/debate2-d07374f61bcea66883256a0fd9c52ef6055408d1e3874bd9131c7c4619c98753-4.pt": {
+          "sha256": "78d7207d3b1f8487395016a45f9a849a6074d071959ac23847de1d85deedd915",
+          "bytes": 1403897
+        },
+        "retained_features_qwen35_v1/debate2-d07374f61bcea66883256a0fd9c52ef6055408d1e3874bd9131c7c4619c98753-5.pt": {
+          "sha256": "69e027bf39fc156b446057b66378c35ba29db201377b73fb9cb797f65471d1a2",
+          "bytes": 1407161
+        },
+        "retained_features_qwen35_v1/debate2-d0f7fc0e46db7c75570be921eab263da664295f9448fe5d4ca5ea87da7a029f9-0.pt": {
+          "sha256": "4a888d4a7dfba6ced29026b114aa37f48f89266e092127e1e27a8ad7d7d4fb0e",
+          "bytes": 1650553
+        },
+        "retained_features_qwen35_v1/debate2-d0f7fc0e46db7c75570be921eab263da664295f9448fe5d4ca5ea87da7a029f9-1.pt": {
+          "sha256": "86fcce90c9a4594b9a4820da7c8dcdbdb4ee1de8c489b05f10e8e4fe096d9fc2",
+          "bytes": 4600633
+        },
+        "retained_features_qwen35_v1/debate2-d0f7fc0e46db7c75570be921eab263da664295f9448fe5d4ca5ea87da7a029f9-2.pt": {
+          "sha256": "7e6f83eba4e76e0c26bf8c70a1d1ce0d678b84f6d34e4f74cda028af9d2b1662",
+          "bytes": 1901049
+        },
+        "retained_features_qwen35_v1/debate2-d0f7fc0e46db7c75570be921eab263da664295f9448fe5d4ca5ea87da7a029f9-3.pt": {
+          "sha256": "9c51ad552a8e5c94aefd1503907e92246d221af3d71f2f4ab70f3942dc159966",
+          "bytes": 1903097
+        },
+        "retained_features_qwen35_v1/debate2-d0f7fc0e46db7c75570be921eab263da664295f9448fe5d4ca5ea87da7a029f9-4.pt": {
+          "sha256": "a43ff98199a00f76b29612e2bad0c9a6c1634e7bbda867291d15f3c1ad6e1d1d",
+          "bytes": 1904185
+        },
+        "retained_features_qwen35_v1/debate2-d0f7fc0e46db7c75570be921eab263da664295f9448fe5d4ca5ea87da7a029f9-5.pt": {
+          "sha256": "417aec732037aaa11cb3b9ffc8b783c664915bdba950b70175947631e8f8b925",
+          "bytes": 1905977
+        },
+        "retained_features_qwen35_v1/debate2-e805714a8e4a8c08336e1750c7a610e141272e17cb609690f967503224bc4624-0.pt": {
+          "sha256": "31e1b7971c9dad08eca30610fcb5d85b2d9743dc387779ea3c260a3130aa4b25",
+          "bytes": 2371449
+        },
+        "retained_features_qwen35_v1/debate2-e805714a8e4a8c08336e1750c7a610e141272e17cb609690f967503224bc4624-1.pt": {
+          "sha256": "976c3bbce6c615692e7175ff478509f6d835201bb20a101182772efa1bd457cc",
+          "bytes": 7286649
+        },
+        "retained_features_qwen35_v1/debate2-e805714a8e4a8c08336e1750c7a610e141272e17cb609690f967503224bc4624-2.pt": {
+          "sha256": "147af3f63c96147612bdb7722062b56dc6a2217a57910ea4e18f2f371d33750e",
+          "bytes": 2620793
+        },
+        "retained_features_qwen35_v1/debate2-e805714a8e4a8c08336e1750c7a610e141272e17cb609690f967503224bc4624-3.pt": {
+          "sha256": "2c517e5aec70574ac3519da8cb1336cd3934bad76345726f9485e8705bdfc623",
+          "bytes": 2127993
+        },
+        "retained_features_qwen35_v1/debate2-e805714a8e4a8c08336e1750c7a610e141272e17cb609690f967503224bc4624-4.pt": {
+          "sha256": "212063d67d6dcc965679f60e1a66102e9456e728929513c0f0fba00dd857fea1",
+          "bytes": 2624249
+        },
+        "retained_features_qwen35_v1/debate2-e805714a8e4a8c08336e1750c7a610e141272e17cb609690f967503224bc4624-5.pt": {
+          "sha256": "095b8543855501590dbbbb855f73858d68ab1679c5cde4908dff80c22cf0fa13",
+          "bytes": 2131001
+        },
+        "retained_features_qwen35_v1/debate2-f0bf97da4813cb20667e2bc2be290bfef9fda81c8abc76b98579841fdafd8f56-0.pt": {
+          "sha256": "acf0451b4c427fed44fcf9a7f26bffe28701e9de076008d422f0723ee9eb7873",
+          "bytes": 3127225
+        },
+        "retained_features_qwen35_v1/debate2-f0bf97da4813cb20667e2bc2be290bfef9fda81c8abc76b98579841fdafd8f56-1.pt": {
+          "sha256": "18b8836857b061899d684e632ae99bd633107871b73bee86608ac166b4e9cbae",
+          "bytes": 4601721
+        },
+        "retained_features_qwen35_v1/debate2-f0bf97da4813cb20667e2bc2be290bfef9fda81c8abc76b98579841fdafd8f56-2.pt": {
+          "sha256": "e29ce7e631c75c29645f048c568f5ba6f912d21e53b0a7db8b0b123dc0a61fa3",
+          "bytes": 3624057
+        },
+        "retained_features_qwen35_v1/debate2-f0bf97da4813cb20667e2bc2be290bfef9fda81c8abc76b98579841fdafd8f56-3.pt": {
+          "sha256": "525bbc94d860b99b5dc6cabd6e18d6304244077662c68fa29630fbde4b3e05ff",
+          "bytes": 1409721
+        },
+        "retained_features_qwen35_v1/debate2-f0bf97da4813cb20667e2bc2be290bfef9fda81c8abc76b98579841fdafd8f56-4.pt": {
+          "sha256": "c6918732e2886685dbbfb7a7c55b813adb2e1bcf117eb97cb14b9746ada37cbb",
+          "bytes": 3626489
+        },
+        "retained_features_qwen35_v1/debate2-f0bf97da4813cb20667e2bc2be290bfef9fda81c8abc76b98579841fdafd8f56-5.pt": {
+          "sha256": "00d5647d11190df499f3d55452802f2224668039306363e55f9c16a5fa0b9ad3",
+          "bytes": 1412665
+        },
+        "retained_features_qwen35_v1/manifest.json": {
+          "sha256": "96a19a50079e9c810467ae849293e2754bfd616cbf259d35f598d416898b57f5",
+          "bytes": 6709
+        },
+        "retained_features_qwen35_v1/receipts.jsonl": {
+          "sha256": "b61628d1e45626af40077d442d61c7bb5170e588ea95eb6157af613388661ee0",
+          "bytes": 390214
+        },
+        "retained_features_qwen35_v1/source_manifest.json": {
+          "sha256": "ebd3874b9085cc1ca69bba60792cf1afd4567c91818160ed4549d310c0437dd0",
+          "bytes": 1726
+        },
+        "retained_features_qwen35_v1/summary.json": {
+          "sha256": "3e1854332fed31bc3a392452b23f0aaa2d1ea107d6daab58ea3e72091ca13e7c",
+          "bytes": 424
+        }
+      },
+      "summary": {
+        "termination_counts": {
+          "teacher_forced_complete_sequence": 144
+        },
+        "rows_expected": 144,
+        "rows_completed": 144,
+        "context_tokens_max": 10177,
+        "bytes": 393966992,
+        "scope": "Unpadded teacher-forced API-text replay. No live-generation or padded-execution equivalence claim. All contexts and responses complete.",
+        "retained_tensor_bytes": 386826240,
+        "source_segments": 3628,
+        "retained_segments": 1358
+      },
+      "manifest_sha256": "96a19a50079e9c810467ae849293e2754bfd616cbf259d35f598d416898b57f5",
+      "retention_receipts_sha256": "b61628d1e45626af40077d442d61c7bb5170e588ea95eb6157af613388661ee0"
+    },
+    {
+      "path": "runs/iteration3/final/retained_features_qwen38_v1.tar.gz",
+      "sha256": "565f94868f1360fc43e60bfc4490212c3dbb87d3a90efb12ef010aec6099e436",
+      "bytes": 259533332,
+      "members": {
+        "retained_features_qwen38_v1/debate2-0a771c3a1a30127b70cd1ea1fdc62fae7b50459d371ddf48f64e7d1c7a88fb70-0.pt": {
+          "sha256": "91456df8a1d07266650f39e94a024b2c5854d0224d47e906c4b11bb21df62091",
+          "bytes": 2122361
+        },
+        "retained_features_qwen38_v1/debate2-0a771c3a1a30127b70cd1ea1fdc62fae7b50459d371ddf48f64e7d1c7a88fb70-1.pt": {
+          "sha256": "f7c53f5740a096050358bc28fa786c00a5eac360a6a9d4bc3aa02ee66f811ee9",
+          "bytes": 9500857
+        },
+        "retained_features_qwen38_v1/debate2-0a771c3a1a30127b70cd1ea1fdc62fae7b50459d371ddf48f64e7d1c7a88fb70-2.pt": {
+          "sha256": "d5a53e639d1c00d857afae2983d4df0dd54552fdb65301b3c6ef923e5a7ad0a4",
+          "bytes": 2619193
+        },
+        "retained_features_qwen38_v1/debate2-0a771c3a1a30127b70cd1ea1fdc62fae7b50459d371ddf48f64e7d1c7a88fb70-3.pt": {
+          "sha256": "b6b3f932beba6dae0f9ca7c836bd016ab50ffe01d46855cbc8a5534b1b7ba4c0",
+          "bytes": 2373625
+        },
+        "retained_features_qwen38_v1/debate2-0a771c3a1a30127b70cd1ea1fdc62fae7b50459d371ddf48f64e7d1c7a88fb70-4.pt": {
+          "sha256": "bbcef5ec248edccc1d8b8f5821a7df74cbdc3aab36172b09d398d151800efedb",
+          "bytes": 3116921
+        },
+        "retained_features_qwen38_v1/debate2-0a771c3a1a30127b70cd1ea1fdc62fae7b50459d371ddf48f64e7d1c7a88fb70-5.pt": {
+          "sha256": "deef63433d3de4eafa8a3c0d843d59bff3a41d05ffad6f1760ea297901b84dcf",
+          "bytes": 3610105
+        },
+        "retained_features_qwen38_v1/debate2-18bdb09aeba11aceaa46228f2607c9b69e33ff49cb09d59c2f3cf6cd95401592-0.pt": {
+          "sha256": "f373517e5cd5a9508260c3bfd7079276b32d33b1a30a2e16a1d008ce448778bb",
+          "bytes": 1631801
+        },
+        "retained_features_qwen38_v1/debate2-18bdb09aeba11aceaa46228f2607c9b69e33ff49cb09d59c2f3cf6cd95401592-1.pt": {
+          "sha256": "b52de010dcc5098a4b4b70b764095fdd000dbcce5925e61ef1be72b22a418110",
+          "bytes": 5565369
+        },
+        "retained_features_qwen38_v1/debate2-18bdb09aeba11aceaa46228f2607c9b69e33ff49cb09d59c2f3cf6cd95401592-2.pt": {
+          "sha256": "bb1bac6eb3c01a92865f79b66db8cef1dd8904fd606421e03603f63b51e1a2af",
+          "bytes": 1388409
+        },
+        "retained_features_qwen38_v1/debate2-18bdb09aeba11aceaa46228f2607c9b69e33ff49cb09d59c2f3cf6cd95401592-3.pt": {
+          "sha256": "09caf6a35b355c47d707ed723699e6fcb5eb0c04879da2c86b3ef816c089f1cf",
+          "bytes": 1881017
+        },
+        "retained_features_qwen38_v1/debate2-18bdb09aeba11aceaa46228f2607c9b69e33ff49cb09d59c2f3cf6cd95401592-4.pt": {
+          "sha256": "5e58307da1fd5b05ca75921c1b824f8ca79000ef2c9cd402d8f4f213593cc9de",
+          "bytes": 1390713
+        },
+        "retained_features_qwen38_v1/debate2-18bdb09aeba11aceaa46228f2607c9b69e33ff49cb09d59c2f3cf6cd95401592-5.pt": {
+          "sha256": "4ed6a4edc2239bf9da856ede2f7c61e3a6537e0248f4596a88bcde5b3ef6c226",
+          "bytes": 1883321
+        },
+        "retained_features_qwen38_v1/debate2-26619b2e461139bab654d47f7f361d53e1ae23b88a7eae1515847233de83323f-0.pt": {
+          "sha256": "82d892438f5ebdf5597d35e7ab41ddd3860478ffb9bd168d90a19cb9275b5c21",
+          "bytes": 4840249
+        },
+        "retained_features_qwen38_v1/debate2-26619b2e461139bab654d47f7f361d53e1ae23b88a7eae1515847233de83323f-1.pt": {
+          "sha256": "de481a4ff6a5f58954296b6fd1e4306cc6c75208993b2be202d22ca2f2dfb550",
+          "bytes": 2633081
+        },
+        "retained_features_qwen38_v1/debate2-26619b2e461139bab654d47f7f361d53e1ae23b88a7eae1515847233de83323f-2.pt": {
+          "sha256": "0195c516614ad8fd504d60ce03ab4327a0eab5d502934b700d3f88a4ac7dcf85",
+          "bytes": 2143097
+        },
+        "retained_features_qwen38_v1/debate2-26619b2e461139bab654d47f7f361d53e1ae23b88a7eae1515847233de83323f-3.pt": {
+          "sha256": "973d5696edf638a5174ab052ed21fae31ad734d0b97cb8f8e6b365410a16d559",
+          "bytes": 2636217
+        },
+        "retained_features_qwen38_v1/debate2-26619b2e461139bab654d47f7f361d53e1ae23b88a7eae1515847233de83323f-4.pt": {
+          "sha256": "be29025336908616d04cdbc9c9b77f32281cbaa1d845ed39ca8b229c5effcc03",
+          "bytes": 2641785
+        },
+        "retained_features_qwen38_v1/debate2-26619b2e461139bab654d47f7f361d53e1ae23b88a7eae1515847233de83323f-5.pt": {
+          "sha256": "5350d9cdf3781b11ce3faab1dbae3d83e6b702d160a16c03dda71f53142bf3ce",
+          "bytes": 2888249
+        },
+        "retained_features_qwen38_v1/debate2-28f121555835d3402352402a253e7a5d26f997457baea1df3bf5108838142939-0.pt": {
+          "sha256": "4830dfb8a74b70ed159f3c54ec421cd8befa0d9cd9156ad7272edf5f6d27e55c",
+          "bytes": 1138489
+        },
+        "retained_features_qwen38_v1/debate2-28f121555835d3402352402a253e7a5d26f997457baea1df3bf5108838142939-1.pt": {
+          "sha256": "ad114760c870b4a669ad39221edb47df04bbe55f202dede4fb22032fa87dedf0",
+          "bytes": 5566009
+        },
+        "retained_features_qwen38_v1/debate2-28f121555835d3402352402a253e7a5d26f997457baea1df3bf5108838142939-2.pt": {
+          "sha256": "b323cafd23694be3f3d71c4f835d9264632767ee86d10c57b72032cd03a3c665",
+          "bytes": 1883321
+        },
+        "retained_features_qwen38_v1/debate2-28f121555835d3402352402a253e7a5d26f997457baea1df3bf5108838142939-3.pt": {
+          "sha256": "afc44222a8359d3168b8f71b1bf9f3d146ce17900b6a950f9a4f0ff49cf75b07",
+          "bytes": 1882489
+        },
+        "retained_features_qwen38_v1/debate2-28f121555835d3402352402a253e7a5d26f997457baea1df3bf5108838142939-4.pt": {
+          "sha256": "c0d7c61fcbd092e76b0e8b9ae87d828a23903c3364ebc75e1fdb426bf1009efe",
+          "bytes": 1886265
+        },
+        "retained_features_qwen38_v1/debate2-28f121555835d3402352402a253e7a5d26f997457baea1df3bf5108838142939-5.pt": {
+          "sha256": "d21ae7fb3bc2cede7810ddca1ead67b56ee2b66bf15b838ef25e0de8895cb7aa",
+          "bytes": 1885433
+        },
+        "retained_features_qwen38_v1/debate2-3514f2ab2d294a4f60de20a622b9183030bdc02fc6af5a0406d8dbf09a480bc2-0.pt": {
+          "sha256": "f603e6059aadd6f2920ae43be1da36097ddea39305a7e32036e753978da07bb9",
+          "bytes": 2388089
+        },
+        "retained_features_qwen38_v1/debate2-3514f2ab2d294a4f60de20a622b9183030bdc02fc6af5a0406d8dbf09a480bc2-1.pt": {
+          "sha256": "7b950255b7ed3287d3a1145df293ce5512ba74463eef78da7de9346b1fa5f397",
+          "bytes": 4357049
+        },
+        "retained_features_qwen38_v1/debate2-3514f2ab2d294a4f60de20a622b9183030bdc02fc6af5a0406d8dbf09a480bc2-2.pt": {
+          "sha256": "fd2204f865f1e76ec5625428f43ea11d52a927501d7d8de3f9d6d41a587e8870",
+          "bytes": 2641273
+        },
+        "retained_features_qwen38_v1/debate2-3514f2ab2d294a4f60de20a622b9183030bdc02fc6af5a0406d8dbf09a480bc2-3.pt": {
+          "sha256": "36cdbef7b487cdf6c41bb557df680faaa559a9649f4b815c89b3598d928065c5",
+          "bytes": 1410937
+        },
+        "retained_features_qwen38_v1/debate2-3514f2ab2d294a4f60de20a622b9183030bdc02fc6af5a0406d8dbf09a480bc2-4.pt": {
+          "sha256": "3fc39975d99f71b7f426ffeb438028781b66253117785ed7162209b528746e27",
+          "bytes": 2644345
+        },
+        "retained_features_qwen38_v1/debate2-3514f2ab2d294a4f60de20a622b9183030bdc02fc6af5a0406d8dbf09a480bc2-5.pt": {
+          "sha256": "72923e6762074fea9711e2896ea4cb51e52b7d32ba60383c166f63040f6121ce",
+          "bytes": 1414009
+        },
+        "retained_features_qwen38_v1/debate2-49c5672ece410dc30a110f6045073b7cb41a26d3855875d3f00ec6ef4c1513f1-0.pt": {
+          "sha256": "3d5540a1a9c8494c514cd4c2597b57668e7537fde82148c5b9356235dad7b3c6",
+          "bytes": 4335033
+        },
+        "retained_features_qwen38_v1/debate2-49c5672ece410dc30a110f6045073b7cb41a26d3855875d3f00ec6ef4c1513f1-1.pt": {
+          "sha256": "428e273dd5356a82f7d4cba7dbecf0fc823ed1e0edb9b47da6d70341511fe498",
+          "bytes": 1883961
+        },
+        "retained_features_qwen38_v1/debate2-49c5672ece410dc30a110f6045073b7cb41a26d3855875d3f00ec6ef4c1513f1-2.pt": {
+          "sha256": "8866da2314ef5c650a704375efc651983257868ca3ba654cbed6355673eb0283",
+          "bytes": 2625657
+        },
+        "retained_features_qwen38_v1/debate2-49c5672ece410dc30a110f6045073b7cb41a26d3855875d3f00ec6ef4c1513f1-3.pt": {
+          "sha256": "643f240c55a4a2def22c87fdd63a1658fdb93184c0c91464ea63acb9d51dc0d1",
+          "bytes": 1888057
+        },
+        "retained_features_qwen38_v1/debate2-49c5672ece410dc30a110f6045073b7cb41a26d3855875d3f00ec6ef4c1513f1-4.pt": {
+          "sha256": "4d021f307d605f4413b47c81b33a4e41a7e9e128dce8e18a3cfd36596490a965",
+          "bytes": 2629753
+        },
+        "retained_features_qwen38_v1/debate2-49c5672ece410dc30a110f6045073b7cb41a26d3855875d3f00ec6ef4c1513f1-5.pt": {
+          "sha256": "2e1c683649d828d6548c605a768ed06f98402e90301580521f87721d4c0f46fb",
+          "bytes": 1892025
+        },
+        "retained_features_qwen38_v1/debate2-4f630df1dec5d01f16695aa1b35f8528da12c13108412e76b32b3ac36de9ffeb-0.pt": {
+          "sha256": "ebd3882dee6d7e7b309eac3d1e9f52a796598be43782cf066cde3f56a5686e19",
+          "bytes": 1149945
+        },
+        "retained_features_qwen38_v1/debate2-4f630df1dec5d01f16695aa1b35f8528da12c13108412e76b32b3ac36de9ffeb-1.pt": {
+          "sha256": "e80bf627dce1835c9787b899f6910477f7cc9500a584ef389d70a8751f00ed8e",
+          "bytes": 3852409
+        },
+        "retained_features_qwen38_v1/debate2-4f630df1dec5d01f16695aa1b35f8528da12c13108412e76b32b3ac36de9ffeb-2.pt": {
+          "sha256": "44d7c1216c45f2dbde20a8d6a5f25cbf96316e695c0b55a6beba62d6e9a319b7",
+          "bytes": 1893945
+        },
+        "retained_features_qwen38_v1/debate2-4f630df1dec5d01f16695aa1b35f8528da12c13108412e76b32b3ac36de9ffeb-3.pt": {
+          "sha256": "9b927d3cdca67f9b30d33d78c02c0cd9775c951b8c70d61e145a24a3bf8d2187",
+          "bytes": 1397433
+        },
+        "retained_features_qwen38_v1/debate2-4f630df1dec5d01f16695aa1b35f8528da12c13108412e76b32b3ac36de9ffeb-4.pt": {
+          "sha256": "30e0548daea0fe3567c4673fe3f452e8adda8e666a36e3fbcac54b5436ab57ef",
+          "bytes": 1896569
+        },
+        "retained_features_qwen38_v1/debate2-4f630df1dec5d01f16695aa1b35f8528da12c13108412e76b32b3ac36de9ffeb-5.pt": {
+          "sha256": "3b57953b80fefbb95863788e365d61ad786f7a0e98e118ca28cea297241f3433",
+          "bytes": 2141753
+        },
+        "retained_features_qwen38_v1/debate2-50871e84df1d995a897d08126d058bdd036ae6c381042d8a21272fede14836ef-0.pt": {
+          "sha256": "a1e511b312816aa08b58fbfe1e825fefaab7cb24a1409a7c4f5a8af5a7b5b2f4",
+          "bytes": 2861561
+        },
+        "retained_features_qwen38_v1/debate2-50871e84df1d995a897d08126d058bdd036ae6c381042d8a21272fede14836ef-1.pt": {
+          "sha256": "40ae441b5e63b23d12ba7333dec19fd0ccdd9150fcaf8fe58d66d37d4f978788",
+          "bytes": 8514809
+        },
+        "retained_features_qwen38_v1/debate2-50871e84df1d995a897d08126d058bdd036ae6c381042d8a21272fede14836ef-2.pt": {
+          "sha256": "9c654d39ba9e02545012d12d52b4ff0f2f28a713271a6b2e33dcb666685b0182",
+          "bytes": 2125241
+        },
+        "retained_features_qwen38_v1/debate2-50871e84df1d995a897d08126d058bdd036ae6c381042d8a21272fede14836ef-3.pt": {
+          "sha256": "540f5c93c66930f77677d715d1555246ac3de96e61eaaf8497ebd924bffaa91d",
+          "bytes": 2864633
+        },
+        "retained_features_qwen38_v1/debate2-50871e84df1d995a897d08126d058bdd036ae6c381042d8a21272fede14836ef-4.pt": {
+          "sha256": "1e2b94db631df5fb3f4d489976c48fe7dcf1c9ac701937e6558e4cd98b781f98",
+          "bytes": 2127673
+        },
+        "retained_features_qwen38_v1/debate2-50871e84df1d995a897d08126d058bdd036ae6c381042d8a21272fede14836ef-5.pt": {
+          "sha256": "35269a5261cddc5c8013d6f34405585c4fa9139acd392818b2ab272f44905422",
+          "bytes": 2867129
+        },
+        "retained_features_qwen38_v1/debate2-584dff284403efa9c16e44b3602482181ebc6b2483f21ac19539359a676bbc1f-0.pt": {
+          "sha256": "1ad967fefdb623d157ca980a1228d7a287104a4ac20f062e26180219b16edf32",
+          "bytes": 1149881
+        },
+        "retained_features_qwen38_v1/debate2-584dff284403efa9c16e44b3602482181ebc6b2483f21ac19539359a676bbc1f-1.pt": {
+          "sha256": "f28c27e2d81bbaa022539706e58cfa0570bf0fb363eb11e722c0490acbcf4881",
+          "bytes": 5331385
+        },
+        "retained_features_qwen38_v1/debate2-584dff284403efa9c16e44b3602482181ebc6b2483f21ac19539359a676bbc1f-2.pt": {
+          "sha256": "fac8a83dfecd23403fe2a54c1a6eb19262e974dbcf38d5eb47120f885d7b9291",
+          "bytes": 1400057
+        },
+        "retained_features_qwen38_v1/debate2-584dff284403efa9c16e44b3602482181ebc6b2483f21ac19539359a676bbc1f-3.pt": {
+          "sha256": "83e4a62abbf6a1f47a77191aa99f3f34f04e30d7ade5bdfc912540fe991b8e06",
+          "bytes": 1647353
+        },
+        "retained_features_qwen38_v1/debate2-584dff284403efa9c16e44b3602482181ebc6b2483f21ac19539359a676bbc1f-4.pt": {
+          "sha256": "aecd2608354056903b0ace534939c9e10cc6394ddba6037133bde387b9c3a4db",
+          "bytes": 1402041
+        },
+        "retained_features_qwen38_v1/debate2-584dff284403efa9c16e44b3602482181ebc6b2483f21ac19539359a676bbc1f-5.pt": {
+          "sha256": "2ede9b513c23c63b908076b21f3b4fcafc1c28a3382cc668a31855e3cf87b1aa",
+          "bytes": 1649849
+        },
+        "retained_features_qwen38_v1/debate2-59c7900ee0241ec40d3222ba3a6673c1afc5bdf3d5d9164920ed008f3911b882-0.pt": {
+          "sha256": "e7b0ea008c7815fc7113bc9f815727cf809f76985c740779246eb1118075e4c9",
+          "bytes": 7545337
+        },
+        "retained_features_qwen38_v1/debate2-59c7900ee0241ec40d3222ba3a6673c1afc5bdf3d5d9164920ed008f3911b882-1.pt": {
+          "sha256": "64252f55963c0e51eed8efdb1316231dc888dd9664fd7b31a6327e643c634afd",
+          "bytes": 2879929
+        },
+        "retained_features_qwen38_v1/debate2-59c7900ee0241ec40d3222ba3a6673c1afc5bdf3d5d9164920ed008f3911b882-2.pt": {
+          "sha256": "6f8ce65a04a4c296a1b16e5b48b2c2fa5e7f84befc4b79dcf85b73e1593ba2bc",
+          "bytes": 2634681
+        },
+        "retained_features_qwen38_v1/debate2-59c7900ee0241ec40d3222ba3a6673c1afc5bdf3d5d9164920ed008f3911b882-3.pt": {
+          "sha256": "379850a86bcf5dcb6c6935a385cdd9d2451a90efc1efedc41db530ace06281d3",
+          "bytes": 2883577
+        },
+        "retained_features_qwen38_v1/debate2-59c7900ee0241ec40d3222ba3a6673c1afc5bdf3d5d9164920ed008f3911b882-4.pt": {
+          "sha256": "22c2704f2632891e432d62713498680502d5cd21014fabe047b5ad536b7cede8",
+          "bytes": 2638329
+        },
+        "retained_features_qwen38_v1/debate2-59c7900ee0241ec40d3222ba3a6673c1afc5bdf3d5d9164920ed008f3911b882-5.pt": {
+          "sha256": "69d073e1b3220487a536d31b6d488d8d1e2d01e5f48c0c11290e27e553e5cb99",
+          "bytes": 2887289
+        },
+        "retained_features_qwen38_v1/debate2-6e4bd6aed72ae3cff0ce8f7a3679e87ad18cbe7c29ec211c29168a474fc1876e-0.pt": {
+          "sha256": "3dbad22dbb09a456036773859bb3096ef6b10e8cf3d8963bf547d3fcd3c896b9",
+          "bytes": 3611129
+        },
+        "retained_features_qwen38_v1/debate2-6e4bd6aed72ae3cff0ce8f7a3679e87ad18cbe7c29ec211c29168a474fc1876e-1.pt": {
+          "sha256": "786a718f85e3d8b2233f8ff2dac9f95f717ae3a80c562b4eacb233cf829cbbdb",
+          "bytes": 1399929
+        },
+        "retained_features_qwen38_v1/debate2-6e4bd6aed72ae3cff0ce8f7a3679e87ad18cbe7c29ec211c29168a474fc1876e-2.pt": {
+          "sha256": "fd74f181a15d37e650b32ba98966912d6c62de5a59f3f0d7c58c04dd861bd48d",
+          "bytes": 1897081
+        },
+        "retained_features_qwen38_v1/debate2-6e4bd6aed72ae3cff0ce8f7a3679e87ad18cbe7c29ec211c29168a474fc1876e-3.pt": {
+          "sha256": "fc2bc72c9892da2f1a8d1ce8834d329e4fabbbad160649f9be43e2295a3b4efb",
+          "bytes": 2393081
+        },
+        "retained_features_qwen38_v1/debate2-6e4bd6aed72ae3cff0ce8f7a3679e87ad18cbe7c29ec211c29168a474fc1876e-4.pt": {
+          "sha256": "202e639bfbc00aafb2cdea7abc7c2df42b25f227e9369027d9c8dfe62c846e79",
+          "bytes": 1900857
+        },
+        "retained_features_qwen38_v1/debate2-6e4bd6aed72ae3cff0ce8f7a3679e87ad18cbe7c29ec211c29168a474fc1876e-5.pt": {
+          "sha256": "e47c93ad9a9f115db760b07fafa58e0cb25f7a223e062a292ceff4358d5b69e5",
+          "bytes": 2396857
+        },
+        "retained_features_qwen38_v1/debate2-6f9f3ce59cd7005ee3fa0cb01aec742f7b9046e8213f13cda1804739d47262ff-0.pt": {
+          "sha256": "33f5a80edd55e4cbd2f315e5a7b5a736e90333afdad79a8fa94c24f6a8d47e66",
+          "bytes": 5324473
+        },
+        "retained_features_qwen38_v1/debate2-6f9f3ce59cd7005ee3fa0cb01aec742f7b9046e8213f13cda1804739d47262ff-1.pt": {
+          "sha256": "66f23428854d3fdba6158299709879fdf4c1ece859352f4089d67e2d3278e480",
+          "bytes": 3363833
+        },
+        "retained_features_qwen38_v1/debate2-6f9f3ce59cd7005ee3fa0cb01aec742f7b9046e8213f13cda1804739d47262ff-2.pt": {
+          "sha256": "6810333537b9c69d9cb17109999c48d31e3390634ba997e3bc21a372a5caaa68",
+          "bytes": 2133689
+        },
+        "retained_features_qwen38_v1/debate2-6f9f3ce59cd7005ee3fa0cb01aec742f7b9046e8213f13cda1804739d47262ff-3.pt": {
+          "sha256": "44b60fbe54b41be16f15903115fd35e9839bfb929d96a4cb65553b23bae8311a",
+          "bytes": 3613881
+        },
+        "retained_features_qwen38_v1/debate2-6f9f3ce59cd7005ee3fa0cb01aec742f7b9046e8213f13cda1804739d47262ff-4.pt": {
+          "sha256": "77566251cf09b1bdf7f7a2e303538b91b457fc3690c17b53967d8fb6917de2a8",
+          "bytes": 2136953
+        },
+        "retained_features_qwen38_v1/debate2-6f9f3ce59cd7005ee3fa0cb01aec742f7b9046e8213f13cda1804739d47262ff-5.pt": {
+          "sha256": "f98558c3ae4e14b322c68c7aa3656b1fac4fb96aa585b8420c7ea6849482bd45",
+          "bytes": 3617145
+        },
+        "retained_features_qwen38_v1/debate2-7e7cdae0d5eb0b007782399c3f6780791e9e771abb55d0bc05faa1ccae3a4752-0.pt": {
+          "sha256": "50c996a55fcd2b27fb5e0a02c6dae52f9e6fe35496a08553af392ff86cac55a0",
+          "bytes": 3369849
+        },
+        "retained_features_qwen38_v1/debate2-7e7cdae0d5eb0b007782399c3f6780791e9e771abb55d0bc05faa1ccae3a4752-1.pt": {
+          "sha256": "23688a7764d90fa27532685eaea2728fd58b83be28b47f235607503a7b0a9809",
+          "bytes": 6320825
+        },
+        "retained_features_qwen38_v1/debate2-7e7cdae0d5eb0b007782399c3f6780791e9e771abb55d0bc05faa1ccae3a4752-2.pt": {
+          "sha256": "29601ad2dc12b3c89f294bab310e67a6f653c660a2a4b118217f84f10d2b520b",
+          "bytes": 3372985
+        },
+        "retained_features_qwen38_v1/debate2-7e7cdae0d5eb0b007782399c3f6780791e9e771abb55d0bc05faa1ccae3a4752-3.pt": {
+          "sha256": "8798a3359cb45c4db02b30c8b307c12aff0a1d120c36dcda1f12c13aa56d7dae",
+          "bytes": 2640121
+        },
+        "retained_features_qwen38_v1/debate2-7e7cdae0d5eb0b007782399c3f6780791e9e771abb55d0bc05faa1ccae3a4752-4.pt": {
+          "sha256": "dc181de76a495725e81567444208e68ad6b2c03e22a960fcd1493492306e1878",
+          "bytes": 3625721
+        },
+        "retained_features_qwen38_v1/debate2-7e7cdae0d5eb0b007782399c3f6780791e9e771abb55d0bc05faa1ccae3a4752-5.pt": {
+          "sha256": "00f1413c68478f7cd9fdf3bf6b4faf874609ea9b5729c72ae2024334e60143d2",
+          "bytes": 2644281
+        },
+        "retained_features_qwen38_v1/debate2-84ab9264f423dba73ac5b6f86cfb4c2af0bc8a986e909423a14932330e0b170f-0.pt": {
+          "sha256": "ae39c349567837a7aa80913f77e896d7a7decd74e5f2f1ac1d710e9059607819",
+          "bytes": 5319609
+        },
+        "retained_features_qwen38_v1/debate2-84ab9264f423dba73ac5b6f86cfb4c2af0bc8a986e909423a14932330e0b170f-1.pt": {
+          "sha256": "afda2aff040e432e76cb4ab607ff02e3eb3e21f6d4fd3299a362e0671be18510",
+          "bytes": 3118137
+        },
+        "retained_features_qwen38_v1/debate2-84ab9264f423dba73ac5b6f86cfb4c2af0bc8a986e909423a14932330e0b170f-2.pt": {
+          "sha256": "a393306e0f2bb2b25ee820e1b3bb6dc153e0abe0a4a3b47a48c537ed86f9a3f8",
+          "bytes": 2132089
+        },
+        "retained_features_qwen38_v1/debate2-84ab9264f423dba73ac5b6f86cfb4c2af0bc8a986e909423a14932330e0b170f-3.pt": {
+          "sha256": "5021858832fa9e2663e5cd9145f24ccb64e4fb7ff3703864737c776f66894348",
+          "bytes": 3121785
+        },
+        "retained_features_qwen38_v1/debate2-84ab9264f423dba73ac5b6f86cfb4c2af0bc8a986e909423a14932330e0b170f-4.pt": {
+          "sha256": "098fe24d00a16a2bd5890a818eca12822d6eaff39f974752fb91d864b3a070a7",
+          "bytes": 2135865
+        },
+        "retained_features_qwen38_v1/debate2-84ab9264f423dba73ac5b6f86cfb4c2af0bc8a986e909423a14932330e0b170f-5.pt": {
+          "sha256": "178de45154e7bff7c1f2f7606e78932cc1c112628ca3cd08fdc58a1ae37a818c",
+          "bytes": 3125561
+        },
+        "retained_features_qwen38_v1/debate2-857ab41ca4f88a9fea48b3124376dc38ebaa079d74cedce92e5ebd3e2d626f32-0.pt": {
+          "sha256": "34d8acf0800106d594f534cd1d0af4377d47dc971982cbaef3e5eb71066c378e",
+          "bytes": 6813049
+        },
+        "retained_features_qwen38_v1/debate2-857ab41ca4f88a9fea48b3124376dc38ebaa079d74cedce92e5ebd3e2d626f32-1.pt": {
+          "sha256": "b4b5b82800362879d3fa474a69e8f7aefabee1035fbba8252c0d850478449069",
+          "bytes": 1898681
+        },
+        "retained_features_qwen38_v1/debate2-857ab41ca4f88a9fea48b3124376dc38ebaa079d74cedce92e5ebd3e2d626f32-2.pt": {
+          "sha256": "6bab990e72e4bce53ef92feebb5d91c7916577a0dee1b2ce28936060c1e6f50d",
+          "bytes": 1654393
+        },
+        "retained_features_qwen38_v1/debate2-857ab41ca4f88a9fea48b3124376dc38ebaa079d74cedce92e5ebd3e2d626f32-3.pt": {
+          "sha256": "dced9f7c653a31fbc7ea60db5c519e868c50606909d9f8834565e92a9a06dc61",
+          "bytes": 2644217
+        },
+        "retained_features_qwen38_v1/debate2-857ab41ca4f88a9fea48b3124376dc38ebaa079d74cedce92e5ebd3e2d626f32-4.pt": {
+          "sha256": "91a92ab36d3267838a66ec904da6aaf008b64cafaef9a0b4b5770ac7e2b93a87",
+          "bytes": 2400889
+        },
+        "retained_features_qwen38_v1/debate2-857ab41ca4f88a9fea48b3124376dc38ebaa079d74cedce92e5ebd3e2d626f32-5.pt": {
+          "sha256": "47feca24152eca5c9adcc84d09cd361caf2d648895750bd6f1a7d9663a0b1dc0",
+          "bytes": 2648633
+        },
+        "retained_features_qwen38_v1/debate2-8954156416b0834282617725e68b25a75dba6a0e654e73457a88faa249ed51f7-0.pt": {
+          "sha256": "ca5a38a8edfaa17bee04ebc5a41eeefb79a87eea579d92085275c5533826170f",
+          "bytes": 2139577
+        },
+        "retained_features_qwen38_v1/debate2-8954156416b0834282617725e68b25a75dba6a0e654e73457a88faa249ed51f7-1.pt": {
+          "sha256": "d8c87ce058aba660dc6c964610c9a5a85d57fdbdefc6b9acf6f4c209733230f2",
+          "bytes": 6072633
+        },
+        "retained_features_qwen38_v1/debate2-8954156416b0834282617725e68b25a75dba6a0e654e73457a88faa249ed51f7-2.pt": {
+          "sha256": "c7e6d6f133064e2564e3210428480fc30591adc735176c62225c1c85719e4187",
+          "bytes": 2144185
+        },
+        "retained_features_qwen38_v1/debate2-8954156416b0834282617725e68b25a75dba6a0e654e73457a88faa249ed51f7-3.pt": {
+          "sha256": "63585515c5b9c2607824aec5d7b8509d19bc9c0149d56733d101432c286aeb00",
+          "bytes": 2145273
+        },
+        "retained_features_qwen38_v1/debate2-8954156416b0834282617725e68b25a75dba6a0e654e73457a88faa249ed51f7-4.pt": {
+          "sha256": "989fc59f0e53f9edac67366b1d821312e88c12992f2fdf431bb0f770c6e42d21",
+          "bytes": 2147321
+        },
+        "retained_features_qwen38_v1/debate2-8954156416b0834282617725e68b25a75dba6a0e654e73457a88faa249ed51f7-5.pt": {
+          "sha256": "80a4282ec19ee50898c891949db7a5bb503e43f7d8365a0a74d3fe56d96e0dc8",
+          "bytes": 2148409
+        },
+        "retained_features_qwen38_v1/debate2-a140077a5e100627390411dfd498b8a8dbfb3a7eb31490760b7db61af8622966-0.pt": {
+          "sha256": "6d2ae3c438eedcb90452e8a867d90156f58b0c567a0256e83ea4a7703d779d41",
+          "bytes": 3854457
+        },
+        "retained_features_qwen38_v1/debate2-a140077a5e100627390411dfd498b8a8dbfb3a7eb31490760b7db61af8622966-1.pt": {
+          "sha256": "2999afddba67bd680cd958ff83ccad7acaced0dae09109efa3f27281f6403e06",
+          "bytes": 1398777
+        },
+        "retained_features_qwen38_v1/debate2-a140077a5e100627390411dfd498b8a8dbfb3a7eb31490760b7db61af8622966-2.pt": {
+          "sha256": "3dcf740e09d79287f96f6021de10a5f7dd48b5e80a7ac28055f99a0cfc5f5aeb",
+          "bytes": 1648249
+        },
+        "retained_features_qwen38_v1/debate2-a140077a5e100627390411dfd498b8a8dbfb3a7eb31490760b7db61af8622966-3.pt": {
+          "sha256": "0927c71d492246346ff4837988e425fee425a7c705cce33d46dc98ed1ab7be13",
+          "bytes": 1401209
+        },
+        "retained_features_qwen38_v1/debate2-a140077a5e100627390411dfd498b8a8dbfb3a7eb31490760b7db61af8622966-4.pt": {
+          "sha256": "751536708dd6316dc5ebe296764a66461b106adb97fb27cc685bf8cc0eedb11a",
+          "bytes": 1650745
+        },
+        "retained_features_qwen38_v1/debate2-a140077a5e100627390411dfd498b8a8dbfb3a7eb31490760b7db61af8622966-5.pt": {
+          "sha256": "890e1dca10aa9ec72a99659ca6e5cc50139c0d03f6800e6adf5dc6266ae31ea3",
+          "bytes": 2393145
+        },
+        "retained_features_qwen38_v1/debate2-a16341908a0823995dc54db5dd7d084e5305f18702e2a70a450ead250bed0ad6-0.pt": {
+          "sha256": "1efe68d50367668b073d90b5316801211aabc96057d8636f59281fd560d924d7",
+          "bytes": 3612857
+        },
+        "retained_features_qwen38_v1/debate2-a16341908a0823995dc54db5dd7d084e5305f18702e2a70a450ead250bed0ad6-1.pt": {
+          "sha256": "07f0dd7a6515e5fba0ce6d3ae244d5c048ba1008ecf862e895137fe9d689b886",
+          "bytes": 1155897
+        },
+        "retained_features_qwen38_v1/debate2-a16341908a0823995dc54db5dd7d084e5305f18702e2a70a450ead250bed0ad6-2.pt": {
+          "sha256": "e8ad25f0bc51f49af769453641133e128a30dc2283216548060f0d6903907fec",
+          "bytes": 1897593
+        },
+        "retained_features_qwen38_v1/debate2-a16341908a0823995dc54db5dd7d084e5305f18702e2a70a450ead250bed0ad6-3.pt": {
+          "sha256": "c2ee0718b45faef12e990b8f707a37e6c38753cd0b372872410955caef815de3",
+          "bytes": 1900217
+        },
+        "retained_features_qwen38_v1/debate2-a16341908a0823995dc54db5dd7d084e5305f18702e2a70a450ead250bed0ad6-4.pt": {
+          "sha256": "4d1b394efd222282ac7e8a9ff9055dce7da7f56c546869604ecf0a855a693176",
+          "bytes": 1900473
+        },
+        "retained_features_qwen38_v1/debate2-a16341908a0823995dc54db5dd7d084e5305f18702e2a70a450ead250bed0ad6-5.pt": {
+          "sha256": "f7993404e46a354e3c0a7c27f15b062ec0a2faa61579b9912a31f880e1591d1d",
+          "bytes": 1903161
+        },
+        "retained_features_qwen38_v1/debate2-b228b036585770b4de90a1575ca4fb746fff007c8d028e035c988801196ef6a9-0.pt": {
+          "sha256": "396651109b50bb995794f8edc7240afb208a50b89edf04c0c14e6f942aff9810",
+          "bytes": 2380281
+        },
+        "retained_features_qwen38_v1/debate2-b228b036585770b4de90a1575ca4fb746fff007c8d028e035c988801196ef6a9-1.pt": {
+          "sha256": "e9d95ea61e304f2c92c6db54b0e4fec8175f10e7d83067156b7f1609f0bd87a6",
+          "bytes": 7785849
+        },
+        "retained_features_qwen38_v1/debate2-b228b036585770b4de90a1575ca4fb746fff007c8d028e035c988801196ef6a9-2.pt": {
+          "sha256": "ad6fa5f4092a85f25aea808ba13e300c842cf5684404d23c156c0c47f1b9b095",
+          "bytes": 2382777
+        },
+        "retained_features_qwen38_v1/debate2-b228b036585770b4de90a1575ca4fb746fff007c8d028e035c988801196ef6a9-3.pt": {
+          "sha256": "cfc83ec8c1eec29b139391ea4c245a426ca435d030e56ab54fcd08f28d9c045d",
+          "bytes": 2878393
+        },
+        "retained_features_qwen38_v1/debate2-b228b036585770b4de90a1575ca4fb746fff007c8d028e035c988801196ef6a9-4.pt": {
+          "sha256": "5cbe20c3ebe58ec1d04198cf351889de3ceae34eed2cc79d4ecec8cace48ee18",
+          "bytes": 2386233
+        },
+        "retained_features_qwen38_v1/debate2-b228b036585770b4de90a1575ca4fb746fff007c8d028e035c988801196ef6a9-5.pt": {
+          "sha256": "80138e447e466db524f0d792b84a0b45e29faef46d5209f5f2b4110919331e05",
+          "bytes": 2881913
+        },
+        "retained_features_qwen38_v1/debate2-b2abe8a8c2ae503bc989f222943a05dfa09bacb70ecc3fe4fe87654846730efb-0.pt": {
+          "sha256": "b3936ae4cec57861454f20e755a2a3bec9233942c851fe067945b701d56c3fac",
+          "bytes": 5328761
+        },
+        "retained_features_qwen38_v1/debate2-b2abe8a8c2ae503bc989f222943a05dfa09bacb70ecc3fe4fe87654846730efb-1.pt": {
+          "sha256": "b8f8c81c798307e0117c222e9567b4221e57989c616ca334d6243effe8982dfb",
+          "bytes": 1399353
+        },
+        "retained_features_qwen38_v1/debate2-b2abe8a8c2ae503bc989f222943a05dfa09bacb70ecc3fe4fe87654846730efb-2.pt": {
+          "sha256": "451435e642aeb6875804b0288eed30cda11016bfabaffc3fa9a65bdba4490128",
+          "bytes": 2632633
+        },
+        "retained_features_qwen38_v1/debate2-b2abe8a8c2ae503bc989f222943a05dfa09bacb70ecc3fe4fe87654846730efb-3.pt": {
+          "sha256": "f91e76a424543523c047d303bafb477a96ca4edb546369e3f950d3e2addc4dd2",
+          "bytes": 1402105
+        },
+        "retained_features_qwen38_v1/debate2-b2abe8a8c2ae503bc989f222943a05dfa09bacb70ecc3fe4fe87654846730efb-4.pt": {
+          "sha256": "19d231e4a423eca0ab5b1817d247799e5ae0bb12b694db73bea9a7c8206f449a",
+          "bytes": 2635577
+        },
+        "retained_features_qwen38_v1/debate2-b2abe8a8c2ae503bc989f222943a05dfa09bacb70ecc3fe4fe87654846730efb-5.pt": {
+          "sha256": "fc9507cf5541098564f2aade8cf10ecf4aedc54cae4690b563b6f03eb9f1f874",
+          "bytes": 1405305
+        },
+        "retained_features_qwen38_v1/debate2-bbdea8f7bcb38485aed245ebcb871103fb256c8c34038eb0910e0bdcdf86074b-0.pt": {
+          "sha256": "913f3cd1dc88ac551dc7769fe99e016884436296978c4317a194faeef4e404ad",
+          "bytes": 1897721
+        },
+        "retained_features_qwen38_v1/debate2-bbdea8f7bcb38485aed245ebcb871103fb256c8c34038eb0910e0bdcdf86074b-1.pt": {
+          "sha256": "092276bd769b8ef24d93f8caae1681a39c7dd371dd9ea60191bd4c11f2ccf58d",
+          "bytes": 6568505
+        },
+        "retained_features_qwen38_v1/debate2-bbdea8f7bcb38485aed245ebcb871103fb256c8c34038eb0910e0bdcdf86074b-2.pt": {
+          "sha256": "109b15bfe0fb842ff3571e9ab4f6d1992222bdf91f0e58b2ca3350b3c3112edc",
+          "bytes": 1900153
+        },
+        "retained_features_qwen38_v1/debate2-bbdea8f7bcb38485aed245ebcb871103fb256c8c34038eb0910e0bdcdf86074b-3.pt": {
+          "sha256": "b4a78758ff39c618708fa788eaae21dd6a35f48ce3d71ecc3b4aab9ded646f8a",
+          "bytes": 2643577
+        },
+        "retained_features_qwen38_v1/debate2-bbdea8f7bcb38485aed245ebcb871103fb256c8c34038eb0910e0bdcdf86074b-4.pt": {
+          "sha256": "18de32b6785577a0bede31755443c61fa968eb78341b91946c50f5cfa77bb41a",
+          "bytes": 2644985
+        },
+        "retained_features_qwen38_v1/debate2-bbdea8f7bcb38485aed245ebcb871103fb256c8c34038eb0910e0bdcdf86074b-5.pt": {
+          "sha256": "a74fe847939f458d1c62751359475a3e4eebb0e32040bae23b15491d9dfaa8ea",
+          "bytes": 2647737
+        },
+        "retained_features_qwen38_v1/debate2-dc69cb3f462363933b67f572a9c53b88b1652b2bbf4130647ecda30c080e6ca0-0.pt": {
+          "sha256": "37dc07f024ccf2b1e191dfd0755aae0d5906fef47d5e657003bf8529b5398544",
+          "bytes": 1640057
+        },
+        "retained_features_qwen38_v1/debate2-dc69cb3f462363933b67f572a9c53b88b1652b2bbf4130647ecda30c080e6ca0-1.pt": {
+          "sha256": "ecbc5be30f5e9cdfc10265839ddc0092e3e945113b00a7dbc84cc006fdf673b6",
+          "bytes": 5571769
+        },
+        "retained_features_qwen38_v1/debate2-dc69cb3f462363933b67f572a9c53b88b1652b2bbf4130647ecda30c080e6ca0-2.pt": {
+          "sha256": "2f10b3b795c6c08d306fa06335d04d0a04f0b0ca653dc1c106fb5fabe029afe8",
+          "bytes": 1646073
+        },
+        "retained_features_qwen38_v1/debate2-dc69cb3f462363933b67f572a9c53b88b1652b2bbf4130647ecda30c080e6ca0-3.pt": {
+          "sha256": "93583920045627fb8f4bb3b3a029228f7a092fec3a1c1258bb67d9c660737257",
+          "bytes": 2139961
+        },
+        "retained_features_qwen38_v1/debate2-dc69cb3f462363933b67f572a9c53b88b1652b2bbf4130647ecda30c080e6ca0-4.pt": {
+          "sha256": "836f23fff5c73ec42168d0dbfc1f31983837e83fbc1fcc1452198b918003ebc2",
+          "bytes": 1649657
+        },
+        "retained_features_qwen38_v1/debate2-dc69cb3f462363933b67f572a9c53b88b1652b2bbf4130647ecda30c080e6ca0-5.pt": {
+          "sha256": "29276cfbf2b42c02040b61396f01317fc290aba6ff37931ea1c6929a159b9bd2",
+          "bytes": 2143801
+        },
+        "retained_features_qwen38_v1/debate2-e69c876d4089f76a1109370af968d12956b50469f7971ac045305fd6e915f58b-0.pt": {
+          "sha256": "2fa4484cef4467eae6e43c2963bd501f38ce8c8c781bcf782c10b5909b1a7476",
+          "bytes": 5819001
+        },
+        "retained_features_qwen38_v1/debate2-e69c876d4089f76a1109370af968d12956b50469f7971ac045305fd6e915f58b-1.pt": {
+          "sha256": "35b131eab8b4a65556b9df6d50ebd3f86b31e23ae2969256dc29bf8ce8ab31d6",
+          "bytes": 1886713
+        },
+        "retained_features_qwen38_v1/debate2-e69c876d4089f76a1109370af968d12956b50469f7971ac045305fd6e915f58b-2.pt": {
+          "sha256": "3a1d2e49214771027a80a5d9ed09396611183de55cb366432b49dc79b386c074",
+          "bytes": 2136889
+        },
+        "retained_features_qwen38_v1/debate2-e69c876d4089f76a1109370af968d12956b50469f7971ac045305fd6e915f58b-3.pt": {
+          "sha256": "6b81ca9077433a6fdbb327257ec52eed2bd1ea3ead71df2e617a2cb47ffccacb",
+          "bytes": 2139897
+        },
+        "retained_features_qwen38_v1/debate2-e69c876d4089f76a1109370af968d12956b50469f7971ac045305fd6e915f58b-4.pt": {
+          "sha256": "94c6201f5577713cb4c94a0c3c44f79d6f239f321e5043107d826645cd24a766",
+          "bytes": 2140153
+        },
+        "retained_features_qwen38_v1/debate2-e69c876d4089f76a1109370af968d12956b50469f7971ac045305fd6e915f58b-5.pt": {
+          "sha256": "50bbb2b66086045abe5199474ba1ae988e16767e07af1f4581e04600dc688e7b",
+          "bytes": 2143097
+        },
+        "retained_features_qwen38_v1/debate2-ee205020119f04c04d766e1cfcc50a929219d6f40662cea8bbbd66ebb794dbb1-0.pt": {
+          "sha256": "d812baf7b39e36507463efb6545a53803f96a66c0d1e698f0e60dbfdfe7d6aec",
+          "bytes": 4828985
+        },
+        "retained_features_qwen38_v1/debate2-ee205020119f04c04d766e1cfcc50a929219d6f40662cea8bbbd66ebb794dbb1-1.pt": {
+          "sha256": "046d51c10338c8d93a2b6188da2a8988431f34da5bb0d2879ca075cd25df032e",
+          "bytes": 1883321
+        },
+        "retained_features_qwen38_v1/debate2-ee205020119f04c04d766e1cfcc50a929219d6f40662cea8bbbd66ebb794dbb1-2.pt": {
+          "sha256": "d7a7c5b8743c54ca91b4aed9012ea2f9c31074f4a1e6f2ff2f955b3ff8c21df9",
+          "bytes": 1636089
+        },
+        "retained_features_qwen38_v1/debate2-ee205020119f04c04d766e1cfcc50a929219d6f40662cea8bbbd66ebb794dbb1-3.pt": {
+          "sha256": "5210d356d10b911e9de32b4bee207901f8facea0eadf3d8074e432591f84388e",
+          "bytes": 1885497
+        },
+        "retained_features_qwen38_v1/debate2-ee205020119f04c04d766e1cfcc50a929219d6f40662cea8bbbd66ebb794dbb1-4.pt": {
+          "sha256": "5b689b6c701e220d12cc4cd5a96c45cb4d83573348d6bff24efb73e408a1e4db",
+          "bytes": 3611193
+        },
+        "retained_features_qwen38_v1/debate2-ee205020119f04c04d766e1cfcc50a929219d6f40662cea8bbbd66ebb794dbb1-5.pt": {
+          "sha256": "490e5e594643882564b15cff3ed214d4054568086827501ef0df6b1581d4e01f",
+          "bytes": 1888633
+        },
+        "retained_features_qwen38_v1/manifest.json": {
+          "sha256": "61813a1129b1ba22dd7daac19a293b4e622ed3e761a648155785cc3a6a20801a",
+          "bytes": 6672
+        },
+        "retained_features_qwen38_v1/receipts.jsonl": {
+          "sha256": "33d44b6f37e6f369d0b295819f43b91554b944d6e10e2fd8584eb3288b5d7b1d",
+          "bytes": 390438
+        },
+        "retained_features_qwen38_v1/source_manifest.json": {
+          "sha256": "b804ba8d96dca60379f9c4fc9b2f7969926945f6dd8fac105f0151f760bdda2c",
+          "bytes": 1689
+        },
+        "retained_features_qwen38_v1/summary.json": {
+          "sha256": "90b1acd209d30a7921c742f538369c7c560ee54e690281d4187778a1c27e3169",
+          "bytes": 424
+        }
+      },
+      "summary": {
+        "termination_counts": {
+          "teacher_forced_complete_sequence": 144
+        },
+        "rows_expected": 144,
+        "rows_completed": 144,
+        "context_tokens_max": 10545,
+        "bytes": 401843792,
+        "scope": "Unpadded teacher-forced API-text replay. No live-generation or padded-execution equivalence claim. All contexts and responses complete.",
+        "retained_tensor_bytes": 394690560,
+        "source_segments": 3947,
+        "retained_segments": 1390
+      },
+      "manifest_sha256": "61813a1129b1ba22dd7daac19a293b4e622ed3e761a648155785cc3a6a20801a",
+      "retention_receipts_sha256": "33d44b6f37e6f369d0b295819f43b91554b944d6e10e2fd8584eb3288b5d7b1d"
+    }
+  ],
+  "gpu_originals_deleted": false,
+  "independent_external_retention_confirmed": false
+}

@@ -1,0 +1,79 @@
+{
+  "schema": "local3_lossless_fresh_provenance_archive_v1",
+  "status": "all_original_file_bytes_and_hashes_verified",
+  "script_sha256": "bb1abc59e7c1404a5ea8c89a4d567f54baccb09ab7a768e0984b41726e56225a",
+  "feature_completion_audit_sha256": "aaf8e4b85a614bcc01845567e85c19c15a5f6e05a40510ed9cee6b053c3d1137",
+  "archive": "runs/iteration3/final/local_fresh_feature_provenance_v1.tar.gz",
+  "archive_bytes": 2937781,
+  "archive_sha256": "926dfafda05a25b3110a3bc478c3e9f4f714414915cd70d458c7c41812f4188a",
+  "member_count": 16,
+  "uncompressed_member_bytes": 11068690,
+  "members": {
+    "runs/iteration3/coordinator/feature_completion_policy_v1.json": {
+      "bytes": 2346,
+      "sha256": "7a97045af9d22b3dd1b675f86407842706d628f50f780583552e47ff9c5ee1de"
+    },
+    "runs/iteration3/coordinator/fresh_features_ready_v1.json": {
+      "bytes": 74,
+      "sha256": "eddd212150423e210d4a572725f10008728c38cead77130cbd37d9f26195dc68"
+    },
+    "runs/iteration3/final/corpus_qwen35.jsonl": {
+      "bytes": 5363439,
+      "sha256": "e200d35529abc1ff1ab86c3f95916bf6f6d9e196df60a32c6f8e20c0acb0124b"
+    },
+    "runs/iteration3/final/corpus_qwen38.jsonl": {
+      "bytes": 5351903,
+      "sha256": "15ab027a20fb714f8260fc67618552f8dd92842d20442ae78a5e918b151e6c80"
+    },
+    "runs/iteration3/final/features_qwen35/alignment.json": {
+      "bytes": 2205,
+      "sha256": "e6d281253bf4ac4b89f9644757e0dc7097d6ba086e65b611093fd81b14858070"
+    },
+    "runs/iteration3/final/features_qwen35/long_alignment.json": {
+      "bytes": 2206,
+      "sha256": "f945482f1d744375de7858d87b5d0fe125e2df0a684e9157f90902772d65c771"
+    },
+    "runs/iteration3/final/features_qwen35/manifest.json": {
+      "bytes": 1726,
+      "sha256": "ebd3874b9085cc1ca69bba60792cf1afd4567c91818160ed4549d310c0437dd0"
+    },
+    "runs/iteration3/final/features_qwen35/receipts.jsonl": {
+      "bytes": 47292,
+      "sha256": "99d480a4342305fa9bd9b69f030f468d42e6500fefeb97add02de95d1e2f7bd0"
+    },
+    "runs/iteration3/final/features_qwen35/summary.json": {
+      "bytes": 330,
+      "sha256": "190f3d32fa3dcf56cb8043a90c30eb1ebf0195629069e1780e734008078d0959"
+    },
+    "runs/iteration3/final/features_qwen38/alignment.json": {
+      "bytes": 2204,
+      "sha256": "0cf716cda9928888aa7753a469aeb0e37211a1ad2d1a1a6365d293a7410dbc4e"
+    },
+    "runs/iteration3/final/features_qwen38/long_alignment.json": {
+      "bytes": 2206,
+      "sha256": "4144f6cd678395def6be61859e26f484db49a010c2a733a5f73874dde2d09e61"
+    },
+    "runs/iteration3/final/features_qwen38/manifest.json": {
+      "bytes": 1689,
+      "sha256": "b804ba8d96dca60379f9c4fc9b2f7969926945f6dd8fac105f0151f760bdda2c"
+    },
+    "runs/iteration3/final/features_qwen38/receipts.jsonl": {
+      "bytes": 47326,
+      "sha256": "273a842cf1f71bfa84fd3bf0fa2b8bb365b1bdb09316083e456ca4f2d6c0deaa"
+    },
+    "runs/iteration3/final/features_qwen38/summary.json": {
+      "bytes": 331,
+      "sha256": "bd6941b59b48caceff5ff524bc418988155fd593effefa07f417724e273f1559"
+    },
+    "runs/iteration3/final/global_freeze_v2.json": {
+      "bytes": 23393,
+      "sha256": "35ce913f3837eb295d21eb118bfdafa7d9224f2c202aec7890741918e33a522c"
+    },
+    "runs/iteration3/final/local_feature_completion_audit_v1.json": {
+      "bytes": 220020,
+      "sha256": "aaf8e4b85a614bcc01845567e85c19c15a5f6e05a40510ed9cee6b053c3d1137"
+    }
+  },
+  "original_files_deleted_or_modified": false,
+  "scope": "Exact canonical corpus JSONL, both original numerical diagnostic files per model, original extraction manifests/summaries/receipts, completion policy, ready receipt, global freeze and detailed feature audit. No feature tensor copies or lossy text changes. Retain GPU originals until independent transfer proof is complete."
+}

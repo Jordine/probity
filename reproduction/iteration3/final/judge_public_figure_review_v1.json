@@ -1,0 +1,48 @@
+{
+  "schema": "judge3_independent_public_figure_review_v1",
+  "created_at_utc": "2026-10-15T14:10:38.401739+00:00",
+  "reviewer": "judge_evaluation",
+  "judge_figure_numeric_validation": {
+    "status": "pass",
+    "effect_cells": 30,
+    "coverage": "Every frozen participant-specific comparison, with the 16 pooled rows available separately in CSV.",
+    "checks": [
+      "All30means,CI endpoints,presentation counts and family counts exactly match audited CSVs.",
+      "All5public merged CSVs are byte-identical to the audited exports.",
+      "Every plotted input hash and source-script hash matches the manifest.",
+      "Full underlying figure script read; lower panels select exactly raw/oracle cells and preserve family intervals."
+    ]
+  },
+  "visual_review": {
+    "judge_figure": "Pass: no clipped points, intervals, titles or labels; all three judges distinguishable; missing FIBS and reduced Opus scope are stated; baseline/oracle markers distinguishable.",
+    "local_sentence_figure": "Readable with all frozen controls, eligible-family denominators and label-coverage caveats visible. This is a visual review; primary local metrics remain owned/audited by the local workstream."
+  },
+  "prose_review_status": "The complete development report was read. Its final results/cost/cleanup update was still pending at this review; do not treat this artifact as approval of final prose.",
+  "minor_caption_suggestion": "Clarify All frozen participant-specific detector contrasts, because pooled rows are retained in CSV rather than shown in the figure.",
+  "artifacts": {
+    "reports/plot_frozen_judge_results.py": {
+      "sha256": "01e53d2c563e2db9360cca90dfbfe43f35f350b5cbdfb4c234d1916930655247",
+      "bytes": 8730
+    },
+    "reports/figures/iteration3/judge_results.png": {
+      "sha256": "0769acc23c2a958a62ce18bf32fd40dbc53477342679a609df3aa80d8f8528d3",
+      "bytes": 210714
+    },
+    "reports/figures/iteration3/judge_results.manifest.json": {
+      "sha256": "8345f1cc2372bf8f36db980567f181c2d63bf2759bb7e740806c1aabdf5cc289",
+      "bytes": 8803
+    },
+    "reports/figures/iteration3/local_sentence_results.png": {
+      "sha256": "64c065c81ca62c956ac83e84dac87a917d9ecaac09419c673b6b3ff2d628a788",
+      "bytes": 205782
+    },
+    "reports/figures/iteration3/local_sentence_results.manifest.json": {
+      "sha256": "22b02d6bb8780da49c7d7932a35581a498a09fbab402fee8d1359a391e8b6fb4",
+      "bytes": 6450
+    },
+    "docs/probity_iteration3_results.md": {
+      "sha256": "d9068a313776a2b735f113ad30bdd211faca8b9f5a384ddd33096b25c852c41d",
+      "bytes": 25006
+    }
+  }
+}

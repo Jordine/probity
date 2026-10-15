@@ -1,0 +1,64 @@
+{
+  "created_at_utc": "2026-10-15T10:44:35.457327+00:00",
+  "automatic_source_review": "runs/iteration3/final/source_ambiguity_review_final_v1/results.json",
+  "automatic_complete_reviews": 24,
+  "automatic_new_api_cost_usd": 0.0317168,
+  "automatic_gold_blinding_caveat": "All24 active source-review prompts now match clean sourcev5 and omit explicit answer metadata. Source114 originalv4 review remains a contaminated historical diagnostic; its one clean-source replacement independently returnsB with exact evidence. No question/key/family selection.",
+  "manual_triggered_complete_sources_read": 8,
+  "manual_trigger_source_lines": [
+    97,
+    114,
+    16,
+    145,
+    116,
+    85,
+    21,
+    126
+  ],
+  "automatic_key_disagreements_resolved": [
+    {
+      "parent": 97,
+      "reason": "Recording date March15 versus incident date March14; reviewer chose incident date."
+    },
+    {
+      "parent": 145,
+      "reason": "Explicit3/20 final primate failures imply15%; reviewer rejected numeric conversion as not literal mention."
+    }
+  ],
+  "other_manual_trigger_resolution": "Six exact-quotation defects, including116 inconsistent ambiguity flag; complete-source checks support original keys. Exact contiguous evidence offsets preserved in individual records.",
+  "material_source_wording_caveats": [
+    {
+      "parent": 124,
+      "description": "Porter orders isolation; staff also proposed regular duties within the discussion. Exact question says proposed rather than specifically ordered. Primary case retained unchanged.",
+      "review": "runs/iteration3/environment/fresh_validity/source_124_review_v1.json"
+    },
+    {
+      "parent": 116,
+      "description": "13months is an approximate calendar duration;8.5months explicitly only regeneration chamber. Exact dates unavailable."
+    },
+    {
+      "parent": 21,
+      "description": "Character-priority inference; authentic concern/benefits coexist with profit-driven behavior. Cannot label all wrong-role claims false."
+    },
+    {
+      "parent": 46,
+      "description": "Author-stance interpretation rather than atomic lookup.",
+      "review": "runs/iteration3/environment/fresh_validity/source_46_review_v1.json"
+    }
+  ],
+  "source_cleanup": "runs/iteration3/coordinator/source_metadata_cleanup_v1.json",
+  "primary_policy": "Same24families, keys and questions; only discovered generator metadata removed before public debate. No source chosen, replaced or excluded based on outcomes.",
+  "manual_evidence_sha256": {
+    "runs/iteration3/environment/fresh_validity/source_97_review_v2.json": "b1fe4cea7318fdcc891ab4409ab041e0a48ab66d59674d61482d5d321e21f8e8",
+    "runs/iteration3/environment/fresh_validity/source_114_review_v2.json": "a953fe8a978f16e47a829f5c6a885f615c141ce389200ccf9d202bd65fcc9f2a",
+    "runs/iteration3/environment/fresh_validity/source_16_review_v2.json": "e87798eef2e854d57e0610c872174168a2fe816b89c00f1d00ebae9945f55d37",
+    "runs/iteration3/environment/fresh_validity/source_145_review_v2.json": "8df7cc40307b1548dd740ba61021f3224fd5c6b27f311f65b90fda2fe3252e55",
+    "runs/iteration3/environment/fresh_validity/source_116_review_v2.json": "121453d1d8c010c468221d91796cc0d8eab58a9c53fa2ec2e2f9ae4abbd0ceed",
+    "runs/iteration3/environment/fresh_validity/source_85_review_v2.json": "94f67ba9307efc1c7d7299df76029b9f0debf689d394bd8a47ae5ee25729fa6c",
+    "runs/iteration3/environment/fresh_validity/source_21_review_v2.json": "b3db3aae105dd208ef2335a5e14dd6b595326f9ddb6cd44f9f942a932101672c",
+    "runs/iteration3/environment/fresh_validity/source_126_review_v2.json": "0007bb4a2018cac57c10000fcaab762dcdff764dcc784792c4d2aaf9e3e8c01f"
+  },
+  "scope": "Outcome-blind supplemental source audit and manual flagged-source checks; not independent human annotation or a certificate that every source is defect-free.",
+  "source114_clean_review": "runs/iteration3/final/source_ambiguity_clean114_v1/results.json",
+  "previous_adjudication": "runs/iteration3/environment/fresh_validity/source_review_adjudication_v2.json"
+}

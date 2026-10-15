@@ -1,0 +1,60 @@
+{
+  "schema": "judge3_audited_table_export_v2",
+  "created_at_utc": "2026-10-15T13:53:09.361149+00:00",
+  "judges": [
+    "Qwen/Qwen3.5-4B"
+  ],
+  "input_sha256": {
+    "/root/projects/probity-benchmark/runs/iteration3/judge_controls/native_table_export_spec_v1.json": "4d3f8cd857eb63e456bc4a8427902fc453f347df1dec1a262f9ad9477c977a86",
+    "/root/projects/probity-benchmark/runs/iteration3/final/native_judge_analysis_view_v1/native_analysis_view_provenance.json": "69e25b41271647877a9bdd177b5d07c8b170126b65b4c213390ba4a9a87b624a",
+    "/root/projects/probity-benchmark/runs/iteration3/final/judge_package_v1/package.json": "5f7b4d92e0585b3920ab5bda1d82daf88f457c153f1f4cfe8d45e922998066a0",
+    "/root/projects/probity-benchmark/runs/iteration3/final/judge_package_v1/compiled/jobs.jsonl": "487aa4cd7de93cc2c3e6e65efae19f6da4b6b72cbf9d292afbbc89aa4a93a505",
+    "/root/projects/probity-benchmark/runs/iteration3/final/native_judge_v1/manifest.json": "8ca22c784e0847d69e6e197972a8d3fc655be6016189401bad3a0dec87fd5741",
+    "/root/projects/probity-benchmark/runs/iteration3/final/native_judge_v1/evaluations.jsonl": "e7308602d45f27f7fda331b1d1503b6e2f3bbf6029f8294e5f1665c2d7e53449",
+    "/root/projects/probity-benchmark/runs/iteration3/final/native_judge_analysis_v1/prompt_repeatability.json": "60b1ffa4a6fbc745311f3783e662d301ca57b079ab6149b6895d87a8fbcf50fb",
+    "/root/projects/probity-benchmark/runs/iteration3/final/native_generation_audit_v1.json": "abdb445804bba0856a64977b8a90c9bc3685a42971ef7f9859d3038254a085a9",
+    "/root/projects/probity-benchmark/runs/iteration3/final/native_judge_analysis_v1/analysis.json": "385246960a6279dcbd3f456726364ad7178d3fc37b78e5e351c3f477cd490879",
+    "/root/projects/probity-benchmark/runs/iteration3/final/native_judge_analysis_v1/receipt_audit.json": "1bac07c411177f60f0666e0953d5403eb913ad230d190ec7baa8e7f88465dcea",
+    "/root/projects/probity-benchmark/runs/iteration3/final/native_judge_analysis_view_v1/evaluations.jsonl": "956294bd3396e3ebef25bc7aff21518920e88a9efe0d182f7d888d210d2bce55",
+    "/root/projects/probity-benchmark/runs/iteration3/final/native_judge_analysis_view_v1/manifest.json": "8ca22c784e0847d69e6e197972a8d3fc655be6016189401bad3a0dec87fd5741"
+  },
+  "projector_source_sha256": "ce79c84f967da55f885330f974db563581d3d6f1d551809a2e20abd061d5071b",
+  "outputs": {
+    "accuracies": {
+      "path": "runs/iteration3/final/judge_tables_native_v1/accuracies.csv",
+      "rows": 66,
+      "sha256": "8d482a24e92e7a82274f2b694f12cbe164d7d6d0c5a3d4ff29403383f391c468"
+    },
+    "all_paired_contrasts": {
+      "path": "runs/iteration3/final/judge_tables_native_v1/all_paired_contrasts.csv",
+      "rows": 123,
+      "sha256": "6887430eef30991c9b0f49b78bc3d010b06d1de9d9cbc169c61f08e16bac3c83"
+    },
+    "real_minus_neutral": {
+      "path": "runs/iteration3/final/judge_tables_native_v1/real_minus_neutral.csv",
+      "rows": 20,
+      "sha256": "3aa41770b0a6cb40de5a8cea22dab2a5377a8362e6e1886b40da920fc3e5c0ba"
+    },
+    "exact_prompt_summary": {
+      "path": "runs/iteration3/final/judge_tables_native_v1/exact_prompt_summary.csv",
+      "rows": 1,
+      "sha256": "7a2d51f6b3fe52bd57acb1600f1f1d1ad29db939fa4e3cc55377ca3395be0bc0"
+    },
+    "exact_prompt_groups": {
+      "path": "runs/iteration3/final/judge_tables_native_v1/exact_prompt_groups.csv",
+      "rows": 97,
+      "sha256": "ee190354b1aa9f610a07c504d00e6eda30f426d3d8c1d1f0f84aa7c0041d9802"
+    }
+  },
+  "inference_or_bootstrap_rerun": false,
+  "interpretation": [
+    "Estimates, family bootstrap intervals, fixes, harms and denominators are copied from the complete audited analyses; no outcome-based selection.",
+    "Participant all pools only the detector's declared model coverage. Published FIBS has Qwen3.5 coverage only.",
+    "The matched-neutral table includes every frozen detector; the prespecified-primary flag identifies adapted_primary and local3_sentence without selecting on outcomes.",
+    "All paired contrasts retain their own matched denominators; do not subtract an unmatched pooled raw baseline cell for a restricted detector.",
+    "Exact-message repeats are descriptive observations within a judge run, not extra independent families. Zero repeated groups means unmeasured repeatability, not zero noise.",
+    "Logical agreement includes cached native jobs. Generation-aware agreement counts only distinct resolved generation receipts; cache-only native repeats leave sampling repeatability unmeasured.",
+    "Original native evaluations and manifest remain immutable. If a native analysis view is used, its sole added field is answer equal to the existing parsed.answer, with original and derived hashes recorded.",
+    "Complete-request hashes and provider/model/fingerprint metadata remain distinct from message equality. Missing metadata is unknown."
+  ]
+}

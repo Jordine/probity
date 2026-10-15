@@ -1,0 +1,53 @@
+{
+  "created_at_utc": "2026-10-15T11:00:02.653633+00:00",
+  "status": "operational_continuation_authorized_before_public_debates",
+  "authorization": "Root explicitly authorized a versioned canonical-job completion gate and continuation, retaining every failed schema attempt under the already frozen two-retry API policy.",
+  "global_freeze": "runs/iteration3/final/global_freeze_v2.json",
+  "trigger": {
+    "stage": "reasoned_preparation",
+    "request_sha256": "a7c690809cbef3570ccf5f073e3a471dd888f1fdf2b3863f3cc7f29193423cb5",
+    "error_type": "ValidationError",
+    "attempt": 0,
+    "finish_reason": "stop",
+    "charged_usd": 0.006985875,
+    "observation": "A full normally stopped response omitted required preparation fields. The frozen API automatically retries the exact request under its existing policy."
+  },
+  "supersedes_operational_gate_only": "The original launcher requires every raw attempted receipt to be valid. The continuation instead requires exactly one valid complete accepted result for each of all 96 canonical jobs, with every failed attempt retained, independently validated as an allowed JSON/schema failure, tied to the identical request/tag, bounded by two retries and included in charges.",
+  "unchanged": "Original global freeze, environment lock, launcher, API and every inference driver remain byte-identical. Same source, models, prompts, schema, token allowances, reasoning, source schedule, public protocol and output paths. No source selection, role-label change, valid-answer regeneration or outcome-based repair.",
+  "canonical_reuse": "All 22 prescribed original responses must retain exact request/hash/tag/raw-response/parsed/usage bytes and incur zero new charge. Existing catalog-price amendment remains the only allowed old/current request difference.",
+  "generation_outputs": {
+    "preparations": "runs/iteration3/final/preparations_v3",
+    "debates": "runs/iteration3/final/debates_v1",
+    "context_checks": "runs/iteration3/final/context_checks_v1"
+  },
+  "completion_gate_output": "runs/iteration3/final/preparation_completion_gate_v1.json",
+  "continuation": "runs/iteration3/environment/run_final_environment_v4.sh",
+  "read_only_auditor_change": "environment3_validity_audit optionally verifies the immutable preparation completion audit and all underlying raw attempts, then uses the unique accepted preparation per job. Every schema failure remains recorded in the audit. This module was not part of the frozen inference code. Original auditor bytes are retained.",
+  "budget": "No new workstream allocation; remaining debate $3.50 and context $0.50 caps, cumulative environment maximum $9.9224631852; complete shared-ledger accounting. Validity prose audit uses previously authorized separate $0.80 judge-controls allocation.",
+  "validation": {
+    "regression_tests_passed": 5,
+    "required_cases": [
+      "schema failure then valid exact-request completion retains failure and charge",
+      "unresolved failed job blocks continuation"
+    ],
+    "additional_cases": [
+      "request drift rejected",
+      "missing or excess retry history rejected",
+      "exposed truncation cannot become a schema retry"
+    ],
+    "bash_syntax": "both new launchers pass"
+  },
+  "fresh_public_debate_outcomes_observed": false,
+  "input_sha256": {
+    "runs/iteration3/final/global_freeze_v2.json": "35ce913f3837eb295d21eb118bfdafa7d9224f2c202aec7890741918e33a522c",
+    "runs/iteration3/environment/final_environment_lock_v2.json": "50df5a5b9653ea568f2ab03df628bb1e8b7be8d2786a7cfb2befc09e62c1180f",
+    "runs/iteration3/environment/run_final_environment_v3.sh": "bc8a609c49fb5dd09ad547528cd7f020055bc2925b6ec4f06becf756f4eef4e6",
+    "probity_benchmark/environment3_preparation_gate.py": "caf3c871ea05df884b019a3125fecfa3b4267914c9df9dd1c8a915dbe98d96e7",
+    "probity_benchmark/environment3_validity_audit.py": "b3ca59d95345cd718029482f35d6433e846f932720dabeb0d2603654ae989bdd",
+    "tests/test_environment3_preparation_gate.py": "10f7ab7a523841323417af88c2cc8f358feb7cce56e61a0750a6b172cef25391",
+    "runs/iteration3/environment/run_final_environment_v4.sh": "9b48d9fac67557759cef115c8a8cdd66d4d2f2c1cc91f6d288e05e94b7e7d652",
+    "runs/iteration3/environment/run_final_validity_audit_v4.sh": "84b2466ddba7d78858859ed7cbf5ef8ccf749ce88378bb0027fa7467a268fc9c",
+    "runs/iteration3/environment/fresh_validity/environment3_validity_audit_before_schema_gate.py": "0fcb21b6d248c8bf6a5635b8ea91cb6c9de76a8e0a104b18160479424f1a3ab3",
+    "runs/iteration3/environment/fresh_validity/preparation_gate_regression_v1.json": "3ab23a108a51cc63eb01d17185bbedd6f0b4897bd59c3e991a98f33963f8fe21"
+  }
+}

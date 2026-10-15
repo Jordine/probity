@@ -1,0 +1,15 @@
+{
+  "schema": "local3_descriptive_clause_recovery_evaluation_scope_v1",
+  "descriptive_only": true,
+  "frozen_evaluator_unchanged": true,
+  "annotation_directory_override": "runs/iteration3/final/local_opening_clause_annotations_v2",
+  "primary_sentence_results_unchanged": true,
+  "artifacts_sha256": {
+    "runs/iteration3/final/local_opening_clause_evaluation_v1/results.json": "c7bf4d4efd6993101f1ca2c174245ab4c610e2cd6d0143b98c872f5b3e52e152",
+    "runs/iteration3/final/local_opening_clause_evaluation_v1/predictions_with_labels.jsonl": "76be57a9ef778af754696d94f0cfbfe7631525f35247ee837332d7b584a13a3a",
+    "runs/iteration3/final/local_truth_by_advocacy_clause_v2.json": "6496dcabfad5ec53764ea6557036e710961e84719a7ca1222cbc73e18f3b0daf",
+    "runs/iteration3/final/local_clause_annotation_completion_audit_v2.json": "1875d23e7e5d5d5a8fc03e86378a7358d117dfd715faa89ae377c193ae854aae",
+    "/root/projects/probity-benchmark/runs/iteration3/local_probes/finish_clause_lossless_recovery_v1.py": "7ed64d3ca9922ba510b5a1650dbe6661a5faf74160662bca823ba25ac65110e4",
+    "runs/iteration3/local_probes/summarize_truth_by_advocacy_v2.py": "62b73c997fc4702a39dcdfa47b78575b82128e54cdab0b70e7500c9eda3b707b"
+  }
+}

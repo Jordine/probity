@@ -1,0 +1,24 @@
+{
+  "frozen_at_utc": "2026-10-15T10:38:41.356444+00:00",
+  "runner": "probity_benchmark/local3_final_runner.py",
+  "runner_sha256": "9dd634ca9e4de1a4d0f1dc870fcad501cf28a18fc104070ec08a6083e15b4c23",
+  "handoff_sha256": "e85087463fc74ebb50bae12f35f07fa25a44479d04c44ed608e95f6611dd0576",
+  "annotation_protocol_sha256": "5b5cc656e619e3f3e033910a6e05f1c17a645a853e699f2b091646d1793d2978",
+  "secondary_protocol_sha256": "6675ab388af9f0da47ff5c978f8bb55938e26e995ba96507b666820127e3158b",
+  "api_source_sha256": "17b1a32470172aedc5bfb93ad53c20c43bd9019e03ba1b963775c6377bb3693d",
+  "commands": {
+    "verify": "PROBITY_PILOT_LEDGER=/root/projects/probity-benchmark/runs/pilot_budget.json PYTHONPATH=. python3 runs/iteration3/local_probes/run_final_local_v3.py verify",
+    "annotate": "PROBITY_PILOT_LEDGER=/root/projects/probity-benchmark/runs/pilot_budget.json PYTHONPATH=. python3 runs/iteration3/local_probes/run_final_local_v3.py annotate",
+    "export": "PROBITY_PILOT_LEDGER=/root/projects/probity-benchmark/runs/pilot_budget.json PYTHONPATH=. python3 runs/iteration3/local_probes/run_final_local_v3.py export",
+    "evaluate": "PROBITY_PILOT_LEDGER=/root/projects/probity-benchmark/runs/pilot_budget.json PYTHONPATH=. python3 runs/iteration3/local_probes/run_final_local_v3.py evaluate"
+  },
+  "secondary_commands": {
+    "plan": "PROBITY_PILOT_LEDGER=/root/projects/probity-benchmark/runs/pilot_budget.json PYTHONPATH=. python3 runs/iteration3/local_probes/run_final_local_v3.py secondary-plan",
+    "annotate": "PROBITY_PILOT_LEDGER=/root/projects/probity-benchmark/runs/pilot_budget.json PYTHONPATH=. python3 runs/iteration3/local_probes/run_final_local_v3.py secondary-annotate",
+    "evaluate": "PROBITY_PILOT_LEDGER=/root/projects/probity-benchmark/runs/pilot_budget.json PYTHONPATH=. python3 runs/iteration3/local_probes/run_final_local_v3.py secondary-evaluate"
+  },
+  "adapter": "runs/iteration3/local_probes/run_final_local_v3.py",
+  "adapter_sha256": "37aaf15449bcecd5fc865af9ee02d8d0d3cd3da0f64d3e5dfde0a7d09bdaac6b",
+  "supersedes": "runs/iteration3/local_probes/final_handoff_v2/runner_lock.json",
+  "scope": "Select versioned dataset/global-freeze paths in immutable handoff v3; execute unchanged frozen experimental modules."
+}

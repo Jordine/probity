@@ -1,0 +1,37 @@
+{
+  "archives": [
+    {
+      "archive": "runs/iteration3/local_probes/retained_verified_features_qwen35_v2.tar.xz",
+      "bytes": 182340820,
+      "sha256": "45ddb2126e8c61353a4c5a4ffbd57247f0d34d66c53f342e1bb0c418b0286385",
+      "verified_files": 234,
+      "retained_manifest_sha256": "2137884a00161ad827420f4a91869cc06ceef21ad2fea9e54ff71ff7b3a56ae7",
+      "source_untouched": true
+    },
+    {
+      "archive": "runs/iteration3/local_probes/retained_verified_features_qwen38_v2.tar.xz",
+      "bytes": 177379064,
+      "sha256": "1bfe32e87cfdc3a91320a5f1b41f12149c18805098c5cb8dfc875b12349c4f08",
+      "verified_files": 234,
+      "retained_manifest_sha256": "b54024cecff9274b0dc3d4916bbb1e6de8196b58130e736c35956f0dbb243a3f",
+      "source_untouched": true
+    },
+    {
+      "archive": "runs/iteration3/local_probes/retained_verified_mixed_features_qwen35_v2.tar.xz",
+      "bytes": 22734892,
+      "sha256": "19db2c94f16dc0665e633614da200a65b02c045d61f3888a25caaa518ce8f076",
+      "verified_files": 40,
+      "retained_manifest_sha256": "612109ccfde06fb7a9b61a32733e2e7043b718cfb5af31b0f62a460a4c53bbf5",
+      "source_untouched": true
+    },
+    {
+      "archive": "runs/iteration3/local_probes/retained_verified_mixed_features_qwen38_v2.tar.xz",
+      "bytes": 22749480,
+      "sha256": "bef2022b5025c8d752f211aa367f0f24816fe08d5a5facf107d0bb98b9005091",
+      "verified_files": 40,
+      "retained_manifest_sha256": "142875867b279735999fe9e76458f9342910fb293a65f318f163ab85f0907a6a",
+      "source_untouched": true
+    }
+  ],
+  "total_bytes": 405204256
+}

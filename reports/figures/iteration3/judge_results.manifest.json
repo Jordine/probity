@@ -1,0 +1,315 @@
+{
+  "schema": "frozen_judge_figure_v1",
+  "synthetic_fixture": false,
+  "inputs_sha256": {
+    "runs/iteration3/final/judge_tables_native_v1/accuracies.csv": "8d482a24e92e7a82274f2b694f12cbe164d7d6d0c5a3d4ff29403383f391c468",
+    "runs/iteration3/final/judge_tables_native_v1/real_minus_neutral.csv": "3aa41770b0a6cb40de5a8cea22dab2a5377a8362e6e1886b40da920fc3e5c0ba",
+    "runs/iteration3/final/judge_tables_haiku_v1/accuracies.csv": "55e6857fa987e9e0d918246a5f84ddeb5eeff873a33dadb23ca3b740afbe0577",
+    "runs/iteration3/final/judge_tables_haiku_v1/real_minus_neutral.csv": "d00031cc2d0d1164f16766f50ef5c9fd0af55db81de8bf1b112235eaa5fda75d",
+    "runs/iteration3/final/judge_tables_opus_v1/accuracies.csv": "02297263d2c5b7dbe60cd85a6a6148ba51c8c118332074a79b404d156765f152",
+    "runs/iteration3/final/judge_tables_opus_v1/real_minus_neutral.csv": "8fd05d86b2d592776127cc87d5285304648e6848571eb67a4c8eafa8c183b394"
+  },
+  "script_sha256": "01e53d2c563e2db9360cca90dfbfe43f35f350b5cbdfb4c234d1916930655247",
+  "cells": [
+    {
+      "judge": "Native Qwen3.5-4B",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "adapted_primary",
+      "mean_pp": 12.5,
+      "ci_low_pp": 0.0,
+      "ci_high_pp": 25.0,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Native Qwen3.5-4B",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "apollo_response_mean",
+      "mean_pp": 16.666666666666664,
+      "ci_low_pp": 4.166666666666666,
+      "ci_high_pp": 33.33333333333333,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Native Qwen3.5-4B",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "apollo_dyl_difference",
+      "mean_pp": 12.5,
+      "ci_low_pp": 0.0,
+      "ci_high_pp": 25.0,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Native Qwen3.5-4B",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "published_fibs_dyl",
+      "mean_pp": 12.5,
+      "ci_low_pp": 0.0,
+      "ci_high_pp": 25.0,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Native Qwen3.5-4B",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "local3_sentence",
+      "mean_pp": -12.5,
+      "ci_low_pp": -25.0,
+      "ci_high_pp": 0.0,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Native Qwen3.5-4B",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "local3_clause",
+      "mean_pp": -16.666666666666664,
+      "ci_low_pp": -33.33333333333333,
+      "ci_high_pp": -4.166666666666666,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Native Qwen3.5-4B",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "local2_frozen_sentence",
+      "mean_pp": 0.0,
+      "ci_low_pp": 0.0,
+      "ci_high_pp": 0.0,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Haiku 5.5",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "adapted_primary",
+      "mean_pp": -4.166666666666666,
+      "ci_low_pp": -12.5,
+      "ci_high_pp": 0.0,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Haiku 5.5",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "apollo_response_mean",
+      "mean_pp": 0.0,
+      "ci_low_pp": 0.0,
+      "ci_high_pp": 0.0,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Haiku 5.5",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "apollo_dyl_difference",
+      "mean_pp": 0.0,
+      "ci_low_pp": 0.0,
+      "ci_high_pp": 0.0,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Haiku 5.5",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "published_fibs_dyl",
+      "mean_pp": 0.0,
+      "ci_low_pp": 0.0,
+      "ci_high_pp": 0.0,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Haiku 5.5",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "local3_sentence",
+      "mean_pp": -4.166666666666666,
+      "ci_low_pp": -12.5,
+      "ci_high_pp": 0.0,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Haiku 5.5",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "local3_clause",
+      "mean_pp": 4.166666666666666,
+      "ci_low_pp": 0.0,
+      "ci_high_pp": 12.5,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Haiku 5.5",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "local2_frozen_sentence",
+      "mean_pp": 0.0,
+      "ci_low_pp": 0.0,
+      "ci_high_pp": 0.0,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Opus 5.5",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "adapted_primary",
+      "mean_pp": 0.0,
+      "ci_low_pp": 0.0,
+      "ci_high_pp": 0.0,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Opus 5.5",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "local3_sentence",
+      "mean_pp": 0.0,
+      "ci_low_pp": 0.0,
+      "ci_high_pp": 0.0,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Native Qwen3.5-4B",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "adapted_primary",
+      "mean_pp": 20.833333333333336,
+      "ci_low_pp": 4.166666666666666,
+      "ci_high_pp": 37.5,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Native Qwen3.5-4B",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "apollo_response_mean",
+      "mean_pp": -8.333333333333332,
+      "ci_low_pp": -29.166666666666668,
+      "ci_high_pp": 12.5,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Native Qwen3.5-4B",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "apollo_dyl_difference",
+      "mean_pp": -12.5,
+      "ci_low_pp": -33.33333333333333,
+      "ci_high_pp": 8.333333333333332,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Native Qwen3.5-4B",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "local3_sentence",
+      "mean_pp": -25.0,
+      "ci_low_pp": -41.66666666666667,
+      "ci_high_pp": -8.333333333333332,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Native Qwen3.5-4B",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "local3_clause",
+      "mean_pp": -8.333333333333332,
+      "ci_low_pp": -20.833333333333336,
+      "ci_high_pp": 0.0,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Native Qwen3.5-4B",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "local2_frozen_sentence",
+      "mean_pp": -12.5,
+      "ci_low_pp": -25.0,
+      "ci_high_pp": 0.0,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Haiku 5.5",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "adapted_primary",
+      "mean_pp": 0.0,
+      "ci_low_pp": -12.5,
+      "ci_high_pp": 12.5,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Haiku 5.5",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "apollo_response_mean",
+      "mean_pp": -8.333333333333332,
+      "ci_low_pp": -29.166666666666668,
+      "ci_high_pp": 12.5,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Haiku 5.5",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "apollo_dyl_difference",
+      "mean_pp": -8.333333333333332,
+      "ci_low_pp": -25.0,
+      "ci_high_pp": 8.333333333333332,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Haiku 5.5",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "local3_sentence",
+      "mean_pp": 8.333333333333332,
+      "ci_low_pp": 0.0,
+      "ci_high_pp": 20.833333333333336,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Haiku 5.5",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "local3_clause",
+      "mean_pp": 4.166666666666666,
+      "ci_low_pp": -8.333333333333332,
+      "ci_high_pp": 16.666666666666664,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Haiku 5.5",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "local2_frozen_sentence",
+      "mean_pp": 0.0,
+      "ci_low_pp": -12.5,
+      "ci_high_pp": 12.5,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Opus 5.5",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "adapted_primary",
+      "mean_pp": 4.166666666666666,
+      "ci_low_pp": 0.0,
+      "ci_high_pp": 12.5,
+      "families": 24,
+      "presentations": 24
+    },
+    {
+      "judge": "Opus 5.5",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "local3_sentence",
+      "mean_pp": 0.0,
+      "ci_low_pp": 0.0,
+      "ci_high_pp": 0.0,
+      "families": 24,
+      "presentations": 24
+    }
+  ]
+}

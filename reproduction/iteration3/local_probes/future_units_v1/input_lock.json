@@ -1,0 +1,21 @@
+{
+  "schema": "future_units_old_dev_lock_v1",
+  "expected_rows": 45,
+  "expected_families": 4,
+  "inputs": {
+    "corpus": {
+      "path": "runs/iteration3/local_probes/natural_twins_verified_v2/corpus.jsonl",
+      "sha256": "fa1819665c9d9043522a1e71b7296eb2f828d6dcec8b4899f02b8e763a52dc72"
+    },
+    "references": {
+      "path": "runs/iteration3/local_probes/references_local3_v1/sentence_references.json",
+      "sha256": "96c2d312a522c208f75d73ec7a7fc03f07e18b330c3a6c5bf5e7f6518f6d2e17"
+    },
+    "worlds": {
+      "path": "runs/iteration3/environment/worlds_dev4.jsonl",
+      "sha256": "ce1ed45a4cce4284456e3ca8200dd7ac4b4065040d9630191485ac011d8a8e20"
+    }
+  },
+  "population": "Exactly the original-world 45 development reference responses, source parents90/112/128/137, already consumed before the current24-family evaluation. No currently unused family source is read.",
+  "operation": "Offline units and full-source annotation payloads only. No label requests, score loading, fitting or metric replacement."
+}

@@ -1,0 +1,205 @@
+{
+  "schema": "probity_environment3_final_lock_v1",
+  "created_at_utc": "2026-10-14T19:49:47.814640+00:00",
+  "status": "FROZEN_PENDING_EXPLICIT_ROOT_RELEASE",
+  "selected_protocol": "explicit_reasoned_evidence_sequential",
+  "selected_module": "probity_benchmark.environment3_packets",
+  "selection_decision": "Root selected the complete validated evidence_dev4_v1 protocol before any public-thinking judge outcome was inspected. Public-thinking results, including later transport recovery, are secondary development diagnostics and cannot change this selection.",
+  "selection_rationale": {
+    "validity": "Complete authentic sources only; 16/16 development source-only knowledge checks, 32/32 complete-input truth diagnostics, 96/96 independently reviewed prose assignment adherence. All48 correct-answer arguments read; central answers and decisive evidence supported, with incidental overclaims preserved in the factual-review receipt.",
+    "concrete_execution": "Both advocates must execute prepared concrete quotations and address the strongest factual contradiction; wrong advocates know the verified authentic answer and may deliberately fabricate evidence for their assigned alternative.",
+    "headroom": "Native Qwen3.5-4B 13/16 baseline to16/16 labelled oracle; exact answer-only Haiku14/16 to16/16. Only4 development families; no statistically secure generalization claim and no selection on a one-error explanatory-format difference.",
+    "runtime": "Thinking-disabled public execution completed128/128 requests with no length/parsing failures and maximum393 output tokens. Public-thinking serialization and long transport stalls remain operationally uncertain; the fresh selection does not wait for those outcomes."
+  },
+  "source": {
+    "dataset": "runs/iteration3/coordinator/holdout_families_source_v4.jsonl",
+    "dataset_sha256": "66495f9c08d4433a8b5e18a77fe8c50a0c4b2f60278577996d972e1e1eced1a1",
+    "source_lock": "runs/iteration3/coordinator/final_source_lock_v2.json",
+    "source_lock_sha256": "694530dbd511dbf70def59c96edb8a0faa902315909b06de5bb44413bf6efeca",
+    "expected_split": "test",
+    "layout": "24 independent complete original source families; no entity-swap requirement or fresh text selected by this agent",
+    "metadata_only_schedule_audit": "runs/iteration3/environment/fresh_schedule_amendment_audit_v2.json"
+  },
+  "participants": [
+    "qwen/qwen3.5-27b",
+    "qwen/qwen3.8-27b"
+  ],
+  "expected_counts": {
+    "source_families": 24,
+    "episodes": 48,
+    "private_preparations": 96,
+    "public_turns": 288,
+    "complete_input_context_diagnostics": 96
+  },
+  "outputs": {
+    "preparations": "runs/iteration3/final/preparations_v1",
+    "debates": "runs/iteration3/final/debates_v1",
+    "context_checks": "runs/iteration3/final/context_checks_v1"
+  },
+  "preparation": {
+    "module": "probity_benchmark.environment3_reasoned_prepare",
+    "arguments": [
+      "--dataset",
+      "runs/iteration3/coordinator/holdout_families_source_v4.jsonl",
+      "--out",
+      "runs/iteration3/final/preparations_v1",
+      "--expected-split",
+      "test",
+      "--models",
+      "qwen/qwen3.5-27b",
+      "qwen/qwen3.8-27b",
+      "--max-tokens",
+      "16384",
+      "--request-timeout-seconds",
+      "900"
+    ],
+    "reasoning": {
+      "enabled": true
+    },
+    "provider_structured_output": true,
+    "max_tokens": 16384,
+    "request_timeout_seconds": 900,
+    "concurrency": 4,
+    "schema_retries": 2,
+    "independent_reasoning_budget": null,
+    "forced_final_prompt": false,
+    "public_action_access": "Each later public action receives the complete parsed preparation JSON brief, exactly as supplied in its actual messages. The earlier independent preparation call reasoning is retained in receipts but was not supplied to the public action."
+  },
+  "public_debate": {
+    "module": "probity_benchmark.environment3_packets",
+    "arguments": [
+      "--dataset",
+      "runs/iteration3/coordinator/holdout_families_source_v4.jsonl",
+      "--out",
+      "runs/iteration3/final/debates_v1",
+      "--expected-split",
+      "test",
+      "--unpaired",
+      "--models",
+      "qwen/qwen3.5-27b",
+      "qwen/qwen3.8-27b",
+      "--protocol",
+      "explicit_reasoned_evidence_sequential",
+      "--prepared-records",
+      "runs/iteration3/final/preparations_v1/preparations.jsonl",
+      "--rounds",
+      "3",
+      "--judge",
+      "anthropic/claude-haiku-5.5"
+    ],
+    "reasoning": {
+      "enabled": false
+    },
+    "provider_structured_output": true,
+    "max_tokens": 8192,
+    "request_timeout_seconds": 300,
+    "concurrency": 4,
+    "schema_retries": 2,
+    "rounds": 3,
+    "visibility": "Sequential complete public history; full authentic source and own full private preparation always present. No source or response truncation.",
+    "assignment": "Red=A, Blue=B; schedule index bit0 swaps option display and bit0 XORbit1 determines first speaker. Both participant models use the same root-frozen schedule.",
+    "schedule_balance": "Exactly6 cases in each displayed-gold A/B \u00d7 first-speaker Red/Blue cell.",
+    "embedded_judge": "The runner retains its development-style explanatory Haiku call for complete receipt continuity. These outputs are secondary diagnostics; final comparisons use the separately frozen judge protocol and identical matched presentation."
+  },
+  "knowledge_controls": {
+    "source_only": "Within each episode, a separate thinking-disabled full-source answer request must equal the source gold before any public generation for that episode.",
+    "source_only_runtime": {
+      "reasoning": {
+        "enabled": false
+      },
+      "provider_structured_output": true,
+      "max_tokens": 8192,
+      "request_timeout_seconds": 300,
+      "concurrency": 4
+    },
+    "context_module": "probity_benchmark.environment3_context_check",
+    "context_arguments": [
+      "--dataset",
+      "runs/iteration3/coordinator/holdout_families_source_v4.jsonl",
+      "--episodes",
+      "runs/iteration3/final/debates_v1",
+      "--out",
+      "runs/iteration3/final/context_checks_v1"
+    ],
+    "context_runtime": {
+      "reasoning": {
+        "enabled": false
+      },
+      "provider_structured_output": true,
+      "max_tokens": 8192,
+      "request_timeout_seconds": 300,
+      "concurrency": 4,
+      "schema_retries": 2
+    },
+    "context_scope": "Replace advocacy system instruction with truthful-source diagnostic; preserve every non-system message from each speaker latest public action, including complete authentic source, preparation and public history. It measures factual answer access, not direct introspection or intention.",
+    "incorrect_context_handling": "Preserve every complete case and report knowledge failures before interpreting probe claims; do not repair or drop cases based on judge outcomes. Primary/validity-stratified reporting is governed by the global preregistration."
+  },
+  "completion_and_provenance": {
+    "gate": "Every accepted API receipt must be valid, finish normally, remain below allowance and pass the current shared exposed forced/truncated/native-finish guard. Complete expected counts required before downstream use. Schema-repair attempts and transport uncertainties stay accounted and are not silently dropped. Launcher requires all receipts valid before advancing stages.",
+    "recovery": "Only exact request body/hash plus complete canonical job tag may reuse a previously complete receipt. No cross-contract public reuse or prompt-changing recovery. Every incomplete batch remains immutable and unscored; complete recovery gets a new output directory.",
+    "context": "Retain full action messages and final JSON. Public thinking is disabled by request; retain any exposed provider reasoning fields and never claim unavailable internal traces or exact API-provider/backend parity. Native feature replay follows the separately frozen root wrapper.",
+    "no_fresh_tuning": "No fresh generation before explicit root release after global freeze. No fresh outcomes change environment, detector, display or source choices."
+  },
+  "known_limits": [
+    "Verified-answer/assigned-answer instructions are strong in-context deception cues.",
+    "Source-informed advocates have an information advantage over source-blind judges.",
+    "Wrong-answer role is not a local factual label; true facts can occur in misleading turns and honest turns can overclaim.",
+    "Development uses4 independent families and correlated paired worlds/repeated turns; oracle success is a positive control, not real detector uplift."
+  ],
+  "budget_policy": {
+    "coordinator_owned_parameters": [
+      "--budget",
+      "PROBITY_FINAL_PREPARATION_BUDGET",
+      "PROBITY_FINAL_DEBATE_BUDGET",
+      "PROBITY_FINAL_CONTEXT_BUDGET"
+    ],
+    "planning_reservations_usd": {
+      "preparation": 3,
+      "debate": 3.5,
+      "context": 0.5
+    },
+    "workstream_ceiling_usd": 10,
+    "cumulative_ceiling_usd": 75,
+    "ledger": "/root/projects/probity-benchmark/runs/pilot_budget.json",
+    "note": "Budget amounts may be reduced or reallocated by the coordinator without changing experimental parameters. Settled charges plus active conservative reservations and each new stage reservation must remain within the workstream and cumulative ceilings."
+  },
+  "launch": {
+    "script": "runs/iteration3/environment/run_final_environment_v1.sh",
+    "verify_only": [
+      "bash",
+      "runs/iteration3/environment/run_final_environment_v1.sh",
+      "--verify-only"
+    ],
+    "release": "Coordinator launches in tmux with the global-freeze JSON path as sole argument. The script verifies this lock is bound by that global freeze and all runtime/source hashes match."
+  },
+  "code_sha256": {
+    "probity_benchmark/environment3_packets.py": "67081506649ce22326ada55a35bad1338f3207cde3afe8c16a2f35b62f5f7e19",
+    "probity_benchmark/environment3_prepared.py": "2612f3a7aa7b7be0db980cf2d27a58d10c66fc0cee28f2f2c2b1b0be19ca3572",
+    "probity_benchmark/environment3_evidence.py": "41c2ed992f662ff9b54028e3342a9c328aa3ab0019df995de581a7ace0ddcfde",
+    "probity_benchmark/environment3_reasoned_prepare.py": "048a0337fa98edfd2e686f6525e4df1cb03c2771f1f3a62c2226469da63aca12",
+    "probity_benchmark/environment3_context_check.py": "270767a296305c4d7deb2944ac0b2e04b551faa5d843d4ca15b1b8c7c20de324",
+    "probity_benchmark/environment3_public.py": "70ed5d3dd64ee9b0c77058d041b26b04cdb50d4b14ff95bb3e7e259d9a8f9d43",
+    "probity_benchmark/api.py": "17b1a32470172aedc5bfb93ad53c20c43bd9019e03ba1b963775c6377bb3693d",
+    "probity_benchmark/budget.py": "f3e16458a5d5285896b10160e7a7d6491bdd86a8a211b7a82b7ef53dd9766f8b",
+    "probity_benchmark/preflight.py": "ae6141cbb60d3f995a6d54dc645bf704e5396066cc9cbfef49fede28b34fa819",
+    "probity_benchmark/run_debates.py": "425b4ff7c5cf2d8611e6eaf308244415b30cc63a537dd65477976cc7314753f5",
+    "probity_benchmark/build_native_judge_jobs.py": "584736909b63ecae13389cef7a761d4b0fb13d9c0626a7a239c7463be76e39ec",
+    "runs/iteration3/environment/run_final_environment_v1.sh": "a909c074d07acde10810fb15ab52cf3c0b4803aefb225c852a6fe0c03c381086"
+  },
+  "development_evidence_sha256": {
+    "runs/iteration3/environment/evidence_dev4_v1/summary.json": "5c0a29248157a250f876242dd86363b9cae384fa28ac084ce874182d187a3078",
+    "runs/iteration3/environment/evidence_context_dev4_v1/summary.json": "89092ce2a5a68042666aaef351e62a737aa62ac14dc119c7a463f1ddeb7817d3",
+    "runs/iteration3/environment/evidence_factual_review_v1.json": "404a931ac02647fa0623d37e79b69752b9aa0e4e9df05b1dbf7476f37005ed0c",
+    "runs/iteration3/environment/reasoned_prepare_v2/summary.json": "a826797df1c056c80ad2d26e23c68f6f7b0a91b2e7e89fc170856974dd224964",
+    "runs/iteration3/judge_controls/evidence_dev4_advocacy_reviewed.json": "f9538b5369d93091e4fe57b248097019a515bae203c6d571e72b0b79c0a17ff9",
+    "runs/iteration3/judge_controls/evidence_dev4_context_receipt_audit_v3.json": "23216bebd8d9f34331d4b21c77935c6533d55aa7c7f03d2e960c0f8097b25eed",
+    "runs/iteration3/judge_controls/native_candidates_v4/analysis.json": "2978f415d0c3b081339f83d5df86aa7fc26494dd487b01ab0f9502ff9b5f0e5d",
+    "runs/iteration3/judge_controls/haiku_reasoned_candidates_v1/paired_analysis.json": "fc3ae0e1ff8398759164ead7e37576a79daae7619aae7f226c889931934eab34",
+    "runs/iteration3/environment/fresh_schedule_amendment_audit_v2.json": "544d2aae20cf45eb5b9fc11b7f50e5963ec7e84b222914af8cf47f524f11ad3e"
+  },
+  "current_api_guard_reaudit": {
+    "complete_development_receipts": 192,
+    "all_passed": true,
+    "api_sha256": "17b1a32470172aedc5bfb93ad53c20c43bd9019e03ba1b963775c6377bb3693d"
+  }
+}
