@@ -1,0 +1,1600 @@
+{
+  "schema": "probity_analysis_plot_collection_v1",
+  "inference_calls": 0,
+  "data_policy": "Existing public aggregates only; no new statistical analysis, omitted measured detector cells, or changed frozen metrics.",
+  "script_sha256": "bdf37cf49098b4cb6a7edd46077cb42b4b35339dbc4319163a97f3f9ecfbac84",
+  "inputs": [
+    {
+      "path": "reports/data/iteration3/judges/real_minus_neutral.csv",
+      "sha256": "f32e387469dbf36cc4d0ba3719a9f4b630f9595faa34f8ac0a07baa812955026"
+    },
+    {
+      "path": "reports/data/iteration3/judges/accuracies.csv",
+      "sha256": "124c8b8de93808e127bd45f70453f209efd34bdf55484e1428509ea2b589ae41"
+    },
+    {
+      "path": "reports/data/iteration3/judges/exact_prompt_summary.csv",
+      "sha256": "5a55bd68405008262439977856e86ecbf7fbe0ebeb2a7ba553ee66402cdf5d38"
+    },
+    {
+      "path": "reports/data/iteration3/response_role_summary_v1.json",
+      "sha256": "8490964acfdc220f37dffff0bd6f8b67007df132399e334b4cc2178b6ba9d63d"
+    },
+    {
+      "path": "reports/data/iteration3/local_truth_by_advocacy_sentence_v2.json",
+      "sha256": "55bc657b22637f5b3b65421cc1d86a7b932611e31d8edce7b72bad6cbf8996f8"
+    }
+  ],
+  "checks": {
+    "pooled_effect_cells": 16,
+    "role_cells": 9,
+    "truth_cells": 4,
+    "primary_sentences": 1977,
+    "paired_effect_equals_fix_minus_harm": true,
+    "paired_effect_equals_accuracy_difference": true,
+    "unknown_in_all_sentence_denominators": true,
+    "unmeasured_noise_distinct_from_zero": true
+  },
+  "figures": [
+    {
+      "stem": "01_primary_uplift",
+      "caption": "The adapted response signal helps the small judge; the new local sentence display harms it.",
+      "plotted_cells": [
+        {
+          "judge": "Qwen/Qwen3.5-4B",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "adapted_primary",
+          "condition": "real",
+          "condition_id": "adapted_primary:real",
+          "reference_condition_id": "adapted_primary:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "0.16666666666666666",
+          "family_bootstrap_ci_low": "0.0625",
+          "family_bootstrap_ci_high": "0.29218749999999244",
+          "fixes": "8",
+          "harms": "0",
+          "real_accuracy": "0.9791666666666666",
+          "neutral_accuracy": "0.8125",
+          "prespecified_primary_signal": "True"
+        },
+        {
+          "judge": "Qwen/Qwen3.5-4B",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "local3_sentence",
+          "condition": "real",
+          "condition_id": "local3_sentence:real",
+          "reference_condition_id": "local3_sentence:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "-0.1875",
+          "family_bootstrap_ci_low": "-0.3125",
+          "family_bootstrap_ci_high": "-0.08333333333333333",
+          "fixes": "0",
+          "harms": "9",
+          "real_accuracy": "0.625",
+          "neutral_accuracy": "0.8125",
+          "prespecified_primary_signal": "True"
+        },
+        {
+          "judge": "anthropic/claude-haiku-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "adapted_primary",
+          "condition": "real",
+          "condition_id": "adapted_primary:real",
+          "reference_condition_id": "adapted_primary:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "-0.020833333333333332",
+          "family_bootstrap_ci_low": "-0.08333333333333333",
+          "family_bootstrap_ci_high": "0.041666666666666664",
+          "fixes": "1",
+          "harms": "2",
+          "real_accuracy": "0.9166666666666666",
+          "neutral_accuracy": "0.9375",
+          "prespecified_primary_signal": "True"
+        },
+        {
+          "judge": "anthropic/claude-haiku-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "local3_sentence",
+          "condition": "real",
+          "condition_id": "local3_sentence:real",
+          "reference_condition_id": "local3_sentence:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "0.020833333333333332",
+          "family_bootstrap_ci_low": "-0.041666666666666664",
+          "family_bootstrap_ci_high": "0.08333333333333333",
+          "fixes": "2",
+          "harms": "1",
+          "real_accuracy": "0.9583333333333334",
+          "neutral_accuracy": "0.9375",
+          "prespecified_primary_signal": "True"
+        },
+        {
+          "judge": "anthropic/claude-opus-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "adapted_primary",
+          "condition": "real",
+          "condition_id": "adapted_primary:real",
+          "reference_condition_id": "adapted_primary:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "0.020833333333333332",
+          "family_bootstrap_ci_low": "0.0",
+          "family_bootstrap_ci_high": "0.0625",
+          "fixes": "1",
+          "harms": "0",
+          "real_accuracy": "0.9791666666666666",
+          "neutral_accuracy": "0.9583333333333334",
+          "prespecified_primary_signal": "True"
+        },
+        {
+          "judge": "anthropic/claude-opus-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "local3_sentence",
+          "condition": "real",
+          "condition_id": "local3_sentence:real",
+          "reference_condition_id": "local3_sentence:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "0.0",
+          "family_bootstrap_ci_low": "0.0",
+          "family_bootstrap_ci_high": "0.0",
+          "fixes": "0",
+          "harms": "0",
+          "real_accuracy": "0.9791666666666666",
+          "neutral_accuracy": "0.9791666666666666",
+          "prespecified_primary_signal": "True"
+        }
+      ],
+      "files": [
+        {
+          "name": "01_primary_uplift.png",
+          "bytes": 164224,
+          "sha256": "287d5c980a630312976ea7f172f367aa8542d27266762f90f387752304d36d18"
+        },
+        {
+          "name": "01_primary_uplift.svg",
+          "bytes": 15022,
+          "sha256": "3c53a85cc17b3e9855994f0ed75c0a2c148c91aa5e04a4fdf55a82b74b2dbd1d"
+        },
+        {
+          "name": "01_primary_uplift.pdf",
+          "bytes": 22735,
+          "sha256": "bb01545de5d8a6af8f8fa31add30de042054c1b0f55d9bf3b767fd199f32e9a0"
+        }
+      ]
+    },
+    {
+      "stem": "02_judge_accuracy",
+      "caption": "The high baseline measures judge answers: 37/48, 43/48 and 45/48 without probe assistance.",
+      "plotted_cells": [
+        {
+          "judge": "Qwen/Qwen3.5-4B",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "",
+          "condition": "none",
+          "condition_id": "none",
+          "n_presentations": "48",
+          "n_families": "24",
+          "n_correct": "37",
+          "accuracy": "0.7708333333333334",
+          "family_bootstrap_ci_low": "0.625",
+          "family_bootstrap_ci_high": "0.8958333333333334"
+        },
+        {
+          "judge": "Qwen/Qwen3.5-4B",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "adapted_primary",
+          "condition": "neutral",
+          "condition_id": "adapted_primary:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "n_correct": "39",
+          "accuracy": "0.8125",
+          "family_bootstrap_ci_low": "0.6666666666666666",
+          "family_bootstrap_ci_high": "0.9375"
+        },
+        {
+          "judge": "Qwen/Qwen3.5-4B",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "adapted_primary",
+          "condition": "real",
+          "condition_id": "adapted_primary:real",
+          "n_presentations": "48",
+          "n_families": "24",
+          "n_correct": "47",
+          "accuracy": "0.9791666666666666",
+          "family_bootstrap_ci_low": "0.9375",
+          "family_bootstrap_ci_high": "1.0"
+        },
+        {
+          "judge": "Qwen/Qwen3.5-4B",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "local3_sentence",
+          "condition": "neutral",
+          "condition_id": "local3_sentence:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "n_correct": "39",
+          "accuracy": "0.8125",
+          "family_bootstrap_ci_low": "0.6666666666666666",
+          "family_bootstrap_ci_high": "0.9375"
+        },
+        {
+          "judge": "Qwen/Qwen3.5-4B",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "local3_sentence",
+          "condition": "real",
+          "condition_id": "local3_sentence:real",
+          "n_presentations": "48",
+          "n_families": "24",
+          "n_correct": "30",
+          "accuracy": "0.625",
+          "family_bootstrap_ci_low": "0.4375",
+          "family_bootstrap_ci_high": "0.7916666666666666"
+        },
+        {
+          "judge": "Qwen/Qwen3.5-4B",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "",
+          "condition": "oracle",
+          "condition_id": "oracle",
+          "n_presentations": "48",
+          "n_families": "24",
+          "n_correct": "48",
+          "accuracy": "1.0",
+          "family_bootstrap_ci_low": "1.0",
+          "family_bootstrap_ci_high": "1.0"
+        },
+        {
+          "judge": "anthropic/claude-haiku-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "",
+          "condition": "none",
+          "condition_id": "none",
+          "n_presentations": "48",
+          "n_families": "24",
+          "n_correct": "43",
+          "accuracy": "0.8958333333333334",
+          "family_bootstrap_ci_low": "0.8125",
+          "family_bootstrap_ci_high": "0.9791666666666666"
+        },
+        {
+          "judge": "anthropic/claude-haiku-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "adapted_primary",
+          "condition": "neutral",
+          "condition_id": "adapted_primary:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "n_correct": "45",
+          "accuracy": "0.9375",
+          "family_bootstrap_ci_low": "0.8541666666666666",
+          "family_bootstrap_ci_high": "1.0"
+        },
+        {
+          "judge": "anthropic/claude-haiku-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "adapted_primary",
+          "condition": "real",
+          "condition_id": "adapted_primary:real",
+          "n_presentations": "48",
+          "n_families": "24",
+          "n_correct": "44",
+          "accuracy": "0.9166666666666666",
+          "family_bootstrap_ci_low": "0.8125",
+          "family_bootstrap_ci_high": "1.0"
+        },
+        {
+          "judge": "anthropic/claude-haiku-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "local3_sentence",
+          "condition": "neutral",
+          "condition_id": "local3_sentence:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "n_correct": "45",
+          "accuracy": "0.9375",
+          "family_bootstrap_ci_low": "0.875",
+          "family_bootstrap_ci_high": "1.0"
+        },
+        {
+          "judge": "anthropic/claude-haiku-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "local3_sentence",
+          "condition": "real",
+          "condition_id": "local3_sentence:real",
+          "n_presentations": "48",
+          "n_families": "24",
+          "n_correct": "46",
+          "accuracy": "0.9583333333333334",
+          "family_bootstrap_ci_low": "0.8958333333333334",
+          "family_bootstrap_ci_high": "1.0"
+        },
+        {
+          "judge": "anthropic/claude-haiku-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "",
+          "condition": "oracle",
+          "condition_id": "oracle",
+          "n_presentations": "48",
+          "n_families": "24",
+          "n_correct": "47",
+          "accuracy": "0.9791666666666666",
+          "family_bootstrap_ci_low": "0.9375",
+          "family_bootstrap_ci_high": "1.0"
+        },
+        {
+          "judge": "anthropic/claude-opus-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "",
+          "condition": "none",
+          "condition_id": "none",
+          "n_presentations": "48",
+          "n_families": "24",
+          "n_correct": "45",
+          "accuracy": "0.9375",
+          "family_bootstrap_ci_low": "0.8333333333333334",
+          "family_bootstrap_ci_high": "1.0"
+        },
+        {
+          "judge": "anthropic/claude-opus-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "adapted_primary",
+          "condition": "neutral",
+          "condition_id": "adapted_primary:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "n_correct": "46",
+          "accuracy": "0.9583333333333334",
+          "family_bootstrap_ci_low": "0.8958333333333334",
+          "family_bootstrap_ci_high": "1.0"
+        },
+        {
+          "judge": "anthropic/claude-opus-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "adapted_primary",
+          "condition": "real",
+          "condition_id": "adapted_primary:real",
+          "n_presentations": "48",
+          "n_families": "24",
+          "n_correct": "47",
+          "accuracy": "0.9791666666666666",
+          "family_bootstrap_ci_low": "0.9375",
+          "family_bootstrap_ci_high": "1.0"
+        },
+        {
+          "judge": "anthropic/claude-opus-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "local3_sentence",
+          "condition": "neutral",
+          "condition_id": "local3_sentence:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "n_correct": "47",
+          "accuracy": "0.9791666666666666",
+          "family_bootstrap_ci_low": "0.9375",
+          "family_bootstrap_ci_high": "1.0"
+        },
+        {
+          "judge": "anthropic/claude-opus-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "local3_sentence",
+          "condition": "real",
+          "condition_id": "local3_sentence:real",
+          "n_presentations": "48",
+          "n_families": "24",
+          "n_correct": "47",
+          "accuracy": "0.9791666666666666",
+          "family_bootstrap_ci_low": "0.9375",
+          "family_bootstrap_ci_high": "1.0"
+        },
+        {
+          "judge": "anthropic/claude-opus-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "",
+          "condition": "oracle",
+          "condition_id": "oracle",
+          "n_presentations": "48",
+          "n_families": "24",
+          "n_correct": "48",
+          "accuracy": "1.0",
+          "family_bootstrap_ci_low": "1.0",
+          "family_bootstrap_ci_high": "1.0"
+        }
+      ],
+      "files": [
+        {
+          "name": "02_judge_accuracy.png",
+          "bytes": 187585,
+          "sha256": "c4347b3e39ef59623aae4ff2cbb3ca3ff89c63389893ffb50c72cb5a733eedfb"
+        },
+        {
+          "name": "02_judge_accuracy.svg",
+          "bytes": 33064,
+          "sha256": "519040c5719fef36b93106dc8db8d6fe7eaa2929b6ac81e382ab232ff604950f"
+        },
+        {
+          "name": "02_judge_accuracy.pdf",
+          "bytes": 25206,
+          "sha256": "c06fe27c68d62a5df10ec3560182cd03a2e3b1835f81a8c08c647be58951f040"
+        }
+      ]
+    },
+    {
+      "stem": "03_all_detector_uplift",
+      "caption": "Every measured detector is retained, including unsuccessful comparisons and unavailable Opus cells.",
+      "plotted_cells": [
+        {
+          "judge": "Qwen/Qwen3.5-4B",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "adapted_primary",
+          "condition": "real",
+          "condition_id": "adapted_primary:real",
+          "reference_condition_id": "adapted_primary:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "0.16666666666666666",
+          "family_bootstrap_ci_low": "0.0625",
+          "family_bootstrap_ci_high": "0.29218749999999244",
+          "fixes": "8",
+          "harms": "0",
+          "real_accuracy": "0.9791666666666666",
+          "neutral_accuracy": "0.8125",
+          "prespecified_primary_signal": "True"
+        },
+        {
+          "judge": "Qwen/Qwen3.5-4B",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "apollo_dyl_difference",
+          "condition": "real",
+          "condition_id": "apollo_dyl_difference:real",
+          "reference_condition_id": "apollo_dyl_difference:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "0.0",
+          "family_bootstrap_ci_low": "-0.14583333333333334",
+          "family_bootstrap_ci_high": "0.16666666666666666",
+          "fixes": "5",
+          "harms": "5",
+          "real_accuracy": "0.8125",
+          "neutral_accuracy": "0.8125",
+          "prespecified_primary_signal": "False"
+        },
+        {
+          "judge": "Qwen/Qwen3.5-4B",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "apollo_response_mean",
+          "condition": "real",
+          "condition_id": "apollo_response_mean:real",
+          "reference_condition_id": "apollo_response_mean:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "0.041666666666666664",
+          "family_bootstrap_ci_low": "-0.10416666666666667",
+          "family_bootstrap_ci_high": "0.1875",
+          "fixes": "6",
+          "harms": "4",
+          "real_accuracy": "0.8541666666666666",
+          "neutral_accuracy": "0.8125",
+          "prespecified_primary_signal": "False"
+        },
+        {
+          "judge": "Qwen/Qwen3.5-4B",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "local2_frozen_sentence",
+          "condition": "real",
+          "condition_id": "local2_frozen_sentence:real",
+          "reference_condition_id": "local2_frozen_sentence:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "-0.0625",
+          "family_bootstrap_ci_low": "-0.125",
+          "family_bootstrap_ci_high": "0.0",
+          "fixes": "0",
+          "harms": "3",
+          "real_accuracy": "0.75",
+          "neutral_accuracy": "0.8125",
+          "prespecified_primary_signal": "False"
+        },
+        {
+          "judge": "Qwen/Qwen3.5-4B",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "local3_clause",
+          "condition": "real",
+          "condition_id": "local3_clause:real",
+          "reference_condition_id": "local3_clause:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "-0.125",
+          "family_bootstrap_ci_low": "-0.20833333333333334",
+          "family_bootstrap_ci_high": "-0.041666666666666664",
+          "fixes": "0",
+          "harms": "6",
+          "real_accuracy": "0.7083333333333334",
+          "neutral_accuracy": "0.8333333333333334",
+          "prespecified_primary_signal": "False"
+        },
+        {
+          "judge": "Qwen/Qwen3.5-4B",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "local3_sentence",
+          "condition": "real",
+          "condition_id": "local3_sentence:real",
+          "reference_condition_id": "local3_sentence:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "-0.1875",
+          "family_bootstrap_ci_low": "-0.3125",
+          "family_bootstrap_ci_high": "-0.08333333333333333",
+          "fixes": "0",
+          "harms": "9",
+          "real_accuracy": "0.625",
+          "neutral_accuracy": "0.8125",
+          "prespecified_primary_signal": "True"
+        },
+        {
+          "judge": "Qwen/Qwen3.5-4B",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "published_fibs_dyl",
+          "condition": "real",
+          "condition_id": "published_fibs_dyl:real",
+          "reference_condition_id": "published_fibs_dyl:neutral",
+          "n_presentations": "24",
+          "n_families": "24",
+          "mean_difference": "0.125",
+          "family_bootstrap_ci_low": "0.0",
+          "family_bootstrap_ci_high": "0.25",
+          "fixes": "3",
+          "harms": "0",
+          "real_accuracy": "0.9583333333333334",
+          "neutral_accuracy": "0.8333333333333334",
+          "prespecified_primary_signal": "False"
+        },
+        {
+          "judge": "anthropic/claude-haiku-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "adapted_primary",
+          "condition": "real",
+          "condition_id": "adapted_primary:real",
+          "reference_condition_id": "adapted_primary:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "-0.020833333333333332",
+          "family_bootstrap_ci_low": "-0.08333333333333333",
+          "family_bootstrap_ci_high": "0.041666666666666664",
+          "fixes": "1",
+          "harms": "2",
+          "real_accuracy": "0.9166666666666666",
+          "neutral_accuracy": "0.9375",
+          "prespecified_primary_signal": "True"
+        },
+        {
+          "judge": "anthropic/claude-haiku-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "apollo_dyl_difference",
+          "condition": "real",
+          "condition_id": "apollo_dyl_difference:real",
+          "reference_condition_id": "apollo_dyl_difference:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "-0.041666666666666664",
+          "family_bootstrap_ci_low": "-0.125",
+          "family_bootstrap_ci_high": "0.041666666666666664",
+          "fixes": "1",
+          "harms": "3",
+          "real_accuracy": "0.8958333333333334",
+          "neutral_accuracy": "0.9375",
+          "prespecified_primary_signal": "False"
+        },
+        {
+          "judge": "anthropic/claude-haiku-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "apollo_response_mean",
+          "condition": "real",
+          "condition_id": "apollo_response_mean:real",
+          "reference_condition_id": "apollo_response_mean:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "-0.041666666666666664",
+          "family_bootstrap_ci_low": "-0.14583333333333334",
+          "family_bootstrap_ci_high": "0.0625",
+          "fixes": "2",
+          "harms": "4",
+          "real_accuracy": "0.875",
+          "neutral_accuracy": "0.9166666666666666",
+          "prespecified_primary_signal": "False"
+        },
+        {
+          "judge": "anthropic/claude-haiku-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "local2_frozen_sentence",
+          "condition": "real",
+          "condition_id": "local2_frozen_sentence:real",
+          "reference_condition_id": "local2_frozen_sentence:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "0.0",
+          "family_bootstrap_ci_low": "-0.0625",
+          "family_bootstrap_ci_high": "0.0625",
+          "fixes": "1",
+          "harms": "1",
+          "real_accuracy": "0.9583333333333334",
+          "neutral_accuracy": "0.9583333333333334",
+          "prespecified_primary_signal": "False"
+        },
+        {
+          "judge": "anthropic/claude-haiku-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "local3_clause",
+          "condition": "real",
+          "condition_id": "local3_clause:real",
+          "reference_condition_id": "local3_clause:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "0.041666666666666664",
+          "family_bootstrap_ci_low": "-0.041666666666666664",
+          "family_bootstrap_ci_high": "0.125",
+          "fixes": "3",
+          "harms": "1",
+          "real_accuracy": "0.9583333333333334",
+          "neutral_accuracy": "0.9166666666666666",
+          "prespecified_primary_signal": "False"
+        },
+        {
+          "judge": "anthropic/claude-haiku-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "local3_sentence",
+          "condition": "real",
+          "condition_id": "local3_sentence:real",
+          "reference_condition_id": "local3_sentence:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "0.020833333333333332",
+          "family_bootstrap_ci_low": "-0.041666666666666664",
+          "family_bootstrap_ci_high": "0.08333333333333333",
+          "fixes": "2",
+          "harms": "1",
+          "real_accuracy": "0.9583333333333334",
+          "neutral_accuracy": "0.9375",
+          "prespecified_primary_signal": "True"
+        },
+        {
+          "judge": "anthropic/claude-haiku-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "published_fibs_dyl",
+          "condition": "real",
+          "condition_id": "published_fibs_dyl:real",
+          "reference_condition_id": "published_fibs_dyl:neutral",
+          "n_presentations": "24",
+          "n_families": "24",
+          "mean_difference": "0.0",
+          "family_bootstrap_ci_low": "0.0",
+          "family_bootstrap_ci_high": "0.0",
+          "fixes": "0",
+          "harms": "0",
+          "real_accuracy": "0.9583333333333334",
+          "neutral_accuracy": "0.9583333333333334",
+          "prespecified_primary_signal": "False"
+        },
+        {
+          "judge": "anthropic/claude-opus-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "adapted_primary",
+          "condition": "real",
+          "condition_id": "adapted_primary:real",
+          "reference_condition_id": "adapted_primary:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "0.020833333333333332",
+          "family_bootstrap_ci_low": "0.0",
+          "family_bootstrap_ci_high": "0.0625",
+          "fixes": "1",
+          "harms": "0",
+          "real_accuracy": "0.9791666666666666",
+          "neutral_accuracy": "0.9583333333333334",
+          "prespecified_primary_signal": "True"
+        },
+        {
+          "judge": "anthropic/claude-opus-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "local3_sentence",
+          "condition": "real",
+          "condition_id": "local3_sentence:real",
+          "reference_condition_id": "local3_sentence:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "0.0",
+          "family_bootstrap_ci_low": "0.0",
+          "family_bootstrap_ci_high": "0.0",
+          "fixes": "0",
+          "harms": "0",
+          "real_accuracy": "0.9791666666666666",
+          "neutral_accuracy": "0.9791666666666666",
+          "prespecified_primary_signal": "True"
+        }
+      ],
+      "files": [
+        {
+          "name": "03_all_detector_uplift.png",
+          "bytes": 224565,
+          "sha256": "b70a633c93c02713ba097f9c9411e0a9aaea0a3f6d5fed9c0564a90ca1e02fb3"
+        },
+        {
+          "name": "03_all_detector_uplift.svg",
+          "bytes": 31400,
+          "sha256": "de119df59956c8a3d86c8b1ac281afa90caa61b79d343d2678b934e5bb7b516c"
+        },
+        {
+          "name": "03_all_detector_uplift.pdf",
+          "bytes": 26284,
+          "sha256": "cf26d32d29ba84fa8af1d5b131c0943f19e91580a91653208aae7a12ccf64fe9"
+        }
+      ]
+    },
+    {
+      "stem": "04_fixes_and_harms",
+      "caption": "The small judge gains eight fixes with the response probe and incurs nine new errors with the sentence probe.",
+      "plotted_cells": [
+        {
+          "judge": "Qwen/Qwen3.5-4B",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "adapted_primary",
+          "condition": "real",
+          "condition_id": "adapted_primary:real",
+          "reference_condition_id": "adapted_primary:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "0.16666666666666666",
+          "family_bootstrap_ci_low": "0.0625",
+          "family_bootstrap_ci_high": "0.29218749999999244",
+          "fixes": "8",
+          "harms": "0",
+          "real_accuracy": "0.9791666666666666",
+          "neutral_accuracy": "0.8125",
+          "prespecified_primary_signal": "True"
+        },
+        {
+          "judge": "Qwen/Qwen3.5-4B",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "apollo_dyl_difference",
+          "condition": "real",
+          "condition_id": "apollo_dyl_difference:real",
+          "reference_condition_id": "apollo_dyl_difference:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "0.0",
+          "family_bootstrap_ci_low": "-0.14583333333333334",
+          "family_bootstrap_ci_high": "0.16666666666666666",
+          "fixes": "5",
+          "harms": "5",
+          "real_accuracy": "0.8125",
+          "neutral_accuracy": "0.8125",
+          "prespecified_primary_signal": "False"
+        },
+        {
+          "judge": "Qwen/Qwen3.5-4B",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "apollo_response_mean",
+          "condition": "real",
+          "condition_id": "apollo_response_mean:real",
+          "reference_condition_id": "apollo_response_mean:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "0.041666666666666664",
+          "family_bootstrap_ci_low": "-0.10416666666666667",
+          "family_bootstrap_ci_high": "0.1875",
+          "fixes": "6",
+          "harms": "4",
+          "real_accuracy": "0.8541666666666666",
+          "neutral_accuracy": "0.8125",
+          "prespecified_primary_signal": "False"
+        },
+        {
+          "judge": "Qwen/Qwen3.5-4B",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "local2_frozen_sentence",
+          "condition": "real",
+          "condition_id": "local2_frozen_sentence:real",
+          "reference_condition_id": "local2_frozen_sentence:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "-0.0625",
+          "family_bootstrap_ci_low": "-0.125",
+          "family_bootstrap_ci_high": "0.0",
+          "fixes": "0",
+          "harms": "3",
+          "real_accuracy": "0.75",
+          "neutral_accuracy": "0.8125",
+          "prespecified_primary_signal": "False"
+        },
+        {
+          "judge": "Qwen/Qwen3.5-4B",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "local3_clause",
+          "condition": "real",
+          "condition_id": "local3_clause:real",
+          "reference_condition_id": "local3_clause:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "-0.125",
+          "family_bootstrap_ci_low": "-0.20833333333333334",
+          "family_bootstrap_ci_high": "-0.041666666666666664",
+          "fixes": "0",
+          "harms": "6",
+          "real_accuracy": "0.7083333333333334",
+          "neutral_accuracy": "0.8333333333333334",
+          "prespecified_primary_signal": "False"
+        },
+        {
+          "judge": "Qwen/Qwen3.5-4B",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "local3_sentence",
+          "condition": "real",
+          "condition_id": "local3_sentence:real",
+          "reference_condition_id": "local3_sentence:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "-0.1875",
+          "family_bootstrap_ci_low": "-0.3125",
+          "family_bootstrap_ci_high": "-0.08333333333333333",
+          "fixes": "0",
+          "harms": "9",
+          "real_accuracy": "0.625",
+          "neutral_accuracy": "0.8125",
+          "prespecified_primary_signal": "True"
+        },
+        {
+          "judge": "Qwen/Qwen3.5-4B",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "published_fibs_dyl",
+          "condition": "real",
+          "condition_id": "published_fibs_dyl:real",
+          "reference_condition_id": "published_fibs_dyl:neutral",
+          "n_presentations": "24",
+          "n_families": "24",
+          "mean_difference": "0.125",
+          "family_bootstrap_ci_low": "0.0",
+          "family_bootstrap_ci_high": "0.25",
+          "fixes": "3",
+          "harms": "0",
+          "real_accuracy": "0.9583333333333334",
+          "neutral_accuracy": "0.8333333333333334",
+          "prespecified_primary_signal": "False"
+        },
+        {
+          "judge": "anthropic/claude-haiku-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "adapted_primary",
+          "condition": "real",
+          "condition_id": "adapted_primary:real",
+          "reference_condition_id": "adapted_primary:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "-0.020833333333333332",
+          "family_bootstrap_ci_low": "-0.08333333333333333",
+          "family_bootstrap_ci_high": "0.041666666666666664",
+          "fixes": "1",
+          "harms": "2",
+          "real_accuracy": "0.9166666666666666",
+          "neutral_accuracy": "0.9375",
+          "prespecified_primary_signal": "True"
+        },
+        {
+          "judge": "anthropic/claude-haiku-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "apollo_dyl_difference",
+          "condition": "real",
+          "condition_id": "apollo_dyl_difference:real",
+          "reference_condition_id": "apollo_dyl_difference:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "-0.041666666666666664",
+          "family_bootstrap_ci_low": "-0.125",
+          "family_bootstrap_ci_high": "0.041666666666666664",
+          "fixes": "1",
+          "harms": "3",
+          "real_accuracy": "0.8958333333333334",
+          "neutral_accuracy": "0.9375",
+          "prespecified_primary_signal": "False"
+        },
+        {
+          "judge": "anthropic/claude-haiku-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "apollo_response_mean",
+          "condition": "real",
+          "condition_id": "apollo_response_mean:real",
+          "reference_condition_id": "apollo_response_mean:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "-0.041666666666666664",
+          "family_bootstrap_ci_low": "-0.14583333333333334",
+          "family_bootstrap_ci_high": "0.0625",
+          "fixes": "2",
+          "harms": "4",
+          "real_accuracy": "0.875",
+          "neutral_accuracy": "0.9166666666666666",
+          "prespecified_primary_signal": "False"
+        },
+        {
+          "judge": "anthropic/claude-haiku-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "local2_frozen_sentence",
+          "condition": "real",
+          "condition_id": "local2_frozen_sentence:real",
+          "reference_condition_id": "local2_frozen_sentence:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "0.0",
+          "family_bootstrap_ci_low": "-0.0625",
+          "family_bootstrap_ci_high": "0.0625",
+          "fixes": "1",
+          "harms": "1",
+          "real_accuracy": "0.9583333333333334",
+          "neutral_accuracy": "0.9583333333333334",
+          "prespecified_primary_signal": "False"
+        },
+        {
+          "judge": "anthropic/claude-haiku-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "local3_clause",
+          "condition": "real",
+          "condition_id": "local3_clause:real",
+          "reference_condition_id": "local3_clause:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "0.041666666666666664",
+          "family_bootstrap_ci_low": "-0.041666666666666664",
+          "family_bootstrap_ci_high": "0.125",
+          "fixes": "3",
+          "harms": "1",
+          "real_accuracy": "0.9583333333333334",
+          "neutral_accuracy": "0.9166666666666666",
+          "prespecified_primary_signal": "False"
+        },
+        {
+          "judge": "anthropic/claude-haiku-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "local3_sentence",
+          "condition": "real",
+          "condition_id": "local3_sentence:real",
+          "reference_condition_id": "local3_sentence:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "0.020833333333333332",
+          "family_bootstrap_ci_low": "-0.041666666666666664",
+          "family_bootstrap_ci_high": "0.08333333333333333",
+          "fixes": "2",
+          "harms": "1",
+          "real_accuracy": "0.9583333333333334",
+          "neutral_accuracy": "0.9375",
+          "prespecified_primary_signal": "True"
+        },
+        {
+          "judge": "anthropic/claude-haiku-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "published_fibs_dyl",
+          "condition": "real",
+          "condition_id": "published_fibs_dyl:real",
+          "reference_condition_id": "published_fibs_dyl:neutral",
+          "n_presentations": "24",
+          "n_families": "24",
+          "mean_difference": "0.0",
+          "family_bootstrap_ci_low": "0.0",
+          "family_bootstrap_ci_high": "0.0",
+          "fixes": "0",
+          "harms": "0",
+          "real_accuracy": "0.9583333333333334",
+          "neutral_accuracy": "0.9583333333333334",
+          "prespecified_primary_signal": "False"
+        },
+        {
+          "judge": "anthropic/claude-opus-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "adapted_primary",
+          "condition": "real",
+          "condition_id": "adapted_primary:real",
+          "reference_condition_id": "adapted_primary:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "0.020833333333333332",
+          "family_bootstrap_ci_low": "0.0",
+          "family_bootstrap_ci_high": "0.0625",
+          "fixes": "1",
+          "harms": "0",
+          "real_accuracy": "0.9791666666666666",
+          "neutral_accuracy": "0.9583333333333334",
+          "prespecified_primary_signal": "True"
+        },
+        {
+          "judge": "anthropic/claude-opus-5.5",
+          "protocol": "explicit_reasoned_evidence_sequential",
+          "split": "test",
+          "participant": "all",
+          "detector": "local3_sentence",
+          "condition": "real",
+          "condition_id": "local3_sentence:real",
+          "reference_condition_id": "local3_sentence:neutral",
+          "n_presentations": "48",
+          "n_families": "24",
+          "mean_difference": "0.0",
+          "family_bootstrap_ci_low": "0.0",
+          "family_bootstrap_ci_high": "0.0",
+          "fixes": "0",
+          "harms": "0",
+          "real_accuracy": "0.9791666666666666",
+          "neutral_accuracy": "0.9791666666666666",
+          "prespecified_primary_signal": "True"
+        }
+      ],
+      "files": [
+        {
+          "name": "04_fixes_and_harms.png",
+          "bytes": 224827,
+          "sha256": "0e2bda6553ab2bedaabc0e6830e36ae728646878330d3c4e4c6bbb4e254054a5"
+        },
+        {
+          "name": "04_fixes_and_harms.svg",
+          "bytes": 31954,
+          "sha256": "7268785a238cb9d06b1c99e6774537f34c3a6b4d36c3cb7edc9810a5e0356df3"
+        },
+        {
+          "name": "04_fixes_and_harms.pdf",
+          "bytes": 24758,
+          "sha256": "a48d8c17ba1ee13b0c7f8927083bea28c47a498cdcb4a0cdf2eb4a5a7c07619c"
+        }
+      ]
+    },
+    {
+      "stem": "05_response_role_detection",
+      "caption": "High role AUROC is a separate measurement from sentence truth and from judge uplift.",
+      "plotted_cells": [
+        {
+          "model": "qwen/qwen3.5-27b",
+          "detector": "adapted_primary",
+          "rows": 144,
+          "positives": 72,
+          "parent_groups": 24,
+          "auroc": 0.9936342592592592,
+          "parent_bootstrap_95_ci": [
+            0.9706741898148148,
+            1.0
+          ]
+        },
+        {
+          "model": "qwen/qwen3.5-27b",
+          "detector": "apollo_response_mean",
+          "rows": 144,
+          "positives": 72,
+          "parent_groups": 24,
+          "auroc": 0.9799382716049383,
+          "parent_bootstrap_95_ci": [
+            0.939236111111111,
+            0.9996141975308641
+          ]
+        },
+        {
+          "model": "qwen/qwen3.5-27b",
+          "detector": "apollo_dyl_difference",
+          "rows": 144,
+          "positives": 72,
+          "parent_groups": 24,
+          "auroc": 0.982638888888889,
+          "parent_bootstrap_95_ci": [
+            0.9363425925925926,
+            1.0
+          ]
+        },
+        {
+          "model": "qwen/qwen3.5-27b",
+          "detector": "apollo_dyl_no",
+          "rows": 144,
+          "positives": 72,
+          "parent_groups": 24,
+          "auroc": 0.6047453703703705,
+          "parent_bootstrap_95_ci": [
+            0.5275848765432098,
+            0.6857638888888888
+          ]
+        },
+        {
+          "model": "qwen/qwen3.5-27b",
+          "detector": "published_fibs_dyl",
+          "rows": 144,
+          "positives": 72,
+          "parent_groups": 24,
+          "auroc": 0.9934413580246914,
+          "parent_bootstrap_95_ci": [
+            0.9706597222222222,
+            1.0
+          ]
+        },
+        {
+          "model": "qwen/qwen3.8-27b",
+          "detector": "adapted_primary",
+          "rows": 144,
+          "positives": 72,
+          "parent_groups": 24,
+          "auroc": 1.0,
+          "parent_bootstrap_95_ci": [
+            0.9999999999999999,
+            1.0
+          ]
+        },
+        {
+          "model": "qwen/qwen3.8-27b",
+          "detector": "apollo_response_mean",
+          "rows": 144,
+          "positives": 72,
+          "parent_groups": 24,
+          "auroc": 0.6666666666666667,
+          "parent_bootstrap_95_ci": [
+            0.550925925925926,
+            0.7851128472222222
+          ]
+        },
+        {
+          "model": "qwen/qwen3.8-27b",
+          "detector": "apollo_dyl_difference",
+          "rows": 144,
+          "positives": 72,
+          "parent_groups": 24,
+          "auroc": 0.6238425925925926,
+          "parent_bootstrap_95_ci": [
+            0.5439718364197531,
+            0.7066020447530865
+          ]
+        },
+        {
+          "model": "qwen/qwen3.8-27b",
+          "detector": "apollo_dyl_no",
+          "rows": 144,
+          "positives": 72,
+          "parent_groups": 24,
+          "auroc": 0.5929783950617284,
+          "parent_bootstrap_95_ci": [
+            0.5202498070987653,
+            0.6747733410493827
+          ]
+        }
+      ],
+      "files": [
+        {
+          "name": "05_response_role_detection.png",
+          "bytes": 187506,
+          "sha256": "dd171ad15a9d0f8682e68015a5db365a566cb355964fd5b03ab8bddb7a2a439e"
+        },
+        {
+          "name": "05_response_role_detection.svg",
+          "bytes": 19838,
+          "sha256": "4c40474c034fcb44ad0e94238aa382b31140e0a65b5c510e7adc02069d4e2c91"
+        },
+        {
+          "name": "05_response_role_detection.pdf",
+          "bytes": 23655,
+          "sha256": "5f8545bcb253eb3d9e57a7bca49bfc63d6f45b92999a569d3e2a458c886e6f57"
+        }
+      ]
+    },
+    {
+      "stem": "06_sentence_truth_coverage",
+      "caption": "Wrong-assigned responses still contain supported claims; correct-assigned responses can contain contradicted claims.",
+      "plotted_cells": [
+        {
+          "participant": "qwen/qwen3.5-27b",
+          "advocate_role": "correct_answer_advocate",
+          "all_units": 499,
+          "responses": 72,
+          "families": 24,
+          "supported": 239,
+          "contradicted": 9,
+          "unknown": 251
+        },
+        {
+          "participant": "qwen/qwen3.5-27b",
+          "advocate_role": "wrong_answer_advocate",
+          "all_units": 468,
+          "responses": 72,
+          "families": 24,
+          "supported": 18,
+          "contradicted": 282,
+          "unknown": 168
+        },
+        {
+          "participant": "qwen/qwen3.8-27b",
+          "advocate_role": "correct_answer_advocate",
+          "all_units": 521,
+          "responses": 72,
+          "families": 24,
+          "supported": 323,
+          "contradicted": 0,
+          "unknown": 198
+        },
+        {
+          "participant": "qwen/qwen3.8-27b",
+          "advocate_role": "wrong_answer_advocate",
+          "all_units": 489,
+          "responses": 72,
+          "families": 24,
+          "supported": 19,
+          "contradicted": 293,
+          "unknown": 177
+        }
+      ],
+      "files": [
+        {
+          "name": "06_sentence_truth_coverage.png",
+          "bytes": 235769,
+          "sha256": "fecb59df1a0f8b9b2995d4366c5c287167db42a441b11c70449f88ea74f59857"
+        },
+        {
+          "name": "06_sentence_truth_coverage.svg",
+          "bytes": 15188,
+          "sha256": "cc7370d2f86fbc0ce04e92876d894a4f70197105849604c4c32463c02f165e44"
+        },
+        {
+          "name": "06_sentence_truth_coverage.pdf",
+          "bytes": 23060,
+          "sha256": "12554d0323c64ed780d7990b92b9e5289abf8546f95da8934075bbbe8e2abae4"
+        }
+      ]
+    },
+    {
+      "stem": "07_repeatability",
+      "caption": "Only Haiku provides distinct repeated generations; three of 265 answer pairs differ, within two of 97 groups.",
+      "plotted_cells": [
+        {
+          "judge": "Qwen/Qwen3.5-4B",
+          "runtime_kind": "native",
+          "measurement_status": "cached_repeats_only_sampling_repeatability_unmeasured",
+          "logical_jobs_total": "1032",
+          "fresh_generations_in_run": "863",
+          "reused_logical_jobs": "169",
+          "generation_receipts_represented": "863",
+          "unresolved_native_cached_origins": "0",
+          "generation_repeated_prompt_groups": "0",
+          "generation_groups_with_answer_disagreement": "0",
+          "generation_matching_answer_pairs": "0",
+          "generation_all_answer_pairs": "0",
+          "generation_pairwise_agreement": "",
+          "logical_repeated_prompt_groups": "97",
+          "logical_jobs_in_repeated_groups": "266",
+          "logical_groups_with_answer_disagreement": "0",
+          "logical_matching_answer_pairs": "265",
+          "logical_all_answer_pairs": "265",
+          "logical_pairwise_agreement": "1.0",
+          "independent_evaluation_families": "24"
+        },
+        {
+          "judge": "anthropic/claude-haiku-5.5",
+          "runtime_kind": "api",
+          "measurement_status": "descriptive_distinct_recorded_generations",
+          "logical_jobs_total": "1032",
+          "fresh_generations_in_run": "1032",
+          "reused_logical_jobs": "0",
+          "generation_receipts_represented": "1032",
+          "unresolved_native_cached_origins": "0",
+          "generation_repeated_prompt_groups": "97",
+          "generation_groups_with_answer_disagreement": "2",
+          "generation_matching_answer_pairs": "262",
+          "generation_all_answer_pairs": "265",
+          "generation_pairwise_agreement": "0.9886792452830189",
+          "logical_repeated_prompt_groups": "97",
+          "logical_jobs_in_repeated_groups": "266",
+          "logical_groups_with_answer_disagreement": "2",
+          "logical_matching_answer_pairs": "262",
+          "logical_all_answer_pairs": "265",
+          "logical_pairwise_agreement": "0.9886792452830189",
+          "independent_evaluation_families": "24"
+        },
+        {
+          "judge": "anthropic/claude-opus-5.5",
+          "runtime_kind": "api",
+          "measurement_status": "no_repeated_generations_unmeasured",
+          "logical_jobs_total": "384",
+          "fresh_generations_in_run": "384",
+          "reused_logical_jobs": "0",
+          "generation_receipts_represented": "384",
+          "unresolved_native_cached_origins": "0",
+          "generation_repeated_prompt_groups": "0",
+          "generation_groups_with_answer_disagreement": "0",
+          "generation_matching_answer_pairs": "0",
+          "generation_all_answer_pairs": "0",
+          "generation_pairwise_agreement": "",
+          "logical_repeated_prompt_groups": "0",
+          "logical_jobs_in_repeated_groups": "0",
+          "logical_groups_with_answer_disagreement": "0",
+          "logical_matching_answer_pairs": "0",
+          "logical_all_answer_pairs": "0",
+          "logical_pairwise_agreement": "",
+          "independent_evaluation_families": "24"
+        }
+      ],
+      "files": [
+        {
+          "name": "07_repeatability.png",
+          "bytes": 204335,
+          "sha256": "3e4533c4b02873ccda4cad6b428d8b0451c04414e7ddc7b8e28be31f17ba9537"
+        },
+        {
+          "name": "07_repeatability.svg",
+          "bytes": 16449,
+          "sha256": "a2889a2dfba466134a09863be5deb8fa2631575dee8085d038944496f00256a1"
+        },
+        {
+          "name": "07_repeatability.pdf",
+          "bytes": 23212,
+          "sha256": "cc62fe4f7563ea3bf556710bcd6ccf85f4aa35d76354e181c4fb5d7c194207b7"
+        }
+      ]
+    }
+  ],
+  "appendix": [
+    {
+      "source": "reports/figures/iteration3/local_sentence_results.svg",
+      "source_sha256": "7a59bacb990040cc7fc1121803ddc930d34e86265ee40306cf45154ce08be23f",
+      "pdf": "appendix_local_sentence_results.pdf"
+    },
+    {
+      "source": "reports/figures/iteration3/local_clause_results.svg",
+      "source_sha256": "0143bd6b1446a05bccf2ab38852f8d628ca9a33618a90786b6702fa314a5e042",
+      "pdf": "appendix_local_clause_results.pdf"
+    },
+    {
+      "source": "reports/figures/iteration3/source_controls.svg",
+      "source_sha256": "5ecad362b00695e70954152953d048077cbc879a107f06fd32678eeceeb7686b",
+      "pdf": "appendix_source_controls.pdf"
+    },
+    {
+      "source": "reports/figures/iteration3/judge_results.svg",
+      "source_sha256": "be0116b5257c683e4025e3f64544a87998e4f416581b9182eab6e847f54fcf99",
+      "pdf": "appendix_judge_results.pdf"
+    }
+  ],
+  "pdf_pages": 11,
+  "output_files": [
+    {
+      "name": "01_primary_uplift.png",
+      "bytes": 164224,
+      "sha256": "287d5c980a630312976ea7f172f367aa8542d27266762f90f387752304d36d18"
+    },
+    {
+      "name": "01_primary_uplift.svg",
+      "bytes": 15022,
+      "sha256": "3c53a85cc17b3e9855994f0ed75c0a2c148c91aa5e04a4fdf55a82b74b2dbd1d"
+    },
+    {
+      "name": "01_primary_uplift.pdf",
+      "bytes": 22735,
+      "sha256": "bb01545de5d8a6af8f8fa31add30de042054c1b0f55d9bf3b767fd199f32e9a0"
+    },
+    {
+      "name": "02_judge_accuracy.png",
+      "bytes": 187585,
+      "sha256": "c4347b3e39ef59623aae4ff2cbb3ca3ff89c63389893ffb50c72cb5a733eedfb"
+    },
+    {
+      "name": "02_judge_accuracy.svg",
+      "bytes": 33064,
+      "sha256": "519040c5719fef36b93106dc8db8d6fe7eaa2929b6ac81e382ab232ff604950f"
+    },
+    {
+      "name": "02_judge_accuracy.pdf",
+      "bytes": 25206,
+      "sha256": "c06fe27c68d62a5df10ec3560182cd03a2e3b1835f81a8c08c647be58951f040"
+    },
+    {
+      "name": "03_all_detector_uplift.png",
+      "bytes": 224565,
+      "sha256": "b70a633c93c02713ba097f9c9411e0a9aaea0a3f6d5fed9c0564a90ca1e02fb3"
+    },
+    {
+      "name": "03_all_detector_uplift.svg",
+      "bytes": 31400,
+      "sha256": "de119df59956c8a3d86c8b1ac281afa90caa61b79d343d2678b934e5bb7b516c"
+    },
+    {
+      "name": "03_all_detector_uplift.pdf",
+      "bytes": 26284,
+      "sha256": "cf26d32d29ba84fa8af1d5b131c0943f19e91580a91653208aae7a12ccf64fe9"
+    },
+    {
+      "name": "04_fixes_and_harms.png",
+      "bytes": 224827,
+      "sha256": "0e2bda6553ab2bedaabc0e6830e36ae728646878330d3c4e4c6bbb4e254054a5"
+    },
+    {
+      "name": "04_fixes_and_harms.svg",
+      "bytes": 31954,
+      "sha256": "7268785a238cb9d06b1c99e6774537f34c3a6b4d36c3cb7edc9810a5e0356df3"
+    },
+    {
+      "name": "04_fixes_and_harms.pdf",
+      "bytes": 24758,
+      "sha256": "a48d8c17ba1ee13b0c7f8927083bea28c47a498cdcb4a0cdf2eb4a5a7c07619c"
+    },
+    {
+      "name": "05_response_role_detection.png",
+      "bytes": 187506,
+      "sha256": "dd171ad15a9d0f8682e68015a5db365a566cb355964fd5b03ab8bddb7a2a439e"
+    },
+    {
+      "name": "05_response_role_detection.svg",
+      "bytes": 19838,
+      "sha256": "4c40474c034fcb44ad0e94238aa382b31140e0a65b5c510e7adc02069d4e2c91"
+    },
+    {
+      "name": "05_response_role_detection.pdf",
+      "bytes": 23655,
+      "sha256": "5f8545bcb253eb3d9e57a7bca49bfc63d6f45b92999a569d3e2a458c886e6f57"
+    },
+    {
+      "name": "06_sentence_truth_coverage.png",
+      "bytes": 235769,
+      "sha256": "fecb59df1a0f8b9b2995d4366c5c287167db42a441b11c70449f88ea74f59857"
+    },
+    {
+      "name": "06_sentence_truth_coverage.svg",
+      "bytes": 15188,
+      "sha256": "cc7370d2f86fbc0ce04e92876d894a4f70197105849604c4c32463c02f165e44"
+    },
+    {
+      "name": "06_sentence_truth_coverage.pdf",
+      "bytes": 23060,
+      "sha256": "12554d0323c64ed780d7990b92b9e5289abf8546f95da8934075bbbe8e2abae4"
+    },
+    {
+      "name": "07_repeatability.png",
+      "bytes": 204335,
+      "sha256": "3e4533c4b02873ccda4cad6b428d8b0451c04414e7ddc7b8e28be31f17ba9537"
+    },
+    {
+      "name": "07_repeatability.svg",
+      "bytes": 16449,
+      "sha256": "a2889a2dfba466134a09863be5deb8fa2631575dee8085d038944496f00256a1"
+    },
+    {
+      "name": "07_repeatability.pdf",
+      "bytes": 23212,
+      "sha256": "cc62fe4f7563ea3bf556710bcd6ccf85f4aa35d76354e181c4fb5d7c194207b7"
+    },
+    {
+      "name": "appendix_local_sentence_results.pdf",
+      "bytes": 192732,
+      "sha256": "9ed33d85962a3bccf325734725299db8e92749d31ebad0279ce022606f0fffcf"
+    },
+    {
+      "name": "appendix_local_clause_results.pdf",
+      "bytes": 191859,
+      "sha256": "3a9265a518f05f8ec4537e24f8beea6fa18b5b1176ca5881e17c649f882b3deb"
+    },
+    {
+      "name": "appendix_source_controls.pdf",
+      "bytes": 18831,
+      "sha256": "f04d29528c1c708e212eeda04d18a2cb30ebc0665dc62043734674caec31eacc"
+    },
+    {
+      "name": "appendix_judge_results.pdf",
+      "bytes": 219713,
+      "sha256": "2f96a8f7c8296fbd8fe5e39aca8ec2da5aae1f1a12d88c46684a712623674d88"
+    },
+    {
+      "name": "probity_analysis_plots.pdf",
+      "bytes": 786258,
+      "sha256": "d7659ce6aa8bdfeeca0bb06ff8591b14c4c50c24a91ec6c08b3a6e8ab9d76b23"
+    }
+  ]
+}
