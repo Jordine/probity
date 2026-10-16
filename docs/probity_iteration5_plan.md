@@ -114,3 +114,28 @@ The frozen source/inclusion inventory SHA256 is
 `06a4e542fba39a187638e5dbddfd93fd0af744c35431f940accdf4f7bc2567b5`.
 Its private sources and complete receipts remain in the versioned iteration-5
 run directory; the public plan does not expose source text or credentials.
+
+## Transport recovery, 16 October 2026
+
+The first preparation batch stopped at 18:19 UTC after one request reached its
+1,800-second transport timeout without returning a response. It retained 135
+accepted private plans; 432 requests had not started. All 142 complete-source
+diagnostics had finished. No debate generation, GPU rental or final judging had
+started. Accounted spending was $1.463401471, including the unanswered request's
+full $0.04767828 cost reservation.
+
+Continue the 433 missing plans in separate, versioned batches. Verify all
+request bodies and canonical job identities against the frozen source and
+request contract before making paid calls, and reuse every accepted response
+exactly. A changed catalog price ceiling must not silently cause a cache miss
+and regenerate an accepted plan. Preserve original attempts, stopped-run
+markers, charges and receipts.
+
+Allow at most six new recovery batches and three transport attempts per missing
+request, including previous attempts, within the original $11 total preparation
+envelope and $45 campaign ceiling. Continue only after each preceding batch
+has drained and its liability is accounted for. Schema, completion, context,
+source and budget failures still require review. The 1,800-second timeout and
+all model, prompt, sampling and token settings remain unchanged. These are
+technical continuations, not additional seeds or independent observations;
+report their attempts and missingness in the final analysis.
