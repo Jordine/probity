@@ -19,6 +19,7 @@ def main():
         "probity-qwen-pilot-20261014",
         "probity-iteration2-20261014",
         "probity-iteration3-20261014",
+        "probity-iteration4-20261016",
     } or instance_id in {55765816, 55942119, 55949393}:
         raise RuntimeError("refusing a rental not owned by this pilot")
     print(json.dumps(receipt), flush=True)

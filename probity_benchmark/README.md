@@ -1,5 +1,11 @@
 # Qwen benchmark pilot harness
 
+The [matched feedback grid](../docs/probity_iteration4_results.md) completes
+A/B/C/D on the same 24 stories with both Qwen 27B models, reusing A/C and B/D
+transcripts exactly. It includes D−A, family-paired intervals and downloadable
+plots. Its scalar scoring queue preserves complete contexts without saving new
+raw activations.
+
 This harness is separate from the legacy TransformerLens package and its pinned
 Transformers version. Use Python 3.11 and separate API/GPU environments; do not
 install the repository's legacy `pyproject.toml` into the Qwen environment.

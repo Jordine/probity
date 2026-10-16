@@ -1,5 +1,10 @@
 # Probity analysis plots
 
+[The completed A/B/C/D feedback grid](../docs/probity_iteration4_results.md)
+adds matched results for both Qwen 27B participants and two judges, including
+D−A, with a [seven-page grid and replay PDF](figures/iteration4/replay_v1/probity_grid_and_replay.pdf).
+The iteration-3 figures below retain their original neutral-display comparisons.
+
 [Download the 11-page PDF](figures/iteration3/analysis_plots_v1/probity_analysis_plots.pdf) · [Download all PNG, SVG and PDF exports](figures/iteration3/analysis_plots_v1/probity_analysis_plots.zip)
 
 These figures use the completed pilot's audited aggregates. The independent unit is the original story family: 48 debate presentations cover 24 families, with both Qwen 27B debater models represented. Intervals resample families and are not adjusted for multiple comparisons. No new inference or statistical fitting was performed for this collection.
