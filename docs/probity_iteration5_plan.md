@@ -139,3 +139,52 @@ source and budget failures still require review. The 1,800-second timeout and
 all model, prompt, sampling and token settings remain unchanged. These are
 technical continuations, not additional seeds or independent observations;
 report their attempts and missingness in the final analysis.
+
+## Reviewed preparation recovery, 16 October 2026
+
+Preparation stopped again with 316 of 568 new plans accepted. All five earlier
+transport timeouts had accepted identical-request retries. One later Alibaba
+response reported 82,150 completion tokens: 81,920 thinking tokens and 230 answer
+tokens. The unchanged runner rejected it for exceeding its cost reservation;
+it would also fail the existing combined-completion token check. The original
+response, invalid status and full $0.128880375 charge are retained.
+
+Alibaba documents `max_tokens` as an answer-token limit for this model, with a
+separate thinking budget. This differs from the runner's combined-token
+assumption; the receipt alone does not establish a provider contract violation.
+See the [Alibaba API reference](https://www.alibabacloud.com/help/en/model-studio/qwen-api-via-openai-chat-completions)
+and [OpenRouter reasoning documentation](https://openrouter.ai/docs/guides/best-practices/reasoning-tokens).
+The request remains out of protocol and is not an accepted observation.
+
+An explicit review permits an identical-request technical retry of that one
+recorded failure, retaining all 316 accepted plans exactly. No general exception
+for over-limit responses is introduced: another nontransport failure stops for
+review. Across the entire history, permit at most three actual paid attempts per
+job and six recovery batches after the original batch. Report first-attempt
+failure, retries, and eventual missingness separately; accepted retries must not
+be described as a sample without retry selection.
+
+Five unanswered requests also have unresolved thinking-token costs. Preserve
+their original allowances and add $0.638976 of conservative liability per
+request, or $3.19488 total. This is an allowance for unknown charges, not measured
+spending. A later successful retry does not resolve the earlier request's cost.
+Before resumption, recorded costs plus these additional allowances are
+$6.812461936 for preparation and $6.981508436 for the campaign.
+
+Reserve every new preparation attempt against its prompt byte bound and the
+frozen model's global context ceiling as a conservative billed-output bound:
+262,144 tokens for Qwen3.5 and 1,000,000 for Qwen3.8, at the unchanged sent price
+ceilings. Admit a request only when recorded costs, unresolved liabilities and
+all concurrent requests fit the remaining original $11 preparation envelope.
+Retain unknown-call allowances after a drained batch; incomplete drainage keeps
+the full batch reservation. These bounds assume the service respects the sent
+price ceilings and published model context limits.
+
+Dispatch unfinished Qwen3.8 preparations before Qwen3.5 preparations so that
+large per-request reservations are feasible while more headroom remains.
+Concurrency may fall below four when the financial gate requires it. This
+changes operational scheduling only: prompts, models, request bodies, sampling,
+the existing acceptance checks and the $45 campaign ceiling remain fixed.
+Coverage within the preparation envelope is not guaranteed; an unaffordable
+next request stops before being sent. Controlling provider-specific thinking
+budgets explicitly is a future protocol change, outside this dataset expansion.
