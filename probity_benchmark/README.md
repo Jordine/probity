@@ -6,6 +6,10 @@ transcripts exactly. It includes D−A, family-paired intervals and downloadable
 plots. Its scalar scoring queue preserves complete contexts without saving new
 raw activations.
 
+The [exact protocol and scope](../docs/probity_iteration4_protocol_scope.md)
+records the private fabrication-plan prompts, original prompt-level differences,
+feedback contents, raw-transcript availability and unfinished comparisons.
+
 This harness is separate from the legacy TransformerLens package and its pinned
 Transformers version. Use Python 3.11 and separate API/GPU environments; do not
 install the repository's legacy `pyproject.toml` into the Qwen environment.
