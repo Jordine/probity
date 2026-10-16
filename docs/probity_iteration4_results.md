@@ -93,8 +93,10 @@ private preparations, three-round protocol and public generation settings
 match each original episode. The private intervention announces score feedback
 and provides only prior public-turn percentiles, running speaker means and an
 optional lower-mean recommendation. Both debaters receive the same available
-history. Openings have no numerical score history, but do receive the new
-availability instruction. The intervention uses in-context feedback; it does
+history. Only the first public turn has no numerical score history; later
+turns, including the second speaker's opening, receive all completed-turn
+scores. The availability instruction is present from the first turn.
+The intervention uses in-context feedback; it does
 not train or update debater weights.
 
 The detector is the previously frozen **adapted response-mean probe**: layer 43
