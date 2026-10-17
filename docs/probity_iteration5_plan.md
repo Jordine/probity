@@ -11,6 +11,13 @@ The previous [cost estimates](probity_cost_plan.md) and
 [machine-readable forecasts](../reports/costs/probity_cost_forecast_v1.json)
 remain saved. Later seed, prompt, probe, display and judge sweeps are deferred.
 
+On 17 October, execution resumed with **560 of the 568 new private plans
+accepted**. These are preparation notes, not completed public debates. All
+284 Qwen3.8 plans were accepted; eight of the 284 Qwen3.5 plans remained. The
+[latest recovery amendment](#approved-continuation-17-october-2026) raises the
+preparation allowance to $13 within the unchanged $45 campaign ceiling.
+The experimental settings below remain fixed.
+
 ## Fixed experiment
 
 Use the completed [iteration-4 protocol](probity_iteration4_protocol_scope.md):
@@ -188,3 +195,37 @@ the existing acceptance checks and the $45 campaign ceiling remain fixed.
 Coverage within the preparation envelope is not guaranteed; an unaffordable
 next request stops before being sent. Controlling provider-specific thinking
 budgets explicitly is a future protocol change, outside this dataset expansion.
+
+## Approved continuation, 17 October 2026
+
+The user approved the remaining-work estimate of **$20–30 additional**, including
+contingency, and approximately **8–14 hours after resumption** if execution is
+healthy. Allow a day when provider failures and reader checks intervene. This
+estimate covers finishing preparations, all remaining public debates and
+scalar scoring, both judges, analysis, plots and reader review. It does not
+cover additional seeds, prompt variants, probes or annotation campaigns.
+
+At approval, known provider-reported charges were **$6.302720676**. Unanswered
+requests retained **$4.82587352** in conservative liability allowances, giving
+**$11.128594196** accounted against the $45 ceiling. These allowances are not
+measured charges and are not released when a later retry succeeds. The earlier
+pilot ledger remains separate. The remaining-work estimate is additional to
+this accounted amount, not a replacement for it.
+
+The amendment raises the preparation-stage ceiling from $11 to **$13**, still
+inside $45. Preserve all 560 accepted plans and all stopped-run evidence.
+The eight missing plans belong to both speakers of four questions under
+Qwen3.5-27B. Resume identical requests serially, with the unchanged 1,800-second
+timeout and acceptance checks. Resume in `preparations_v7`; `preparations_v8`
+is allowed only after one new unanswered transport failure in v7. A second
+new transport failure, or any new nontransport failure, stops new paid work
+for review. The cumulative limit remains three actual attempts per job.
+Every live attempt must fit its full liability reservation before it is sent.
+
+This is an operational continuation of the same experiment. It changes neither
+the source data nor the analysis population, prompts, models, scores, displays
+or successful responses. The additive execution freeze and approval receipt
+record the amendment while preserving all earlier frozen files. GPU rental
+waits for complete preparation, baseline generation, feedback openings and
+full-context preflight. Final reporting must distinguish accepted plans from
+completed debates and judgments, and measured charges from unresolved costs.

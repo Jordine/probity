@@ -10,7 +10,7 @@ and accuracy of local factual labels.
 The [24-family pilot is complete](probity_iteration4_results.md), including its
 plots and a separately reported Haiku replay. The
 [166-question expansion](probity_iteration5_plan.md) is ongoing as of
-16 October 2026. All expansion counts below are targets until its completion
+17 October 2026. All expansion counts below are targets until its completion
 and coverage audit. Do not read pilot plots as expanded results.
 
 ## The two-by-two design
@@ -202,6 +202,16 @@ recovery directories retain old cache hits and failed attempts; they are not
 different scientific samples. These dependencies must accompany any private
 evidence handoff.
 
+The offline [paired transcript inspector](../reports/build_grid5_inspection_pack.py)
+collects the four examples selected before expansion outcomes were available:
+eight trajectories and all their judge views. It requires reviewed completion,
+package and selection hashes, and writes a private HTML file with its evidence
+and provenance. Source text, private plans, actual debater inputs, raw responses
+and judge messages are labeled separately. The inspection layout is not a
+display tested in the experiment. Native compiled messages are retained; the
+native runner did not retain the final serialized prompt text. The inspector
+cannot produce the expanded pack until the completed run passes its checks.
+
 For a plot-only reader with NumPy and Matplotlib, the **completed public pilot**
 can be replotted without API credentials or a GPU:
 
@@ -264,10 +274,11 @@ release must separately report first-attempt success, technical failures,
 accepted retries and missing jobs by model. Retrying an identical request is
 technical continuation, not an extra seed. The rejected 82,150-token private
 preparation remains invalid and charged; a reviewed retry does not erase it.
-Five earlier unanswered requests retain unknown-charge allowances even though
-their retries succeeded. Known charges, unknown liabilities, active batch
-reservations and GPU accounting must be reported separately. The expansion's
-campaign ceiling is $45 and its preparation ceiling is $11.
+At the 17 October continuation approval, seven unanswered attempts retained
+$4.825874 in unknown-charge allowances, including their original reservations.
+Accepted retries do not resolve these costs. Known charges, unknown liabilities,
+active batch reservations and GPU accounting must be reported separately.
+The expansion's campaign ceiling is $45 and its preparation ceiling is $13.
 
 The active campaign extends dataset coverage with the existing probe, display,
 participants and judges. It does not add repeated trajectories, new
