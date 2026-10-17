@@ -1,0 +1,38 @@
+{
+  "created_at_utc": "2026-10-15T11:47:12.142267+00:00",
+  "status": "root_authorized_read_only_alias_recovery_before_final_judge_or_probe_outcomes",
+  "authorization": "Root authorized lossless derived alias interpretation for only the six unresolved jobs, with original90 results and both parent116 wrong answers unchanged. No new inference calls.",
+  "trigger": "28 Qwen3.5 normal-stop strict JSON responses have answer+quotation while frozen provider schema requires answer+evidence. Natural-language instruction requests a quotation without naming evidence. One job exhausted two retries; five retry jobs then stopped. Original strict run is90/96.",
+  "selection_rule": "For only the six jobs without a valid original result, choose earliest complete normal-stop strict JSON containing exactly answer and quotation, with A/B answer and nonempty quotation. Rename quotation to evidence only in derived interpretation. Never inspect correctness or source-string exactness to choose. Preserve all90 originally accepted results, raw valid=false attempts and all charges.",
+  "unchanged": "Global freeze, source, prompts, request bodies, schemas, raw receipts, original summary, models, all48 public debates/288 turns, heads, thresholds, labels and primary inclusion are unchanged. No regeneration or source/outcome selection.",
+  "original_strict_results": {
+    "requested": 96,
+    "accepted": 90,
+    "correct_accepted": 88,
+    "wrong_valid": 2,
+    "format_unresolved": 6,
+    "attempts": 118,
+    "invalid_schema_attempts": 28,
+    "cost_usd": 0.141592475
+  },
+  "derived_output": "runs/iteration3/final/context_alias_v1",
+  "published_context_audit": "runs/iteration3/final/context_receipt_audit_v1.json",
+  "dependent_public_prose_audit": "runs/iteration3/environment/run_final_validity_audit_v5.sh",
+  "paid_audit_contract": "Existing blind advocacy and unresolved-evidence recheck commands unchanged; prior authorized caps$0.5+$0.3 in judge_controls, shared ledger. These audit annotations and never repair public outputs.",
+  "regression_tests_passed": 4,
+  "input_sha256": {
+    "runs/iteration3/final/global_freeze_v2.json": "35ce913f3837eb295d21eb118bfdafa7d9224f2c202aec7890741918e33a522c",
+    "runs/iteration3/environment/final_environment_lock_v2.json": "50df5a5b9653ea568f2ab03df628bb1e8b7be8d2786a7cfb2befc09e62c1180f",
+    "probity_benchmark/environment3_context_check.py": "270767a296305c4d7deb2944ac0b2e04b551faa5d843d4ca15b1b8c7c20de324",
+    "probity_benchmark/api.py": "17b1a32470172aedc5bfb93ad53c20c43bd9019e03ba1b963775c6377bb3693d",
+    "probity_benchmark/environment3_context_alias_audit.py": "5c62a92ad20d0811b39cc5b6d6a194d9b80ecd49945acbfba78e50d72f57c76d",
+    "tests/test_environment3_context_alias_audit.py": "97fab66c81d19049c7a6aca46ac2b07c5faf70d1d6e3c4d1f8f1707fb54271d4",
+    "runs/iteration3/environment/run_final_validity_audit_v5.sh": "c6c5e1f62b7f1daac88c17d64497c3be46a6a462d26ea268b10ccd8bcb456f0a",
+    "runs/iteration3/final/context_checks_v1/requests.jsonl": "01b9c6313d0db08749285191e73e37d76464aa4b2162a7a85dcd92b9920842a9",
+    "runs/iteration3/final/context_checks_v1/results.json": "b913538c6c18d02be0e7a896c41a8cabc604d85db09465c49f6f3be2e7d95942",
+    "runs/iteration3/final/context_checks_v1/summary.json": "efb7130feac9098156a72389fbf4e824ea3158c5b0efcd166c9c294a0f4a88e7",
+    "runs/iteration3/final/debates_v1/summary.json": "0700a95c4ff6d85e231b90246f80f95d0e996df8ecb62438d7d55a829a540f5f",
+    "runs/iteration3/final/complete_input_receipt_audit_v1.json": "b68bb9f230f9cc79dd12b02804cced4ce465fb8ad545af3ff061a0f2f28c3f20",
+    "runs/iteration3/environment/fresh_validity/context_alias_regression_v1.json": "552851fa20f78a05d3df48be3248d07e7dea0be7a3d0021a205ece85221e8acf"
+  }
+}

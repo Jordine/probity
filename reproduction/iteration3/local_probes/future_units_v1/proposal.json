@@ -1,0 +1,77 @@
+{
+  "schema": "future_local_units_and_relations_proposal_v1",
+  "created_at_utc": "2026-10-15T14:37:01.943608+00:00",
+  "status": "offline_scaffold_only_not_frozen_or_authorized_for_paid_calls",
+  "hypothesis_origin": "Current fixed qualitative review identified honorific fragments, open quotation boundaries, and attribution/provider-recipient errors. These are retrospective motivation for a future study, not new confirmatory current-holdout results.",
+  "implementation": "probity_benchmark/local3_future_units.py",
+  "tests": "tests/test_local3_future_units.py",
+  "reproduce": "python3 -m probity_benchmark.local3_future_units --lock runs/iteration3/local_probes/future_units_v1/input_lock.json --out NEW_IMMUTABLE_OUTPUT_DIRECTORY",
+  "data_scope": {
+    "exact_old_reference_rows": 45,
+    "old_source_families": 4,
+    "parent_source_lines": [
+      90,
+      112,
+      128,
+      137
+    ],
+    "fresh_holdout_read_by_dry_run": false,
+    "unused_28_families_read": false,
+    "source_role_gold_or_probe_fields_in_annotation_messages": false,
+    "original_full_source_verified_in_each_original_generation_context": true
+  },
+  "dry_run": {
+    "old_sentence_units": 257,
+    "prospective_units": 274,
+    "rows_with_changed_boundaries": 29,
+    "change_categories": {
+      "unchanged": 16,
+      "merge_honorific_or_quotation_fragments_only": 4,
+      "add_closing_quote_sentence_boundaries_only": 22,
+      "both": 3
+    },
+    "full_character_and_raw_json_coverage": true,
+    "diagnostics": {
+      "abbreviation_boundary_suppressed": 52
+    },
+    "full_sources_and_arguments_staged": 45,
+    "api_calls": 0,
+    "labels_created": 0,
+    "bytes_in_payloads_and_units": 1919517
+  },
+  "future_label_design": [
+    "Keep a quote-aware display unit as context; enumerate every atomic proposition rather than assuming one whole quotation is one fact.",
+    "Separately assess accurate quotation content, attributed speaker or actor, and the surrounding claimed relationship.",
+    "For a transfer relation, explicitly bind provider, recipient and transferred object; unresolved roles remain unknown.",
+    "Require exact source paragraph/character evidence and full-argument assertion scope; mechanical evidence validation does not establish semantic entailment.",
+    "Preserve mixed units, disagreement, missing assertions and unaccepted units in coverage. Preserve full reasons with no arbitrary character limit.",
+    "Do not derive factual truth or deceptive intent from assigned advocacy or answer choice."
+  ],
+  "next_development_steps": [
+    "Review the complete45response parser outputs, including abbreviations and post-quotation attribution; current regression fixtures are structural examples, not human validation of every natural unit.",
+    "In a separately approved development study, annotate all staged units blind to role/gold/probe scores with explicit atomic relation fields; compare agreement, unresolved coverage and evidence correctness before training.",
+    "Use the environment development-only coherent source-world pairs for identical-text factual interventions and counterbalance relation directions and unit position; keep family grouping intact.",
+    "If development warrants another model fit, predeclare candidates, select only on development families, and compare against old head, text, random-direction, position/length and response-broadcast controls.",
+    "Freeze the next unit definition, aggregation, detector and evaluation before a new untouched test set is opened. The existing24-family results cannot validate a hypothesis derived from their inspection."
+  ],
+  "runtime_before_any_future_calls": [
+    "Recount every complete input and prospective output, including atomic proposition multiplicity, model context allowance, transport timeout and worst-case reservation.",
+    "Re-extract compatible full-context features if new unit boundaries require unavailable token pools; do not approximate arbitrary new units from old sentence means.",
+    "Keep full sources, arguments, every unit, diagnostics and unknown/disagreement coverage; preserve normal-stop receipts and treat truncated generations as incomplete."
+  ],
+  "limits": [
+    "A heuristic quotation-aware unit is not necessarily an atomic claim.",
+    "Uppercase post-quotation attribution, abbreviations, ambiguous apostrophes and malformed quotes still require review.",
+    "Unit enumeration completeness and evidence entailment cannot be established by mechanical validation.",
+    "Current holdout motivated these future hypotheses; no confirmatory claim or current metric is recomputed.",
+    "Future arbitrary unit pools require compatible token-level features or new full-context extraction, independent annotation and a new freeze; current pooled sentence vectors are insufficient."
+  ],
+  "current_experiment_changes": [],
+  "bound_artifacts": {
+    "probity_benchmark/local3_future_units.py": "a1f0c8d41e780155f6be13d4908641cfa68b23a519dc0a311def480961612fd7",
+    "tests/test_local3_future_units.py": "d47decb15764c23e71ae49d9dc74affc85e981e07a31c7d2c9203cd1dc44383b",
+    "runs/iteration3/local_probes/future_units_v1/input_lock.json": "ce9c68d1b31a27093d840aae3ce89d4c6f497a3a2a0bd7eca62abe548d1817be",
+    "runs/iteration3/local_probes/future_units_v1/test_receipt.json": "482207b605c28bf04a8281f41f17738f05b0398045e0d444e2369a382914a308",
+    "runs/iteration3/local_probes/future_units_v1/dry_run_v1/summary.json": "fac6f4d1a329f5a61b98f49f0277ef56b967b19f095b69b6cfb37afd02414316"
+  }
+}

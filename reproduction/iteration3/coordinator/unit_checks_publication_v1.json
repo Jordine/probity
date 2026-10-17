@@ -1,0 +1,40 @@
+{
+  "tests": 122,
+  "errors": 0,
+  "failures": 0,
+  "skipped": 0,
+  "success": true,
+  "duration_seconds": 1.3643872737884521,
+  "modules": [
+    "tests/test_api_recovery.py",
+    "tests/test_benchmark_preflight.py",
+    "tests/test_context_twins.py",
+    "tests/test_controls3.py",
+    "tests/test_diagnostic_debates.py",
+    "tests/test_environment3_context_alias_audit.py",
+    "tests/test_environment3_packets.py",
+    "tests/test_environment3_preparation_gate.py",
+    "tests/test_environment3_public.py",
+    "tests/test_generation_alignment.py",
+    "tests/test_judge3_controls.py",
+    "tests/test_judge3_exports.py",
+    "tests/test_judge3_generation_audit.py",
+    "tests/test_judge_assistance.py",
+    "tests/test_judge_protocol.py",
+    "tests/test_local3_controls.py",
+    "tests/test_name_aliases.py",
+    "tests/test_pilot_budget.py",
+    "tests/test_preparation_recovery.py",
+    "tests/test_probe_display.py",
+    "tests/test_qwen_padding.py",
+    "tests/test_returned_reasoning.py",
+    "tests/test_silver_annotations.py",
+    "tests/test_source_families.py",
+    "tests/test_token_objectives.py",
+    "tests/test_world_validation_contract.py"
+  ],
+  "excluded": {
+    "tests/test_pipeline_integrity.py": "Legacy pytest/torch module cannot import in this CPU VPS; same recorded limitation as prior suite."
+  },
+  "log_sha256": "f33e03c147e4026274e88f47b1daa225d2fe1853c5003fb5bd44fcb2291c8726"
+}

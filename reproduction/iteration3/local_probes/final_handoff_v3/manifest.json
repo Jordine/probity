@@ -1,0 +1,25 @@
+{
+  "dataset": "runs/iteration3/coordinator/holdout_families_source_v5.jsonl",
+  "dataset_sha256": "57788f14021d2c6f2e75313b2b0d36c22f3a3d74572ec57d9b4189a5f1b7e45c",
+  "global_freeze": "runs/iteration3/final/global_freeze_v2.json",
+  "required_status": "frozen_before_fresh_outcomes",
+  "episodes": "runs/iteration3/final/debates_v1",
+  "expected_episodes": 48,
+  "expected_turns": 288,
+  "annotation_out": "runs/iteration3/final/local_sentence_annotations_v1",
+  "score_out": "runs/iteration3/final/local_all_unit_scores_v1",
+  "local3_bundle_out": "runs/iteration3/final/local3_bundles_v1",
+  "local2_bundle_out": "runs/iteration3/final/local2_bundles_v1",
+  "evaluation_out": "runs/iteration3/final/local_sentence_evaluation_v1",
+  "annotation_api_cap_usd": 8,
+  "release": "Do not launch until explicit root release, in addition to freeze receipt gates.",
+  "spec_sha256": {
+    "all_unit_score_spec.json": "cb51d8b4fcad14c61f233a2a960b778e374d3cb13173a31e7bacca35d174d814",
+    "local3_bundle_spec.json": "6243caeb546765c3f6d2517dbc4853638b10c1ce1078dc721568c225a4cb162e",
+    "local2_bundle_spec.json": "f39d4a2e429e8e75dd95ce14f82b538f2440efd14f2fecc334aac67647b7891e"
+  },
+  "annotation_protocol_lock": "runs/iteration3/local_probes/fresh_annotation_protocol_lock_v2.json",
+  "secondary_annotation_protocol_lock": "runs/iteration3/local_probes/secondary_clause_protocol_lock_v2.json",
+  "runtime_amendment": "Path-only source amendment before fresh debate outcomes: use source corpus v5 with only parent114 appended non-narrative question/options/answer footer removed. Original v4 corpus and source-control outcomes remain preserved and disclosed. All 24 families, model/spec/head/reference choices, full narrative text, annotation instructions/schema/units/budgets/output allowance and evaluation rules remain unchanged.",
+  "supersedes": "runs/iteration3/local_probes/final_handoff_v2/manifest.json"
+}

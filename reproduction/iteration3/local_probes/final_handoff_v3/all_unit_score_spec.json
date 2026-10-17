@@ -1,0 +1,30 @@
+{
+  "models": [
+    {
+      "participant": "qwen/qwen3.5-27b",
+      "head": "runs/iteration3/local_probes/fitted_qwen35_v2/heads.pt",
+      "reference_features": "runs/iteration3/local_probes/verified_features_qwen35_v2",
+      "evaluation_features": [
+        "runs/iteration3/final/features_qwen35"
+      ],
+      "old_head": "runs/iteration2/fitted_local_qwen35_adjudicated/heads.pt",
+      "response_head": "runs/iteration2/fitted_response_qwen35/heads.pt",
+      "text_control": "runs/iteration3/local_probes/fitted_qwen35_v2/text_control.joblib",
+      "local_reference_bundle": "runs/iteration3/local_probes/references_local3_v1/sentence_references.json",
+      "old_reference_bundle": "runs/iteration3/local_probes/references_local2_v1/sentence_references.json"
+    },
+    {
+      "participant": "qwen/qwen3.8-27b",
+      "head": "runs/iteration3/local_probes/fitted_qwen38_v2/heads.pt",
+      "reference_features": "runs/iteration3/local_probes/verified_features_qwen38_v2",
+      "evaluation_features": [
+        "runs/iteration3/final/features_qwen38"
+      ],
+      "old_head": "runs/iteration2/fitted_local_qwen38_adjudicated/heads.pt",
+      "response_head": "runs/iteration2/fitted_response_qwen38/heads.pt",
+      "text_control": "runs/iteration3/local_probes/fitted_qwen38_v2/text_control.joblib",
+      "local_reference_bundle": "runs/iteration3/local_probes/references_local3_v1/sentence_references.json",
+      "old_reference_bundle": "runs/iteration3/local_probes/references_local2_v1/sentence_references.json"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "schema": "local3_fixed_text_control_provenance_v1",
+  "created_at_utc": "2026-10-15T11:25:39.241774+00:00",
+  "source_smoke_manifest": "runs/iteration3/local_probes/score_units_smoke_v1/manifest.json",
+  "source_smoke_manifest_sha256": "d265b1b94e3736eb84034c43f437d96153a0505badebccbe7f14e3bdc713b749",
+  "artifacts": [
+    {
+      "participant": "qwen/qwen3.5-27b",
+      "path": "runs/iteration3/local_probes/fitted_qwen35_v2/text_control.joblib",
+      "sha256": "a844bc0b5c2900d8183319863ae6ee8d7826278ef9c7472351cdce3a385e7130",
+      "matches_pre_freeze_smoke_receipt": true
+    },
+    {
+      "participant": "qwen/qwen3.8-27b",
+      "path": "runs/iteration3/local_probes/fitted_qwen38_v2/text_control.joblib",
+      "sha256": "23c7c6bde25f4e234d224d43f19bea94039314f97edb74adf239370c3cfc42b4",
+      "matches_pre_freeze_smoke_receipt": true
+    }
+  ],
+  "scope": "No text-control fit or selection changed; both exact joblib bytes match the old-development all-unit smoke receipt generated before global freeze. Recheck these hashes on the GPU host before final export."
+}

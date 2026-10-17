@@ -1,0 +1,40 @@
+{
+  "stages": [
+    {
+      "stage": "sentence",
+      "complete_payloads_checked": 104,
+      "rows": 288,
+      "units": 1977,
+      "changed_payload_rejected": true
+    },
+    {
+      "stage": "clause",
+      "complete_payloads_checked": 50,
+      "rows": 48,
+      "units": 771,
+      "changed_payload_rejected": true
+    }
+  ],
+  "body_checks": [
+    {
+      "model": "qwen/qwen3.8-27b",
+      "only_max_tokens_changed": true,
+      "exact_reservation_increase_usd": 0.0360448
+    },
+    {
+      "model": "anthropic/claude-opus-5.5",
+      "only_max_tokens_changed": true,
+      "exact_reservation_increase_usd": 0.32768
+    }
+  ],
+  "missing_release_rejected": true,
+  "unreleased_secondary_rejected": true,
+  "schema": "local3_annotation_allowance_offline_checks_v2",
+  "amendment_sha256": "83dd1b36816c8a36f631073b16891cbd825dab6891cbc1aa85d59f49103d174e",
+  "adapter_sha256": "0e8f776293fe40518440627dfca70b937bea61d1db318de0c589d8cf86f56511",
+  "check_source_sha256": "acf56eff164afe70cd7e53590e555d3095baec688f47d1231bca6cb0ccdf2c03",
+  "paid_calls": 0,
+  "model_inference_performed": false,
+  "temporary_fake_unknown_annotations_removed": true,
+  "scope": "All 154 complete frozen payloads exercised through unchanged annotation modules using temporary fake transport. Four synthetic API-body checks confirm only max_tokens changes in outgoing bodies and reservation arithmetic follows the increased allowance. Both constructor fixtures require the reviewed 1200-second transport timeout. No real labels, fitting or selection occurred."
+}

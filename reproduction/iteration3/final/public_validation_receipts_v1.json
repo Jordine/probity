@@ -1,0 +1,144 @@
+{
+  "schema": "probity_public_validation_receipts_v1",
+  "created_at_utc": "2026-10-15T15:04:09.406430+00:00",
+  "report": {
+    "path": "docs/probity_iteration3_results.md",
+    "bytes": 34276,
+    "sha256": "98885372f7054a7152253273230cce8591be9eda0992911761c52152db96965c"
+  },
+  "final_semantic_review": {
+    "path": "runs/iteration3/environment/publication_audit_v1/final_report_semantic_review_v2.json",
+    "bytes": 5867,
+    "sha256": "76f3de856a6c8eed9cccefaa40e08a1e1d9de8ab70721cc5490bea79ade3547b"
+  },
+  "page_receipts": [
+    {
+      "path": "runs/iteration3/final/page_result_references_v1.json",
+      "bytes": 1566,
+      "sha256": "1e998f15b17124dde34cbfd5e0d99cd4755736ba836cc82fa4eeac57b7faa5c4",
+      "references": [
+        {
+          "kind": "sentence_plot",
+          "mime_type": "image/png",
+          "byte_size": 205782,
+          "sha256": "64c065c81ca62c956ac83e84dac87a917d9ecaac09419c673b6b3ff2d628a788",
+          "file_access_confirmed": true,
+          "is_image": true
+        },
+        {
+          "kind": "transcript_inspector",
+          "mime_type": "text/html",
+          "byte_size": 5060089,
+          "sha256": "b814a1a396452f5b77b355d3aae09d903c40e68e87afa462da3ae84b824b91fa",
+          "file_access_confirmed": true,
+          "is_image": false
+        }
+      ],
+      "saved_edit_sequence": null,
+      "scope": "Preserved file-reference and edit receipts; private Page and Library identifiers omitted. This projection does not claim a new Page readback."
+    },
+    {
+      "path": "runs/iteration3/final/page_judge_result_references_v1.json",
+      "bytes": 3681,
+      "sha256": "a1fe7317372b9e7dde5ff7de8548933322a4089fe1cd79b7bb79dd482bf1379e",
+      "references": [
+        {
+          "kind": "judge_figure",
+          "mime_type": "image/png",
+          "byte_size": 210714,
+          "sha256": "0769acc23c2a958a62ce18bf32fd40dbc53477342679a609df3aa80d8f8528d3",
+          "file_access_confirmed": true,
+          "is_image": true
+        }
+      ],
+      "saved_edit_sequence": 15,
+      "scope": "Preserved file-reference and edit receipts; private Page and Library identifiers omitted. This projection does not claim a new Page readback."
+    },
+    {
+      "path": "runs/iteration3/final/page_clause_result_references_v1.json",
+      "bytes": 1709,
+      "sha256": "3487c3372af8ee9e15fce6d99442e413ff4f9c5959e8d05b643bfe375f00648b",
+      "references": [
+        {
+          "kind": "reference",
+          "mime_type": "image/png",
+          "byte_size": 202020,
+          "sha256": "72e0c3437a560ea4a8436a38c3dfca3508d4e858b9f6758b2fa34253941630fb",
+          "file_access_confirmed": true,
+          "is_image": true
+        }
+      ],
+      "saved_edit_sequence": 16,
+      "scope": "Preserved file-reference and edit receipts; private Page and Library identifiers omitted. This projection does not claim a new Page readback."
+    }
+  ],
+  "visual_receipts": [
+    {
+      "path": "runs/iteration3/final/report_visual_review_v1.json",
+      "bytes": 828,
+      "sha256": "c99312135d56ad668af54578a1d064001a49342a90585bd7166a5774f4f43ef1"
+    },
+    {
+      "path": "runs/iteration3/final/root_clause_figure_review_v1.json",
+      "bytes": 548,
+      "sha256": "6b91029f2ff0a7a77a795f5c3c5f6de88d509014868cb06077f83151cab9e426"
+    },
+    {
+      "path": "runs/iteration3/final/judge_public_figure_review_v1.json",
+      "bytes": 2603,
+      "sha256": "1ced85f6f4e7a993b6442140f18f8ba92ea069a6eb89b17106bb8c32cee9cb91"
+    },
+    {
+      "path": "runs/iteration3/coordinator/corrected_source_plot_visual_review_v1.json",
+      "bytes": 382,
+      "sha256": "601faaa27200bf8a229816daccf73671a1e3b812d18720189f36a611d7625387"
+    }
+  ],
+  "retention_receipts": [
+    {
+      "path": "runs/iteration3/final/drive_retained_features_qwen35_v1.json",
+      "bytes": 2022,
+      "sha256": "ea59fd0afa83eb5527541ffd4e540e8a3b2babfc36d038b8aecdd0e5a42399e2"
+    },
+    {
+      "path": "runs/iteration3/final/drive_retained_features_qwen38_v1.json",
+      "bytes": 2022,
+      "sha256": "30cacad2788dd48b5bdc8596fed2d65abf296d272b1592909d3bc9abd77ff43e"
+    },
+    {
+      "path": "runs/iteration3/final/drive_retention_metadata_readback_v1.json",
+      "bytes": 842,
+      "sha256": "9ef1f65af81ad2d906783c57e7a811070f672d50da21d1af1cf51f7afc56f818"
+    },
+    {
+      "path": "runs/iteration3/coordinator/storage_offload_v1/development_qwen35/verified_archive.json",
+      "bytes": 1974,
+      "sha256": "3a6ed5eb3c57b3f221c6806e492838f8cbc5598fec6510a85220aad28f710c9f"
+    },
+    {
+      "path": "runs/iteration3/coordinator/drive_development_archive_parts_v1.json",
+      "bytes": 1649,
+      "sha256": "a4a9826447817ba68252859ed15b9156478c60caede05e3cbac83c4c2b025059"
+    },
+    {
+      "path": "runs/iteration3/coordinator/storage_offload_v1/portable_iteration2/eviction_receipt.json",
+      "bytes": 1030,
+      "sha256": "08dabf6498a54d632b5095974f3f8e84499e6216e10479a07b69aca8d521e82f"
+    },
+    {
+      "path": "runs/iteration3/coordinator/storage_offload_v1/initial_pilot/member_eviction_receipt.json",
+      "bytes": 1026,
+      "sha256": "be34e2540993d9eafcac27ce857e9d8b49139ba92ea97247fe8a7a199ec7537e"
+    }
+  ],
+  "retention_summary": {
+    "primary_archive_parts": 14,
+    "historical_archive_parts": 51,
+    "primary_archive_count": 4,
+    "historical_archive_count": 2,
+    "original_receipts_unchanged": true,
+    "all_separately_retained_archive_parts_independently_download_verified": true,
+    "private_retrieval_identifiers_omitted": true
+  },
+  "limits": "Original receipts remain private where they contain retrieval references. Safe review records and public outputs are included separately; hashes bind each exact original receipt."
+}

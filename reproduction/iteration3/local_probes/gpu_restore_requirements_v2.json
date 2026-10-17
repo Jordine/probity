@@ -1,0 +1,224 @@
+{
+  "schema": "local3_gpu_restore_requirements_v2",
+  "created_at_utc": "2026-10-15T11:33:01.290006+00:00",
+  "verified_archive_bytes": 405204256,
+  "needed_archives": [
+    {
+      "path": "runs/iteration3/local_probes/retained_verified_features_qwen35_v2.tar.xz",
+      "sha256": "45ddb2126e8c61353a4c5a4ffbd57247f0d34d66c53f342e1bb0c418b0286385",
+      "bytes": 182340820
+    },
+    {
+      "path": "runs/iteration3/local_probes/retained_verified_features_qwen38_v2.tar.xz",
+      "sha256": "1bfe32e87cfdc3a91320a5f1b41f12149c18805098c5cb8dfc875b12349c4f08",
+      "bytes": 177379064
+    }
+  ],
+  "needed_archive_bytes": 359719884,
+  "small_artifacts": [
+    "runs/iteration3/local_probes/final_handoff_v2",
+    "runs/iteration3/local_probes/final_handoff_v3",
+    "runs/iteration3/local_probes/references_local3_v1",
+    "runs/iteration3/local_probes/references_local2_v1",
+    "runs/iteration3/local_probes/local_artifact_lock_v1.json",
+    "runs/iteration3/local_probes/fresh_annotation_protocol_lock_v2.json",
+    "runs/iteration3/local_probes/secondary_clause_protocol_lock_v2.json",
+    "runs/iteration3/local_probes/run_final_local_v3.py",
+    "runs/iteration3/local_probes/restore_reference_views_v1.py",
+    "runs/iteration3/local_probes/audit_fresh_local_features_v1.py",
+    "runs/iteration3/local_probes/feature_audit_unit_checks_v1.json",
+    "runs/iteration3/local_probes/text_control_provenance_v1.json",
+    "runs/iteration3/local_probes/historical_long_alignment_review_v1.json",
+    "runs/iteration3/final/global_freeze.json",
+    "runs/iteration3/final/global_freeze_v2.json",
+    "runs/iteration3/coordinator/feature_completion_policy_v1.json",
+    "runs/iteration3/coordinator/holdout_families_source_v5.jsonl",
+    "runs/iteration3/coordinator/source_family_map.json",
+    "runs/iteration3/local_probes/fitted_qwen35_v2/heads.pt",
+    "runs/iteration3/local_probes/fitted_qwen35_v2/text_control.joblib",
+    "runs/iteration2/fitted_local_qwen35_adjudicated/heads.pt",
+    "runs/iteration2/fitted_response_qwen35/heads.pt",
+    "runs/iteration3/local_probes/fitted_qwen38_v2/heads.pt",
+    "runs/iteration3/local_probes/fitted_qwen38_v2/text_control.joblib",
+    "runs/iteration2/fitted_local_qwen38_adjudicated/heads.pt",
+    "runs/iteration2/fitted_response_qwen38/heads.pt"
+  ],
+  "frozen_module_tree": "probity_benchmark/",
+  "required_fresh_inputs": [
+    "runs/iteration3/final/debates_v1",
+    "runs/iteration3/final/features_qwen35",
+    "runs/iteration3/final/features_qwen38"
+  ],
+  "not_required_for_fresh_local_export": [
+    "retained_verified_mixed_features_qwen35_v2.tar.xz",
+    "retained_verified_mixed_features_qwen38_v2.tar.xz",
+    "original iteration2 activation archive"
+  ],
+  "restore_note": "Extract the two natural archives below runs/iteration3/local_probes, then run restore_reference_views_v1.py. It verifies every retained file and the original manifest identity and creates immutable, reference-only symlink views. Archived retention manifests/tensors remain unchanged. Do not treat these views as complete general-purpose original segment caches.",
+  "reference_replay_commands": [
+    "python3 -m probity_benchmark.local3_bundle --spec runs/iteration3/local_probes/final_handoff_v3/local3_bundle_spec.json --references-only --out runs/iteration3/local_probes/restored_local3_reference_replay_v1",
+    "python3 -m probity_benchmark.local3_bundle --spec runs/iteration3/local_probes/final_handoff_v3/local2_bundle_spec.json --references-only --detector-prefix local2_frozen --out runs/iteration3/local_probes/restored_local2_reference_replay_v1"
+  ],
+  "replay_gate": "Each replay bundle must match frozen head_sha256, reference_sha256, and references exactly for both sentence and clause.",
+  "final_judge_bundle_paths": [
+    "runs/iteration3/final/local3_bundles_v1/sentence.json",
+    "runs/iteration3/final/local3_bundles_v1/clause.json",
+    "runs/iteration3/final/local2_bundles_v1/sentence.json"
+  ],
+  "restore_utility_sha256": "e6aecf0c214e0e7ae590d0d4c7a30db6ffeb7755d05576fc334ce142961ac5d4",
+  "previous_requirements_sha256": "39330a3e1cf3fd8d06ee0501ee597bd9cf6fd1aaaba58efbc7cafaa558980f0f",
+  "small_artifact_files": {
+    "runs/iteration3/local_probes/final_handoff_v2/all_unit_score_spec.json": {
+      "bytes": 1545,
+      "sha256": "cb51d8b4fcad14c61f233a2a960b778e374d3cb13173a31e7bacca35d174d814"
+    },
+    "runs/iteration3/local_probes/final_handoff_v2/local2_bundle_spec.json": {
+      "bytes": 690,
+      "sha256": "f39d4a2e429e8e75dd95ce14f82b538f2440efd14f2fecc334aac67647b7891e"
+    },
+    "runs/iteration3/local_probes/final_handoff_v2/local3_bundle_spec.json": {
+      "bytes": 623,
+      "sha256": "6243caeb546765c3f6d2517dbc4853638b10c1ce1078dc721568c225a4cb162e"
+    },
+    "runs/iteration3/local_probes/final_handoff_v2/manifest.json": {
+      "bytes": 1641,
+      "sha256": "f31e506bbafda367124452421a8ce566f48448943325391fdb6a07f37aea4600"
+    },
+    "runs/iteration3/local_probes/final_handoff_v2/runner_lock.json": {
+      "bytes": 1325,
+      "sha256": "680dcb644986db819053a4006dee06dbb993c8ed486b09023302ebd99bcd11e9"
+    },
+    "runs/iteration3/local_probes/final_handoff_v3/all_unit_score_spec.json": {
+      "bytes": 1545,
+      "sha256": "cb51d8b4fcad14c61f233a2a960b778e374d3cb13173a31e7bacca35d174d814"
+    },
+    "runs/iteration3/local_probes/final_handoff_v3/local2_bundle_spec.json": {
+      "bytes": 690,
+      "sha256": "f39d4a2e429e8e75dd95ce14f82b538f2440efd14f2fecc334aac67647b7891e"
+    },
+    "runs/iteration3/local_probes/final_handoff_v3/local3_bundle_spec.json": {
+      "bytes": 623,
+      "sha256": "6243caeb546765c3f6d2517dbc4853638b10c1ce1078dc721568c225a4cb162e"
+    },
+    "runs/iteration3/local_probes/final_handoff_v3/manifest.json": {
+      "bytes": 1914,
+      "sha256": "e85087463fc74ebb50bae12f35f07fa25a44479d04c44ed608e95f6611dd0576"
+    },
+    "runs/iteration3/local_probes/final_handoff_v3/runner_lock.json": {
+      "bytes": 2250,
+      "sha256": "5cc0d48a3e8665d352872fedb30a1b8b901c9e4ca8d9559272d855a01bbd0459"
+    },
+    "runs/iteration3/local_probes/references_local3_v1/clause_references.json": {
+      "bytes": 24712,
+      "sha256": "60b7b55ecb2c0bf7828eaeba2ff25cae3c5a6fc1568a741281e3094343a4f8d9"
+    },
+    "runs/iteration3/local_probes/references_local3_v1/sentence_references.json": {
+      "bytes": 14270,
+      "sha256": "96c2d312a522c208f75d73ec7a7fc03f07e18b330c3a6c5bf5e7f6518f6d2e17"
+    },
+    "runs/iteration3/local_probes/references_local2_v1/clause_references.json": {
+      "bytes": 24719,
+      "sha256": "605d91e18616191d54ced6e252397a8f317815d1b6f0b4cac2a422cda0479239"
+    },
+    "runs/iteration3/local_probes/references_local2_v1/sentence_references.json": {
+      "bytes": 14246,
+      "sha256": "7f66e9ff546caad5987cac0cdbed748d5d0538795865ff1028445cd39f593ea0"
+    },
+    "runs/iteration3/local_probes/local_artifact_lock_v1.json": {
+      "bytes": 4146,
+      "sha256": "e6efbb64454f7e4cbf4d69a9fb4c109c38048b10b0901220fcce8e81b7214984"
+    },
+    "runs/iteration3/local_probes/fresh_annotation_protocol_lock_v2.json": {
+      "bytes": 3258,
+      "sha256": "5b5cc656e619e3f3e033910a6e05f1c17a645a853e699f2b091646d1793d2978"
+    },
+    "runs/iteration3/local_probes/secondary_clause_protocol_lock_v2.json": {
+      "bytes": 5167,
+      "sha256": "6675ab388af9f0da47ff5c978f8bb55938e26e995ba96507b666820127e3158b"
+    },
+    "runs/iteration3/local_probes/run_final_local_v3.py": {
+      "bytes": 3417,
+      "sha256": "37aaf15449bcecd5fc865af9ee02d8d0d3cd3da0f64d3e5dfde0a7d09bdaac6b"
+    },
+    "runs/iteration3/local_probes/restore_reference_views_v1.py": {
+      "bytes": 4749,
+      "sha256": "e6aecf0c214e0e7ae590d0d4c7a30db6ffeb7755d05576fc334ce142961ac5d4"
+    },
+    "runs/iteration3/local_probes/audit_fresh_local_features_v1.py": {
+      "bytes": 18507,
+      "sha256": "1d35f1ebce42983e17fc45d576a4f3928df3927ee87f6c1c26af1e33b6425523"
+    },
+    "runs/iteration3/local_probes/feature_audit_unit_checks_v1.json": {
+      "bytes": 438,
+      "sha256": "7e0ae210610bfd3b4b9af6ffa898deb576b36f0c3b91a3321dc59c40855c8e7e"
+    },
+    "runs/iteration3/local_probes/text_control_provenance_v1.json": {
+      "bytes": 1086,
+      "sha256": "6149d19c4119b89d8bb0828edaedf77ac82981809380ee64d8eb2b801d8e9a3d"
+    },
+    "runs/iteration3/local_probes/historical_long_alignment_review_v1.json": {
+      "bytes": 15150,
+      "sha256": "3e004a42bd10bbaeb7cb4f5ef14450dc6385d97b92734590696c72f4286e96ae"
+    },
+    "runs/iteration3/final/global_freeze.json": {
+      "bytes": 17517,
+      "sha256": "4c4e201737077b161bbddb5e9cb6c9a2e1d2be727265ef6aa5ec0139d31edc3a"
+    },
+    "runs/iteration3/final/global_freeze_v2.json": {
+      "bytes": 23393,
+      "sha256": "35ce913f3837eb295d21eb118bfdafa7d9224f2c202aec7890741918e33a522c"
+    },
+    "runs/iteration3/coordinator/feature_completion_policy_v1.json": {
+      "bytes": 2346,
+      "sha256": "7a97045af9d22b3dd1b675f86407842706d628f50f780583552e47ff9c5ee1de"
+    },
+    "runs/iteration3/coordinator/holdout_families_source_v5.jsonl": {
+      "bytes": 657665,
+      "sha256": "57788f14021d2c6f2e75313b2b0d36c22f3a3d74572ec57d9b4189a5f1b7e45c"
+    },
+    "runs/iteration3/coordinator/source_family_map.json": {
+      "bytes": 58518,
+      "sha256": "7a86c46d8d65d2369c36409efdc496f7684b210fe1d8fdd9b40f5fd05f9cadec"
+    },
+    "runs/iteration3/local_probes/fitted_qwen35_v2/heads.pt": {
+      "bytes": 84373,
+      "sha256": "cde0d6e610759daacc53601527fc7a94789391a531e471a117ffccd77d6a9273"
+    },
+    "runs/iteration3/local_probes/fitted_qwen35_v2/text_control.joblib": {
+      "bytes": 204552,
+      "sha256": "a844bc0b5c2900d8183319863ae6ee8d7826278ef9c7472351cdce3a385e7130"
+    },
+    "runs/iteration2/fitted_local_qwen35_adjudicated/heads.pt": {
+      "bytes": 166665,
+      "sha256": "20fd8e661fdf97984e88bc9127a7a6452b67e431b99a2af26b6e5f5da0360108"
+    },
+    "runs/iteration2/fitted_response_qwen35/heads.pt": {
+      "bytes": 166345,
+      "sha256": "575e1b0256dc3fb0d3b9b5513d72f81f576f96e2b41ef9b950582957fccea643"
+    },
+    "runs/iteration3/local_probes/fitted_qwen38_v2/heads.pt": {
+      "bytes": 84373,
+      "sha256": "18ac4657b2c6136593347af5d9b66bfb4fdb1bd3d8ee978f36983fcef1fc792d"
+    },
+    "runs/iteration3/local_probes/fitted_qwen38_v2/text_control.joblib": {
+      "bytes": 191112,
+      "sha256": "23c7c6bde25f4e234d224d43f19bea94039314f97edb74adf239370c3cfc42b4"
+    },
+    "runs/iteration2/fitted_local_qwen38_adjudicated/heads.pt": {
+      "bytes": 166665,
+      "sha256": "efc56c6364f8b293f1e0b1a9e3c34a6fb36717e6f4cb91066e9c83a1fb910045"
+    },
+    "runs/iteration2/fitted_response_qwen38/heads.pt": {
+      "bytes": 166345,
+      "sha256": "045a9bc3fc76f17b1710a05f30563371647bd8a548c33c680ad57c5cfbcfc2d8"
+    }
+  },
+  "small_artifact_bytes": 2136580,
+  "completion_audit_command": "PYTHONPATH=. python3 runs/iteration3/local_probes/audit_fresh_local_features_v1.py",
+  "completion_audit_gate": "Run after both complete fresh feature caches and exact canonical corpus JSONL files exist, before reference replay/export. Preserve all short/long diagnostic files. Short pass and complete unpadded full-sequence invariants are required; long padded/incremental diagnostics are reported under feature_completion_policy_v1 without a new conjunctive exclusion rule. Notify root of new findings.",
+  "additional_fresh_inputs": [
+    "runs/iteration3/final/corpus_qwen35.jsonl",
+    "runs/iteration3/final/corpus_qwen38.jsonl"
+  ],
+  "text_control_gate": "Verify both text_control.joblib file hashes against text_control_provenance_v1 before export; these are the exact pre-freeze development-smoke artifacts."
+}

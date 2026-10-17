@@ -1,0 +1,21 @@
+{
+  "schema": "local3_clause_lossless_recovery_checks_v1",
+  "adapter_sha256": "ba4f456e734d7a189aa3026b57a25b2713e5710707c3f65359e2d2a0629c1da3",
+  "plan_sha256": "b3750af142e6cb50c12c90fa1ee78eccc94397683fb34a6c97e28ee4421f6ce3",
+  "checks": [
+    "all50 complete request bodies exactly reproduce original frozen planning",
+    "all43 original checks and full976-character reason retained losslessly",
+    "original600-character schema still rejects original record",
+    "changed unit text rejected",
+    "additional schema/index errors rejected",
+    "invalid source evidence coordinate rejected",
+    "unapproved job rejected before API call",
+    "changed complete prompt rejected before API call",
+    "third paid attempt rejected",
+    "two full reservations and combined original5USD envelope fit",
+    "unreleased adapter rejected before constructor or paid work",
+    "all globally frozen experimental modules remain byte-identical"
+  ],
+  "paid_calls": 0,
+  "new_truth_labels_or_scores_created": false
+}

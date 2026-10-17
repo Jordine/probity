@@ -1,0 +1,169 @@
+{
+  "schema": "judge3_reporting_amendment_v1",
+  "created_at_utc": "2026-10-15T11:43:07.493330+00:00",
+  "scope": "Read-only reporting corrections requested by root before fresh final debate-judge outcomes. Original source-control outcomes already exist. No inference, prompts, scores, thresholds, experimental selections or frozen statistics changed.",
+  "authorization": "Root explicitly requested generation-aware repeatability and authorized a provenance-bound native analysis view if the full frozen analyser requires it.",
+  "frozen_judge_lock": "runs/iteration3/judge_controls/final_judge_code_lock_v2.json",
+  "frozen_judge_lock_sha256": "89ab74c57193b41b31c9d7f831ae52a904f4eef11b59948a0f5c9e5cf5c00c86",
+  "frozen_files_unchanged": {
+    "probity_benchmark/judge3_ablate.py": "54835e57e37ef689d30250c2990997e79666b4fc563968cbcc9c2081fcfb1ded",
+    "probity_benchmark/judge3_protocol.py": "8edc5db4355d36ce85f5d604011bdc70a1a20985f8fefaf8dc3b5fac0a8815b0",
+    "probity_benchmark/judge3_protocol.md": "a81378cfc5083876d58e0f7be21ffc90cdcd3693b7417b43b12efdafb03e52c2",
+    "probity_benchmark/judge3_final.py": "00dc7fb63a9f3a59cf5065409ac47090f2ce2e9d4205b3f33fd730155765160c",
+    "probity_benchmark/judge3_final.md": "32ca4ac7a369f3379d55000af342779eed26b3e118f91da2335825f2ca9c378c",
+    "probity_benchmark/judge3_compare.py": "3486f31f5d132b06d9ea8d648fa576c87597497950ea7dc17bb7a9f123c7208c",
+    "probity_benchmark/judge3_context.py": "c79825c408ec27489da6ae1320ef1fddcdef7ee617aae5097e5260bbdf93497d",
+    "probity_benchmark/api.py": "17b1a32470172aedc5bfb93ad53c20c43bd9019e03ba1b963775c6377bb3693d",
+    "probity_benchmark/run_local_judge.py": "e798394d5436ba81dffc38dd105fc8935bd9d5fd9cc46fc4574af4966815b499",
+    "tests/test_judge3_controls.py": "113d777deb1f3cc30c9de68bc98fcfa0b84cbb6d0b97a6fb1a36198253c349dd"
+  },
+  "new_reporting_source_sha256": {
+    "probity_benchmark/judge3_generation_audit.py": "e3a295414d5eb3cf3af4fec7c266ed1a368f71ae088f739a9409074e7d2238aa",
+    "probity_benchmark/judge3_export_tables.py": "ce79c84f967da55f885330f974db563581d3d6f1d551809a2e20abd061d5071b",
+    "tests/test_judge3_generation_audit.py": "313eb60a6fdeca683493d2f5af127c30eaf9767a9eeb3f6541f8c6e25602aa0f",
+    "tests/test_judge3_exports.py": "f2aea71e3677352f687855b53ca6622a67cd2d8537a93b20b8ca2500d887c532"
+  },
+  "findings": [
+    "Frozen run_local_judge caches valid results by exact prompt key within each run and marks subsequent logical jobs reused=true. Logical agreement between cached jobs is not a repeated-generation observation.",
+    "Original native rows contain parsed.answer but no top-level answer. The full frozen judge3_final analyser writes its correctness table and then raises KeyError in logical prompt repeatability. The integration fixture reproduces this exact failure.",
+    "A separate analysis view adds top-level answer exactly equal to parsed.answer; original fields, cache flags, original result bytes and manifest bytes are preserved. View provenance binds both original and derived hashes.",
+    "The unchanged frozen analyser and comparator consume the view. The separate generation audit consumes original native evaluations, or original API receipts with recovery chains resolved.",
+    "The CSV exporter now distinguishes logical agreement from distinct-generation agreement. Native cached repeats produce no observed generation pairs and null generation agreement, explicitly unmeasured.",
+    "API recovery receipts count as existing observations, not new calls. Distinct original response identities remain distinct even when complete request hashes are equal."
+  ],
+  "validation": {
+    "focused_tests_passed": 5,
+    "command": [
+      "python3",
+      "-m",
+      "unittest",
+      "tests.test_judge3_generation_audit",
+      "tests.test_judge3_exports",
+      "-v"
+    ],
+    "full_frozen_native_analysis_and_export_fixture_passed": true,
+    "original_native_inputs_byte_identical_after_fixture": true,
+    "model_calls": 0
+  },
+  "commands": {
+    "native_view": [
+      "python3",
+      "-m",
+      "probity_benchmark.judge3_generation_audit",
+      "prepare-native-view",
+      "--package",
+      "runs/iteration3/final/judge_package_v1",
+      "--frozen-package-sha256",
+      "FULL_PACKAGE_SHA256",
+      "--results",
+      "ORIGINAL_NATIVE_RESULTS",
+      "--out",
+      "runs/iteration3/final/native_judge_analysis_view_v1"
+    ],
+    "native_frozen_analysis": [
+      "python3",
+      "-m",
+      "probity_benchmark.judge3_final",
+      "analyse",
+      "--package",
+      "runs/iteration3/final/judge_package_v1",
+      "--frozen-package-sha256",
+      "FULL_PACKAGE_SHA256",
+      "--results",
+      "runs/iteration3/final/native_judge_analysis_view_v1",
+      "--out",
+      "runs/iteration3/final/native_judge_analysis_v1"
+    ],
+    "native_generation_audit": [
+      "python3",
+      "-m",
+      "probity_benchmark.judge3_generation_audit",
+      "audit",
+      "--package",
+      "runs/iteration3/final/judge_package_v1",
+      "--frozen-package-sha256",
+      "FULL_PACKAGE_SHA256",
+      "--results",
+      "ORIGINAL_NATIVE_RESULTS",
+      "--analysis",
+      "runs/iteration3/final/native_judge_analysis_v1",
+      "--out",
+      "runs/iteration3/final/native_generation_audit_v1.json"
+    ],
+    "haiku_generation_audit": [
+      "python3",
+      "-m",
+      "probity_benchmark.judge3_generation_audit",
+      "audit",
+      "--package",
+      "runs/iteration3/final/judge_package_v1",
+      "--frozen-package-sha256",
+      "FULL_PACKAGE_SHA256",
+      "--results",
+      "runs/iteration3/final/haiku_judge_v1",
+      "--analysis",
+      "runs/iteration3/final/haiku_judge_v1/analysis",
+      "--out",
+      "runs/iteration3/final/haiku_generation_audit_v1.json"
+    ],
+    "opus_generation_audit": [
+      "python3",
+      "-m",
+      "probity_benchmark.judge3_generation_audit",
+      "audit",
+      "--package",
+      "runs/iteration3/final/opus_package_v1",
+      "--frozen-package-sha256",
+      "OPUS_PACKAGE_SHA256",
+      "--results",
+      "runs/iteration3/final/opus_judge_v1",
+      "--analysis",
+      "runs/iteration3/final/opus_judge_v1/analysis",
+      "--out",
+      "runs/iteration3/final/opus_generation_audit_v1.json"
+    ],
+    "export": [
+      "python3",
+      "-m",
+      "probity_benchmark.judge3_export_tables",
+      "--spec",
+      "FINAL_REVIEWED_EXPORT_SPEC",
+      "--out",
+      "runs/iteration3/final/judge_tables_v1"
+    ]
+  },
+  "export_spec_native_entry": {
+    "package": "runs/iteration3/final/judge_package_v1",
+    "package_sha256": "FULL_PACKAGE_SHA256",
+    "results": "runs/iteration3/final/native_judge_analysis_view_v1",
+    "original_results": "ORIGINAL_NATIVE_RESULTS",
+    "analysis": "runs/iteration3/final/native_judge_analysis_v1",
+    "generation_audit": "runs/iteration3/final/native_generation_audit_v1.json"
+  },
+  "export_spec_api_entry": {
+    "package": "RELEASED_PACKAGE",
+    "package_sha256": "RELEASED_PACKAGE_SHA256",
+    "results": "API_RESULTS",
+    "analysis": "API_RESULTS/analysis",
+    "generation_audit": "GENERATION_AUDIT_JSON"
+  },
+  "export_schema": "judge3_audited_table_export_v2",
+  "unchanged_table_interfaces": [
+    "accuracies.csv",
+    "real_minus_neutral.csv",
+    "all_paired_contrasts.csv"
+  ],
+  "noise_table_changes": [
+    "Logical agreement fields have explicit logical_ prefixes.",
+    "Fresh generation, reused logical job and distinct recorded generation counts are added.",
+    "Generation agreement and disagreement are null when fewer than two distinct resolved generations exist.",
+    "All original logical agreement remains available as descriptive cached-job agreement."
+  ],
+  "crossjudge_command_note": "Use native_judge_analysis_view_v1 as the native results input to unchanged judge3_compare. Include the view provenance and this amendment with the resulting report.",
+  "limits": [
+    "No extra repeated model calls are authorized or needed.",
+    "Naturally repeated API requests remain descriptive and do not establish equal provider hardware or independent sampling.",
+    "Native greedy inference plus caching cannot establish zero sampling or hardware noise.",
+    "The statistical analysis, family denominators and frozen detector scope are unchanged."
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "frozen_at_utc": "2026-10-14T19:50:00.573076+00:00",
+  "primary_granularity": "sentence",
+  "clause_labels": "Separate frozen secondary opening-clause diagnostic; all 288 sentence-turn labels remain primary.",
+  "models": [
+    "qwen/qwen3.8-27b",
+    "anthropic/claude-opus-5.5"
+  ],
+  "script_sha256": "4ce67a348ba48db0dc5e100dff725bebb813238fbac417474aef7fe16640c6bb",
+  "rules_sha256": "f59010c1ea25f4fd24f40caffbb33467d3bce0b61b153d2e68a6ac71b7ba9dce",
+  "schema_sha256": "3222dff8feff6719a5d698b0600a3e8774176d594a4fdc020d16f1c4e75f3301",
+  "partition_source_sha256": "8edc5db4355d36ce85f5d604011bdc70a1a20985f8fefaf8dc3b5fac0a8815b0",
+  "max_units_per_complete_source_chunk": 48,
+  "max_output_tokens": 16384,
+  "budget_cap_usd": 8,
+  "acceptance": "Both independent models agree on supported/contradicted, checkable fact, valid local scope, nonempty source evidence; all complete text-only sentence units included before labels. Mixed/unsupported/interpretive/disputed units remain unknown/unlabelled, never truthful negatives.",
+  "blinding": "Each full source and full argument supplied without roles, answer key, probe scores or other annotator verdicts.",
+  "evaluation": "No fitting; group all metrics/bootstrap by original story family, report unit coverage and mixed-response/family support; selected local3 vs frozen local2, fixed TFIDF, position, selected random and response broadcasts.",
+  "gate": "No fresh API calls until root globalfreeze receipt and explicit rootready handoff.",
+  "supersedes": "runs/iteration3/local_probes/fresh_annotation_protocol_lock_v1.json",
+  "runtime_amendment": "Restore the proven model-specific request settings before any fresh outcomes. All annotation prompts, units, schema, full contexts, output allowance, acceptance and thresholds unchanged.",
+  "requested_reasoning_by_model": {
+    "qwen/qwen3.8-27b": {
+      "enabled": false
+    },
+    "anthropic/claude-opus-5.5": {
+      "effort": "low"
+    }
+  },
+  "api_source_sha256": "17b1a32470172aedc5bfb93ad53c20c43bd9019e03ba1b963775c6377bb3693d",
+  "provider_limitation": "Opus catalog advertises mandatory reasoning. The request explicitly sets low effort; no claim that hidden reasoning is disabled. Preserve raw reasoning fields, token usage, stop/native-finish and exposed truncation flags.",
+  "pilot_evidence": {
+    "mixed_verifier": {
+      "path": "runs/iteration3/local_probes/mixed_twins_opus_v1/requests.jsonl",
+      "calls": 22,
+      "requested_reasoning": {
+        "effort": "low"
+      },
+      "max_tokens": 16384,
+      "reported_reasoning_tokens": {
+        "0": 22
+      },
+      "returned_reasoning": {
+        "null": 22
+      },
+      "finish_reason": {
+        "stop": 22
+      },
+      "native_finish_reason": {
+        "end_turn": 22
+      }
+    },
+    "natural_generation": {
+      "path": "runs/iteration3/local_probes/natural_twins_v1/requests.jsonl",
+      "calls": 12,
+      "requested_reasoning": {
+        "effort": "low"
+      },
+      "max_tokens": 32768,
+      "reported_reasoning_tokens": {
+        "0": 11,
+        "767": 1
+      },
+      "returned_reasoning_nonempty_calls": 1,
+      "finish_reason": {
+        "stop": 12
+      },
+      "native_finish_reason": {
+        "end_turn": 12
+      }
+    }
+  }
+}

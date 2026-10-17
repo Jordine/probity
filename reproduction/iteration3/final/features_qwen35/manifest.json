@@ -1,0 +1,34 @@
+{
+  "model": "Qwen/Qwen3.5-27B",
+  "model_revision": "fc05daec18b0a78c049392ed2e771dde82bdf654",
+  "layers": [
+    19,
+    27,
+    35,
+    43,
+    51,
+    58
+  ],
+  "dtype": "bfloat16",
+  "corpus_sha256": "e200d35529abc1ff1ab86c3f95916bf6f6d9e196df60a32c6f8e20c0acb0124b",
+  "corpus_bytes": 5363439,
+  "expected_rows": 144,
+  "extractor_sha256": "4ba9d2292a66d1d00989757d4dce0f719d9a44f2f943f11fbb8f6172b3d96d96",
+  "runtime_sha256": "e40bddb9fb594171d3d012803b05e0898597df9e83783df6a9d4d58380cd53ca",
+  "published_weights_revision": "05def1c13a70237cda3b717d785813918b8a22fa",
+  "published_probe_available": true,
+  "gpu": "NVIDIA RTX PRO 6000 Blackwell Workstation Edition",
+  "allow_bf16_reduced_precision_reduction": false,
+  "cache_complete_response_tokens": false,
+  "chat_template_sha256": "a4aee8afcf2e0711942cf848899be66016f8d14a889ff9ede07bca099c28f715",
+  "dyl_contrast": "No. score minus Yes. score, read at period before EOT",
+  "scope": "Unpadded teacher-forced API-text replay. No live-generation or padded-execution equivalence claim. All contexts and responses complete.",
+  "returned_reasoning": "When supplied, every returned reasoning character precedes the scored final response in an explicit think block. Final response pooling excludes the reasoning. No claim about opaque provider-side serialization or unreturned internal reasoning.",
+  "pooling": "Span mean and last overlapping token. Response mean and argument mean exclude no response text; argument mean excludes JSON scaffolding. Phrase units are punctuation-derived, not guaranteed assertions.",
+  "versions": {
+    "torch": "2.9.1+cu128",
+    "transformers": "5.9.0",
+    "flash-linear-attention": "0.5.2",
+    "causal-conv1d": "1.7.0"
+  }
+}

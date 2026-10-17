@@ -1,0 +1,225 @@
+{
+  "schema": "local3_restored_reference_identity_audit_v1",
+  "status": "mismatch_stop_before_export",
+  "verification_source_sha256": "b17770b6dbd052766fc48858de1dd6f790527cc8e7eb88da4278a2a879823673",
+  "text_control_provenance_sha256": "6149d19c4119b89d8bb0828edaedf77ac82981809380ee64d8eb2b801d8e9a3d",
+  "reference_bundles": [
+    {
+      "frozen_path": "runs/iteration3/local_probes/references_local3_v1/sentence_references.json",
+      "frozen_file_sha256": "96c2d312a522c208f75d73ec7a7fc03f07e18b330c3a6c5bf5e7f6518f6d2e17",
+      "replayed_path": "runs/iteration3/local_probes/restored_local3_reference_replay_v1/sentence_references.json",
+      "replayed_file_sha256": "5787e600869d8142fea325def60070b1c998fc32c55a5286f78f1be319f223f7",
+      "exact_identity_fields": {
+        "head_sha256": true,
+        "reference_sha256": false,
+        "references": false
+      },
+      "models": {
+        "qwen/qwen3.5-27b": {
+          "frozen_scores": 137,
+          "replayed_scores": 137,
+          "maximum_absolute_score_difference": 1.7763568394002505e-15,
+          "nonidentical_scores": 73
+        },
+        "qwen/qwen3.8-27b": {
+          "frozen_scores": 120,
+          "replayed_scores": 120,
+          "maximum_absolute_score_difference": 4.440892098500626e-16,
+          "nonidentical_scores": 67
+        }
+      }
+    },
+    {
+      "frozen_path": "runs/iteration3/local_probes/references_local3_v1/clause_references.json",
+      "frozen_file_sha256": "60b7b55ecb2c0bf7828eaeba2ff25cae3c5a6fc1568a741281e3094343a4f8d9",
+      "replayed_path": "runs/iteration3/local_probes/restored_local3_reference_replay_v1/clause_references.json",
+      "replayed_file_sha256": "a0c0f1593d817571e04046de36a57fe2b74ed921e36afbac763c6f732d0009fb",
+      "exact_identity_fields": {
+        "head_sha256": true,
+        "reference_sha256": false,
+        "references": false
+      },
+      "models": {
+        "qwen/qwen3.5-27b": {
+          "frozen_scores": 333,
+          "replayed_scores": 333,
+          "maximum_absolute_score_difference": 1.7763568394002505e-15,
+          "nonidentical_scores": 176
+        },
+        "qwen/qwen3.8-27b": {
+          "frozen_scores": 295,
+          "replayed_scores": 295,
+          "maximum_absolute_score_difference": 8.881784197001252e-16,
+          "nonidentical_scores": 163
+        }
+      }
+    },
+    {
+      "frozen_path": "runs/iteration3/local_probes/references_local2_v1/sentence_references.json",
+      "frozen_file_sha256": "7f66e9ff546caad5987cac0cdbed748d5d0538795865ff1028445cd39f593ea0",
+      "replayed_path": "runs/iteration3/local_probes/restored_local2_reference_replay_v1/sentence_references.json",
+      "replayed_file_sha256": "8b81ad212947bbe3582c775e6d4469388da7b0e4c067058a1290d8cb6f5b0a7f",
+      "exact_identity_fields": {
+        "head_sha256": true,
+        "reference_sha256": false,
+        "references": false
+      },
+      "models": {
+        "qwen/qwen3.5-27b": {
+          "frozen_scores": 137,
+          "replayed_scores": 137,
+          "maximum_absolute_score_difference": 8.881784197001252e-16,
+          "nonidentical_scores": 70
+        },
+        "qwen/qwen3.8-27b": {
+          "frozen_scores": 120,
+          "replayed_scores": 120,
+          "maximum_absolute_score_difference": 1.7763568394002505e-15,
+          "nonidentical_scores": 57
+        }
+      }
+    },
+    {
+      "frozen_path": "runs/iteration3/local_probes/references_local2_v1/clause_references.json",
+      "frozen_file_sha256": "605d91e18616191d54ced6e252397a8f317815d1b6f0b4cac2a422cda0479239",
+      "replayed_path": "runs/iteration3/local_probes/restored_local2_reference_replay_v1/clause_references.json",
+      "replayed_file_sha256": "42c726b45e622526c06c374a32714706460a26ec29aecf8b13bf4f1b0dbdfab4",
+      "exact_identity_fields": {
+        "head_sha256": true,
+        "reference_sha256": false,
+        "references": false
+      },
+      "models": {
+        "qwen/qwen3.5-27b": {
+          "frozen_scores": 333,
+          "replayed_scores": 333,
+          "maximum_absolute_score_difference": 8.881784197001252e-16,
+          "nonidentical_scores": 166
+        },
+        "qwen/qwen3.8-27b": {
+          "frozen_scores": 295,
+          "replayed_scores": 295,
+          "maximum_absolute_score_difference": 1.7763568394002505e-15,
+          "nonidentical_scores": 161
+        }
+      }
+    }
+  ],
+  "text_controls": [
+    {
+      "participant": "qwen/qwen3.5-27b",
+      "path": "runs/iteration3/local_probes/fitted_qwen35_v2/text_control.joblib",
+      "sha256": "a844bc0b5c2900d8183319863ae6ee8d7826278ef9c7472351cdce3a385e7130",
+      "matches_pre_freeze_smoke_receipt": true
+    },
+    {
+      "participant": "qwen/qwen3.8-27b",
+      "path": "runs/iteration3/local_probes/fitted_qwen38_v2/text_control.joblib",
+      "sha256": "23c7c6bde25f4e234d224d43f19bea94039314f97edb74adf239370c3cfc42b4",
+      "matches_pre_freeze_smoke_receipt": true
+    }
+  ],
+  "failures": [
+    {
+      "frozen_path": "runs/iteration3/local_probes/references_local3_v1/sentence_references.json",
+      "frozen_file_sha256": "96c2d312a522c208f75d73ec7a7fc03f07e18b330c3a6c5bf5e7f6518f6d2e17",
+      "replayed_path": "runs/iteration3/local_probes/restored_local3_reference_replay_v1/sentence_references.json",
+      "replayed_file_sha256": "5787e600869d8142fea325def60070b1c998fc32c55a5286f78f1be319f223f7",
+      "exact_identity_fields": {
+        "head_sha256": true,
+        "reference_sha256": false,
+        "references": false
+      },
+      "models": {
+        "qwen/qwen3.5-27b": {
+          "frozen_scores": 137,
+          "replayed_scores": 137,
+          "maximum_absolute_score_difference": 1.7763568394002505e-15,
+          "nonidentical_scores": 73
+        },
+        "qwen/qwen3.8-27b": {
+          "frozen_scores": 120,
+          "replayed_scores": 120,
+          "maximum_absolute_score_difference": 4.440892098500626e-16,
+          "nonidentical_scores": 67
+        }
+      }
+    },
+    {
+      "frozen_path": "runs/iteration3/local_probes/references_local3_v1/clause_references.json",
+      "frozen_file_sha256": "60b7b55ecb2c0bf7828eaeba2ff25cae3c5a6fc1568a741281e3094343a4f8d9",
+      "replayed_path": "runs/iteration3/local_probes/restored_local3_reference_replay_v1/clause_references.json",
+      "replayed_file_sha256": "a0c0f1593d817571e04046de36a57fe2b74ed921e36afbac763c6f732d0009fb",
+      "exact_identity_fields": {
+        "head_sha256": true,
+        "reference_sha256": false,
+        "references": false
+      },
+      "models": {
+        "qwen/qwen3.5-27b": {
+          "frozen_scores": 333,
+          "replayed_scores": 333,
+          "maximum_absolute_score_difference": 1.7763568394002505e-15,
+          "nonidentical_scores": 176
+        },
+        "qwen/qwen3.8-27b": {
+          "frozen_scores": 295,
+          "replayed_scores": 295,
+          "maximum_absolute_score_difference": 8.881784197001252e-16,
+          "nonidentical_scores": 163
+        }
+      }
+    },
+    {
+      "frozen_path": "runs/iteration3/local_probes/references_local2_v1/sentence_references.json",
+      "frozen_file_sha256": "7f66e9ff546caad5987cac0cdbed748d5d0538795865ff1028445cd39f593ea0",
+      "replayed_path": "runs/iteration3/local_probes/restored_local2_reference_replay_v1/sentence_references.json",
+      "replayed_file_sha256": "8b81ad212947bbe3582c775e6d4469388da7b0e4c067058a1290d8cb6f5b0a7f",
+      "exact_identity_fields": {
+        "head_sha256": true,
+        "reference_sha256": false,
+        "references": false
+      },
+      "models": {
+        "qwen/qwen3.5-27b": {
+          "frozen_scores": 137,
+          "replayed_scores": 137,
+          "maximum_absolute_score_difference": 8.881784197001252e-16,
+          "nonidentical_scores": 70
+        },
+        "qwen/qwen3.8-27b": {
+          "frozen_scores": 120,
+          "replayed_scores": 120,
+          "maximum_absolute_score_difference": 1.7763568394002505e-15,
+          "nonidentical_scores": 57
+        }
+      }
+    },
+    {
+      "frozen_path": "runs/iteration3/local_probes/references_local2_v1/clause_references.json",
+      "frozen_file_sha256": "605d91e18616191d54ced6e252397a8f317815d1b6f0b4cac2a422cda0479239",
+      "replayed_path": "runs/iteration3/local_probes/restored_local2_reference_replay_v1/clause_references.json",
+      "replayed_file_sha256": "42c726b45e622526c06c374a32714706460a26ec29aecf8b13bf4f1b0dbdfab4",
+      "exact_identity_fields": {
+        "head_sha256": true,
+        "reference_sha256": false,
+        "references": false
+      },
+      "models": {
+        "qwen/qwen3.5-27b": {
+          "frozen_scores": 333,
+          "replayed_scores": 333,
+          "maximum_absolute_score_difference": 8.881784197001252e-16,
+          "nonidentical_scores": 166
+        },
+        "qwen/qwen3.8-27b": {
+          "frozen_scores": 295,
+          "replayed_scores": 295,
+          "maximum_absolute_score_difference": 1.7763568394002505e-15,
+          "nonidentical_scores": 161
+        }
+      }
+    }
+  ],
+  "scope": "Exact frozen arrays remain authoritative. No tolerance, recentering, normalization replacement or new reference selection is allowed. A numerical mismatch stops export for root review and preserves both original and replayed arrays."
+}

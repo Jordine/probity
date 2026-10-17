@@ -1,0 +1,60 @@
+{
+  "scope": "Future-only old-development parser dry run; zero API calls, no labels, scores, training or new-family data.",
+  "script_sha256": "a1f0c8d41e780155f6be13d4908641cfa68b23a519dc0a311def480961612fd7",
+  "lock_sha256": "ce9c68d1b31a27093d840aae3ce89d4c6f497a3a2a0bd7eca62abe548d1817be",
+  "inputs": {
+    "corpus": {
+      "path": "runs/iteration3/local_probes/natural_twins_verified_v2/corpus.jsonl",
+      "sha256": "fa1819665c9d9043522a1e71b7296eb2f828d6dcec8b4899f02b8e763a52dc72"
+    },
+    "references": {
+      "path": "runs/iteration3/local_probes/references_local3_v1/sentence_references.json",
+      "sha256": "96c2d312a522c208f75d73ec7a7fc03f07e18b330c3a6c5bf5e7f6518f6d2e17"
+    },
+    "worlds": {
+      "path": "runs/iteration3/environment/worlds_dev4.jsonl",
+      "sha256": "ce1ed45a4cce4284456e3ca8200dd7ac4b4065040d9630191485ac011d8a8e20"
+    }
+  },
+  "rows": 45,
+  "rows_by_model": {
+    "qwen/qwen3.8-27b": 22,
+    "qwen/qwen3.5-27b": 23
+  },
+  "source_families": 4,
+  "parent_source_lines": [
+    90,
+    112,
+    128,
+    137
+  ],
+  "old_sentence_units": 257,
+  "future_units": 274,
+  "rows_with_changed_boundaries": 29,
+  "diagnostics": {
+    "abbreviation_boundary_suppressed": 52
+  },
+  "full_character_raw_json_and_source_coverage": true,
+  "paid_calls": 0,
+  "artifacts": {
+    "units.jsonl": {
+      "sha256": "6fbb046175a40c07dd41d15554962b1ae9b61c867decb724c3ca41eb554bc9ea",
+      "bytes": 338355
+    },
+    "annotation_payloads.jsonl": {
+      "sha256": "7a699bd3cd6750c4edeed035a54535e97133b757ba7a09304cf47b3e648933a1",
+      "bytes": 1581162
+    },
+    "annotation_rules.txt": {
+      "sha256": "b0e39fe6c22106a6e80d66f63e7fa8ab7f6ca07b36cda93301212706e306331b",
+      "bytes": 2663
+    }
+  },
+  "limits": [
+    "A heuristic quotation-aware unit is not necessarily an atomic claim.",
+    "Uppercase post-quotation attribution, abbreviations, ambiguous apostrophes and malformed quotes still require review.",
+    "Unit enumeration completeness and evidence entailment cannot be established by mechanical validation.",
+    "Current holdout motivated these future hypotheses; no confirmatory claim or current metric is recomputed.",
+    "Future arbitrary unit pools require compatible token-level features or new full-context extraction, independent annotation and a new freeze; current pooled sentence vectors are insufficient."
+  ]
+}

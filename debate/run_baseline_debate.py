@@ -44,7 +44,7 @@ class BaselineDebateRunner:
 
         print(f"\n{'='*60}")
         print(f"Debate {debate_idx}/{total}: {problem.question_id}")
-        print(f"Question: {problem.question[:80]}...")
+        print(f"Question: {problem.question}")
         print(f"{'='*60}")
 
         start_time = time.time()
@@ -77,6 +77,14 @@ class BaselineDebateRunner:
 
             transcript = {
                 "debate_id": debate_id,
+                "debate_type": "quality_synthetic",
+                "experiment_mode": self.config.debate_type.value,
+                "problem_data": {
+                    "question": problem.question,
+                    "correct_answer": problem.correct_answer,
+                    "incorrect_answer": problem.incorrect_answer,
+                },
+                "model_mapping": dict(self.manager.model_mapping),
                 "question_id": problem.question_id,
                 "story_title": problem.story_title,
                 "question": problem.question,

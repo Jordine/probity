@@ -1,0 +1,4 @@
+# Python 3.11; separate environment from the legacy TransformerLens package.
+aiohttp==3.14.1
+jsonschema==4.10.3
+PyYAML==6.0.3

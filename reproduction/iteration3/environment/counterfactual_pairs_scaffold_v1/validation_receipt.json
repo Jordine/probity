@@ -1,0 +1,26 @@
+{
+  "schema": "probity.single_source_counterfactual_validation.v1",
+  "created_at_utc": "2026-10-15T13:54:55.786953+00:00",
+  "audit_sha256": "f6b886af9b3a105a537013e4183cc2c5094a12b6d7e179ee880485d461fc1a89",
+  "protocol_sha256": "ee8282c696908ff959fe34dc677f7f7504fb74fd99c17b498ebad558d3685d50",
+  "test_script_sha256": "a02b621059cc8363838ccb35561228991ad5774d0ea6e5212b954cc9658a1055",
+  "command": "python3 runs/iteration3/environment/counterfactual_pairs_scaffold_v1/test_scaffold.py",
+  "tests_passed": 8,
+  "tests_failed": 0,
+  "tests_skipped": 0,
+  "gates_exercised": [
+    "valid already-consumed pairs",
+    "same-gold pair rejection",
+    "option wording leakage rejection",
+    "partial dependent-name edit rejection even with recomputed source hash",
+    "missing prior-consumption proof rejection",
+    "unapproved parent rejection",
+    "alternate-world source injection rejection",
+    "coupled no-story scoring invariant with both answer orders and invalid-answer rejection"
+  ],
+  "all_seven_generated_artifact_hashes_verified": true,
+  "manual_review": "Both full original sources plus every changed paragraph in the opposite worlds read; all remaining paragraphs byte-identical; exact evidence passages verified. This is one agent review, not an independent model or human annotation batch.",
+  "new_paid_calls": 0,
+  "future_model_knowledge_performance": "not measured",
+  "future_judge_headroom": "not measured"
+}

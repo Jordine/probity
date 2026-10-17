@@ -1,0 +1,87 @@
+{
+  "schema": "probity.single_source_counterfactual_offline_audit.v1",
+  "input_sha256": {
+    "runs/iteration3/environment/worlds_dev4.jsonl": "ce1ed45a4cce4284456e3ca8200dd7ac4b4065040d9630191485ac011d8a8e20",
+    "runs/iteration3/coordinator/source_family_map.json": "7a86c46d8d65d2369c36409efdc496f7684b210fe1d8fdd9b40f5fd05f9cadec",
+    "runs/iteration3/coordinator/source_family_audit.json": "a6aa53d70d50d0bf1f799bf167897d3f3aca1f08c3f11533c814bac0070c87e1",
+    "runs/iteration3/coordinator/holdout_family_lock_v2.json": "d02ed038ff130373e92e44c78d223980a9cbcca265d07181a40a66fe37972ff1",
+    "probity_benchmark/preflight.py": "ae6141cbb60d3f995a6d54dc645bf704e5396066cc9cbfef49fede28b34fa819",
+    "probity_benchmark/environment3_prepared.py": "2612f3a7aa7b7be0db980cf2d27a58d10c66fc0cee28f2f2c2b1b0be19ca3572",
+    "probity_benchmark/build_native_judge_jobs.py": "584736909b63ecae13389cef7a761d4b0fb13d9c0626a7a239c7463be76e39ec",
+    "probity_benchmark/controls3.py": "8a5690b025acb193803874a32c564e7a43d26e1cd014769063eb3a3ab23921bd",
+    "runs/iteration3/environment/counterfactual_pairs_scaffold_v1/build_scaffold.py": "e8e04f4d43a5f3ab351f3c1e557f5bb5a33154d5d57a22edef5ccebc67cb9fed"
+  },
+  "artifacts": [
+    {
+      "path": "runs/iteration3/environment/counterfactual_pairs_scaffold_v1/worked_pairs.jsonl",
+      "sha256": "847c44b9e47b4f8506b517206f8d7a898080f64a172b0404d2405a8a346b9545",
+      "bytes": 107810
+    },
+    {
+      "path": "runs/iteration3/environment/counterfactual_pairs_scaffold_v1/source_edit_and_manual_review.json",
+      "sha256": "b189024698110f83e38947e884a59af9f275b1aebef2b8b1e91558d86b23a482",
+      "bytes": 24335
+    },
+    {
+      "path": "runs/iteration3/environment/counterfactual_pairs_scaffold_v1/no_story_job_previews.jsonl",
+      "sha256": "c1b249da88c52abc8271e9e490c7acc16381a37214bb4c53d73311cc6faf9942",
+      "bytes": 5128
+    },
+    {
+      "path": "runs/iteration3/environment/counterfactual_pairs_scaffold_v1/source_knowledge_job_previews.jsonl",
+      "sha256": "de649a7badceaf1c440dbd7e0b421e3a00ac7e1b6c847675a268618b29ff4a7d",
+      "bytes": 429064
+    },
+    {
+      "path": "runs/iteration3/environment/counterfactual_pairs_scaffold_v1/debate_schedule_preview.jsonl",
+      "sha256": "78a9f79bca8275087199bb2123a11288e214a3d13d016d9dba2143db4844c65d",
+      "bytes": 4644
+    },
+    {
+      "path": "runs/iteration3/environment/counterfactual_pairs_scaffold_v1/private_preparation_previews.jsonl",
+      "sha256": "ab59fe22a285df0313deb66dde08c06161cdcf15581c0e0bf8b73e0bc60614f7",
+      "bytes": 459344
+    },
+    {
+      "path": "runs/iteration3/environment/counterfactual_pairs_scaffold_v1/protocol.json",
+      "sha256": "ee8282c696908ff959fe34dc677f7f7504fb74fd99c17b498ebad558d3685d50",
+      "bytes": 7951
+    }
+  ],
+  "families": 2,
+  "worlds": 4,
+  "selected_parent_source_lines": [
+    90,
+    112
+  ],
+  "selected_family_ids": [
+    "48a34ff98166542b49f9ca82e5ac4ed2b26b0bfefe19550255346c9424d45efc",
+    "f7e3c5fae2808f0f9d9620acf3157ddd044c3f0a4dd1ffe4bcc900b8ee6f4152"
+  ],
+  "paid_calls": 0,
+  "new_holdout_stories_read": 0,
+  "original_28_unused_families_untouched": true,
+  "checks": {
+    "previously_consumed_only": true,
+    "identical_question_options_per_pair": true,
+    "opposite_gold_per_pair": true,
+    "complete_alias_substitution_and_round_trip": true,
+    "single_world_source_in_every_staged_knowledge_and_preparation_input": true,
+    "no_story_messages_identical_across_worlds": true,
+    "coupled_no_story_score_half_for_either_valid_answer": true,
+    "family_partition_preserved": true,
+    "full_source_model_knowledge": "pending; not inferred from offline construction",
+    "future_tokenizer_fit": "pending; no source clipping permitted"
+  },
+  "gold_counts": {
+    "B": 2,
+    "A": 2
+  },
+  "counts": {
+    "no_story_prompt_jobs_per_model": 4,
+    "full_source_knowledge_job_previews": 16,
+    "debate_previews": 8,
+    "private_preparation_previews": 16
+  },
+  "claim_limit": "Development examples and deterministic data/payload checks only. No new debate, probe score, knowledge result or judge uplift has been measured."
+}

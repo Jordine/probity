@@ -1,0 +1,2629 @@
+{
+  "finish_reasons_by_judge": {
+    "Qwen/Qwen3.5-4B": {
+      "stop": 1032
+    },
+    "anthropic/claude-haiku-5.5": {
+      "stop": 1032
+    },
+    "anthropic/claude-opus-5.5": {
+      "stop": 384
+    }
+  },
+  "package_sha256_by_judge": {
+    "Qwen/Qwen3.5-4B": "5f7b4d92e0585b3920ab5bda1d82daf88f457c153f1f4cfe8d45e922998066a0",
+    "anthropic/claude-haiku-5.5": "5f7b4d92e0585b3920ab5bda1d82daf88f457c153f1f4cfe8d45e922998066a0",
+    "anthropic/claude-opus-5.5": "e368fa655538cea03e18b9d409df8a5499fc50df567a29406d1274a6e5858a25"
+  },
+  "judges_in_directional_order": [
+    "Qwen/Qwen3.5-4B",
+    "anthropic/claude-haiku-5.5",
+    "anthropic/claude-opus-5.5"
+  ],
+  "shared_condition_audits": [
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "jobs": 1032,
+      "episodes": 48,
+      "conditions": [
+        "adapted_primary:neutral",
+        "adapted_primary:real",
+        "adapted_primary:shuffled",
+        "apollo_dyl_difference:neutral",
+        "apollo_dyl_difference:real",
+        "apollo_dyl_difference:shuffled",
+        "apollo_response_mean:neutral",
+        "apollo_response_mean:real",
+        "apollo_response_mean:shuffled",
+        "local2_frozen_sentence:neutral",
+        "local2_frozen_sentence:real",
+        "local2_frozen_sentence:shuffled",
+        "local3_clause:neutral",
+        "local3_clause:real",
+        "local3_clause:shuffled",
+        "local3_sentence:neutral",
+        "local3_sentence:real",
+        "local3_sentence:shuffled",
+        "none",
+        "oracle",
+        "published_fibs_dyl:neutral",
+        "published_fibs_dyl:real",
+        "published_fibs_dyl:shuffled"
+      ],
+      "first_only_conditions": [],
+      "second_only_conditions": [],
+      "shared_jobs_sha256": "57c18d4ca110d40d449c8850cfda360aae3e92a95f38565934aa04454d9cfed6"
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "jobs": 384,
+      "episodes": 48,
+      "conditions": [
+        "adapted_primary:neutral",
+        "adapted_primary:real",
+        "adapted_primary:shuffled",
+        "local3_sentence:neutral",
+        "local3_sentence:real",
+        "local3_sentence:shuffled",
+        "none",
+        "oracle"
+      ],
+      "first_only_conditions": [
+        "apollo_dyl_difference:neutral",
+        "apollo_dyl_difference:real",
+        "apollo_dyl_difference:shuffled",
+        "apollo_response_mean:neutral",
+        "apollo_response_mean:real",
+        "apollo_response_mean:shuffled",
+        "local2_frozen_sentence:neutral",
+        "local2_frozen_sentence:real",
+        "local2_frozen_sentence:shuffled",
+        "local3_clause:neutral",
+        "local3_clause:real",
+        "local3_clause:shuffled",
+        "published_fibs_dyl:neutral",
+        "published_fibs_dyl:real",
+        "published_fibs_dyl:shuffled"
+      ],
+      "second_only_conditions": [],
+      "shared_jobs_sha256": "6a69ed9f93fe8ca8c6e3ab677baa397270dd7ffa7820a3ee5d3d8087bd3ba15d"
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "jobs": 384,
+      "episodes": 48,
+      "conditions": [
+        "adapted_primary:neutral",
+        "adapted_primary:real",
+        "adapted_primary:shuffled",
+        "local3_sentence:neutral",
+        "local3_sentence:real",
+        "local3_sentence:shuffled",
+        "none",
+        "oracle"
+      ],
+      "first_only_conditions": [
+        "apollo_dyl_difference:neutral",
+        "apollo_dyl_difference:real",
+        "apollo_dyl_difference:shuffled",
+        "apollo_response_mean:neutral",
+        "apollo_response_mean:real",
+        "apollo_response_mean:shuffled",
+        "local2_frozen_sentence:neutral",
+        "local2_frozen_sentence:real",
+        "local2_frozen_sentence:shuffled",
+        "local3_clause:neutral",
+        "local3_clause:real",
+        "local3_clause:shuffled",
+        "published_fibs_dyl:neutral",
+        "published_fibs_dyl:real",
+        "published_fibs_dyl:shuffled"
+      ],
+      "second_only_conditions": [],
+      "shared_jobs_sha256": "6a69ed9f93fe8ca8c6e3ab677baa397270dd7ffa7820a3ee5d3d8087bd3ba15d"
+    }
+  ],
+  "independent_unit": "source family; all episode/model/world observations resampled together",
+  "estimand": "(second real - second matched neutral) - (first real - first matched neutral)",
+  "interpretation": "When the second judge is designated stronger before outcomes, negative values mean smaller observed uplift. Also inspect both judges' raw and neutral accuracy, oracle headroom, and individual fixes/harms. This is a run-specific paired comparison, not a general claim about model size or capability.",
+  "uplift_interactions": [
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "detector": "adapted_primary",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.3541666666666667,
+        -0.041666666666666664
+      ],
+      "mean_uplift_difference_second_minus_first": -0.1875,
+      "positive_interaction_episodes": 1,
+      "negative_interaction_episodes": 9
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "detector": "apollo_dyl_difference",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.20833333333333334,
+        0.125
+      ],
+      "mean_uplift_difference_second_minus_first": -0.041666666666666664,
+      "positive_interaction_episodes": 4,
+      "negative_interaction_episodes": 7
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "detector": "apollo_response_mean",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.22916666666666666,
+        0.041666666666666664
+      ],
+      "mean_uplift_difference_second_minus_first": -0.08333333333333333,
+      "positive_interaction_episodes": 2,
+      "negative_interaction_episodes": 6
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "detector": "local2_frozen_sentence",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.020833333333333332,
+        0.14583333333333334
+      ],
+      "mean_uplift_difference_second_minus_first": 0.0625,
+      "positive_interaction_episodes": 4,
+      "negative_interaction_episodes": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "detector": "local3_clause",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0625,
+        0.2916666666666667
+      ],
+      "mean_uplift_difference_second_minus_first": 0.16666666666666666,
+      "positive_interaction_episodes": 8,
+      "negative_interaction_episodes": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "detector": "local3_sentence",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.08333333333333333,
+        0.3541666666666667
+      ],
+      "mean_uplift_difference_second_minus_first": 0.20833333333333334,
+      "positive_interaction_episodes": 8,
+      "negative_interaction_episodes": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "detector": "published_fibs_dyl",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.25,
+        0.0
+      ],
+      "mean_uplift_difference_second_minus_first": -0.125,
+      "positive_interaction_episodes": 0,
+      "negative_interaction_episodes": 3
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "adapted_primary",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.3333333333333333,
+        -0.041666666666666664
+      ],
+      "mean_uplift_difference_second_minus_first": -0.16666666666666666,
+      "positive_interaction_episodes": 0,
+      "negative_interaction_episodes": 4
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "apollo_dyl_difference",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.25,
+        0.0
+      ],
+      "mean_uplift_difference_second_minus_first": -0.125,
+      "positive_interaction_episodes": 0,
+      "negative_interaction_episodes": 3
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "apollo_response_mean",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.3333333333333333,
+        -0.041666666666666664
+      ],
+      "mean_uplift_difference_second_minus_first": -0.16666666666666666,
+      "positive_interaction_episodes": 0,
+      "negative_interaction_episodes": 4
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "local2_frozen_sentence",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.0
+      ],
+      "mean_uplift_difference_second_minus_first": 0.0,
+      "positive_interaction_episodes": 0,
+      "negative_interaction_episodes": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "local3_clause",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.041666666666666664,
+        0.375
+      ],
+      "mean_uplift_difference_second_minus_first": 0.20833333333333334,
+      "positive_interaction_episodes": 5,
+      "negative_interaction_episodes": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "local3_sentence",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.20833333333333334
+      ],
+      "mean_uplift_difference_second_minus_first": 0.08333333333333333,
+      "positive_interaction_episodes": 2,
+      "negative_interaction_episodes": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "published_fibs_dyl",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.25,
+        0.0
+      ],
+      "mean_uplift_difference_second_minus_first": -0.125,
+      "positive_interaction_episodes": 0,
+      "negative_interaction_episodes": 3
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "adapted_primary",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.4583333333333333,
+        0.0
+      ],
+      "mean_uplift_difference_second_minus_first": -0.20833333333333334,
+      "positive_interaction_episodes": 1,
+      "negative_interaction_episodes": 5
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "apollo_dyl_difference",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.20833333333333334,
+        0.3333333333333333
+      ],
+      "mean_uplift_difference_second_minus_first": 0.041666666666666664,
+      "positive_interaction_episodes": 4,
+      "negative_interaction_episodes": 4
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "apollo_response_mean",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.16666666666666666,
+        0.16666666666666666
+      ],
+      "mean_uplift_difference_second_minus_first": 0.0,
+      "positive_interaction_episodes": 2,
+      "negative_interaction_episodes": 2
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "local2_frozen_sentence",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.041666666666666664,
+        0.2916666666666667
+      ],
+      "mean_uplift_difference_second_minus_first": 0.125,
+      "positive_interaction_episodes": 4,
+      "negative_interaction_episodes": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "local3_clause",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.041666666666666664,
+        0.3333333333333333
+      ],
+      "mean_uplift_difference_second_minus_first": 0.125,
+      "positive_interaction_episodes": 3,
+      "negative_interaction_episodes": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "local3_sentence",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.125,
+        0.5833333333333334
+      ],
+      "mean_uplift_difference_second_minus_first": 0.3333333333333333,
+      "positive_interaction_episodes": 6,
+      "negative_interaction_episodes": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "detector": "adapted_primary",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.2916666666666667,
+        -0.020833333333333332
+      ],
+      "mean_uplift_difference_second_minus_first": -0.14583333333333334,
+      "positive_interaction_episodes": 1,
+      "negative_interaction_episodes": 8
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "detector": "local3_sentence",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.08333333333333333,
+        0.2916666666666667
+      ],
+      "mean_uplift_difference_second_minus_first": 0.1875,
+      "positive_interaction_episodes": 9,
+      "negative_interaction_episodes": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "adapted_primary",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.25,
+        0.0
+      ],
+      "mean_uplift_difference_second_minus_first": -0.125,
+      "positive_interaction_episodes": 0,
+      "negative_interaction_episodes": 3
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "local3_sentence",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.25
+      ],
+      "mean_uplift_difference_second_minus_first": 0.125,
+      "positive_interaction_episodes": 3,
+      "negative_interaction_episodes": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "adapted_primary",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.375,
+        0.0
+      ],
+      "mean_uplift_difference_second_minus_first": -0.16666666666666666,
+      "positive_interaction_episodes": 1,
+      "negative_interaction_episodes": 5
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "local3_sentence",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.08333333333333333,
+        0.4166666666666667
+      ],
+      "mean_uplift_difference_second_minus_first": 0.25,
+      "positive_interaction_episodes": 6,
+      "negative_interaction_episodes": 0
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "detector": "adapted_primary",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.041666666666666664,
+        0.125
+      ],
+      "mean_uplift_difference_second_minus_first": 0.041666666666666664,
+      "positive_interaction_episodes": 3,
+      "negative_interaction_episodes": 1
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "detector": "local3_sentence",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.08333333333333333,
+        0.041666666666666664
+      ],
+      "mean_uplift_difference_second_minus_first": -0.020833333333333332,
+      "positive_interaction_episodes": 1,
+      "negative_interaction_episodes": 2
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "adapted_primary",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.125
+      ],
+      "mean_uplift_difference_second_minus_first": 0.041666666666666664,
+      "positive_interaction_episodes": 1,
+      "negative_interaction_episodes": 0
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "detector": "local3_sentence",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.125
+      ],
+      "mean_uplift_difference_second_minus_first": 0.041666666666666664,
+      "positive_interaction_episodes": 1,
+      "negative_interaction_episodes": 0
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "adapted_primary",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.08333333333333333,
+        0.16666666666666666
+      ],
+      "mean_uplift_difference_second_minus_first": 0.041666666666666664,
+      "positive_interaction_episodes": 2,
+      "negative_interaction_episodes": 1
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "detector": "local3_sentence",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.20833333333333334,
+        0.0
+      ],
+      "mean_uplift_difference_second_minus_first": -0.08333333333333333,
+      "positive_interaction_episodes": 0,
+      "negative_interaction_episodes": 2
+    }
+  ],
+  "paired_accuracy_differences": [
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "adapted_primary:neutral",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.2708333333333333
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 7,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "adapted_primary:real",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.16666666666666666,
+        0.0
+      ],
+      "mean_accuracy_difference_second_minus_first": -0.0625,
+      "second_only_correct": 0,
+      "first_only_correct": 3
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "adapted_primary:shuffled",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.125,
+        0.4166666666666667
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.2708333333333333,
+      "second_only_correct": 14,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "apollo_dyl_difference:neutral",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.2708333333333333
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 7,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "apollo_dyl_difference:real",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.020833333333333332,
+        0.16666666666666666
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.08333333333333333,
+      "second_only_correct": 4,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "apollo_dyl_difference:shuffled",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0625,
+        0.3541666666666667
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.20833333333333334,
+      "second_only_correct": 11,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "apollo_response_mean:neutral",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.020833333333333332,
+        0.25
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.10416666666666667,
+      "second_only_correct": 6,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "apollo_response_mean:real",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.041666666666666664,
+        0.08333333333333333
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.020833333333333332,
+      "second_only_correct": 2,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "apollo_response_mean:shuffled",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.041666666666666664,
+        0.2916666666666667
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.16666666666666666,
+      "second_only_correct": 9,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "local2_frozen_sentence:neutral",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.020833333333333332,
+        0.2916666666666667
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.14583333333333334,
+      "second_only_correct": 8,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "local2_frozen_sentence:real",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.08333333333333333,
+        0.3333333333333333
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.20833333333333334,
+      "second_only_correct": 10,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "local2_frozen_sentence:shuffled",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.08333333333333333,
+        0.3541666666666667
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.20833333333333334,
+      "second_only_correct": 10,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "local3_clause:neutral",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.0625,
+        0.22916666666666666
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.08333333333333333,
+      "second_only_correct": 7,
+      "first_only_correct": 3
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "local3_clause:real",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.125,
+        0.375
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.25,
+      "second_only_correct": 12,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "local3_clause:shuffled",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.020833333333333332,
+        0.25
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 8,
+      "first_only_correct": 2
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "local3_sentence:neutral",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.020833333333333332,
+        0.2708333333333333
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 8,
+      "first_only_correct": 2
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "local3_sentence:real",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.1875,
+        0.5
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.3333333333333333,
+      "second_only_correct": 16,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "local3_sentence:shuffled",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.08333333333333333,
+        0.3125
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.1875,
+      "second_only_correct": 9,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "none",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.2708333333333333
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 8,
+      "first_only_correct": 2
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "oracle",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.0625,
+        0.0
+      ],
+      "mean_accuracy_difference_second_minus_first": -0.020833333333333332,
+      "second_only_correct": 0,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "published_fibs_dyl:neutral",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.25
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 3,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "published_fibs_dyl:real",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.0
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.0,
+      "second_only_correct": 0,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "published_fibs_dyl:shuffled",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.041666666666666664,
+        0.375
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.20833333333333334,
+      "second_only_correct": 5,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "adapted_primary:neutral",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.25
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 3,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "adapted_primary:real",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.125,
+        0.0
+      ],
+      "mean_accuracy_difference_second_minus_first": -0.041666666666666664,
+      "second_only_correct": 0,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "adapted_primary:shuffled",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.125,
+        0.5416666666666666
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.3333333333333333,
+      "second_only_correct": 9,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "apollo_dyl_difference:neutral",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.25
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 3,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "apollo_dyl_difference:real",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.0
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.0,
+      "second_only_correct": 0,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "apollo_dyl_difference:shuffled",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.041666666666666664,
+        0.375
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.20833333333333334,
+      "second_only_correct": 5,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "apollo_response_mean:neutral",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.25
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 3,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "apollo_response_mean:real",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.125,
+        0.0
+      ],
+      "mean_accuracy_difference_second_minus_first": -0.041666666666666664,
+      "second_only_correct": 0,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "apollo_response_mean:shuffled",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.041666666666666664,
+        0.3333333333333333
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.16666666666666666,
+      "second_only_correct": 4,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "local2_frozen_sentence:neutral",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.25
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 3,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "local2_frozen_sentence:real",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.25
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 3,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "local2_frozen_sentence:shuffled",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.2916666666666667
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 3,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "local3_clause:neutral",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.08333333333333333,
+        0.16666666666666666
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.041666666666666664,
+      "second_only_correct": 2,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "local3_clause:real",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.08333333333333333,
+        0.4166666666666667
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.25,
+      "second_only_correct": 6,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "local3_clause:shuffled",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.08333333333333333,
+        0.25
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.08333333333333333,
+      "second_only_correct": 3,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "local3_sentence:neutral",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.25
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 3,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "local3_sentence:real",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.041666666666666664,
+        0.375
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.20833333333333334,
+      "second_only_correct": 5,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "local3_sentence:shuffled",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.25
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 3,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "none",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.25
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 3,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "oracle",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.0
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.0,
+      "second_only_correct": 0,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "published_fibs_dyl:neutral",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.25
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 3,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "published_fibs_dyl:real",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.0
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.0,
+      "second_only_correct": 0,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "published_fibs_dyl:shuffled",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.041666666666666664,
+        0.375
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.20833333333333334,
+      "second_only_correct": 5,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "adapted_primary:neutral",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.041666666666666664,
+        0.2916666666666667
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 4,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "adapted_primary:real",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.20833333333333334,
+        0.0
+      ],
+      "mean_accuracy_difference_second_minus_first": -0.08333333333333333,
+      "second_only_correct": 0,
+      "first_only_correct": 2
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "adapted_primary:shuffled",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.08333333333333333,
+        0.375
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.20833333333333334,
+      "second_only_correct": 5,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "apollo_dyl_difference:neutral",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.041666666666666664,
+        0.2916666666666667
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 4,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "apollo_dyl_difference:real",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.041666666666666664,
+        0.3333333333333333
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.16666666666666666,
+      "second_only_correct": 4,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "apollo_dyl_difference:shuffled",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.4166666666666667
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.20833333333333334,
+      "second_only_correct": 6,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "apollo_response_mean:neutral",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.08333333333333333,
+        0.25
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.08333333333333333,
+      "second_only_correct": 3,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "apollo_response_mean:real",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.20833333333333334
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.08333333333333333,
+      "second_only_correct": 2,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "apollo_response_mean:shuffled",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.375
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.16666666666666666,
+      "second_only_correct": 5,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "local2_frozen_sentence:neutral",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.375
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.16666666666666666,
+      "second_only_correct": 5,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "local2_frozen_sentence:real",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.125,
+        0.4583333333333333
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.2916666666666667,
+      "second_only_correct": 7,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "local2_frozen_sentence:shuffled",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.125,
+        0.5
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.2916666666666667,
+      "second_only_correct": 7,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "local3_clause:neutral",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.08333333333333333,
+        0.3333333333333333
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 5,
+      "first_only_correct": 2
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "local3_clause:real",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.08333333333333333,
+        0.4166666666666667
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.25,
+      "second_only_correct": 6,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "local3_clause:shuffled",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.375
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.16666666666666666,
+      "second_only_correct": 5,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "local3_sentence:neutral",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.08333333333333333,
+        0.3333333333333333
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 5,
+      "first_only_correct": 2
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "local3_sentence:real",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.25,
+        0.6666666666666666
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.4583333333333333,
+      "second_only_correct": 11,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "local3_sentence:shuffled",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.08333333333333333,
+        0.4166666666666667
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.25,
+      "second_only_correct": 6,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "none",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.08333333333333333,
+        0.3333333333333333
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 5,
+      "first_only_correct": 2
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-haiku-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "oracle",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.125,
+        0.0
+      ],
+      "mean_accuracy_difference_second_minus_first": -0.041666666666666664,
+      "second_only_correct": 0,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "adapted_primary:neutral",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.020833333333333332,
+        0.3125
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.14583333333333334,
+      "second_only_correct": 9,
+      "first_only_correct": 2
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "adapted_primary:real",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.0625,
+        0.0625
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.0,
+      "second_only_correct": 1,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "adapted_primary:shuffled",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.22916666666666666,
+        0.5208333333333334
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.375,
+      "second_only_correct": 18,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "local3_sentence:neutral",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.041666666666666664,
+        0.3125
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.16666666666666666,
+      "second_only_correct": 9,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "local3_sentence:real",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.1875,
+        0.5208333333333334
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.3541666666666667,
+      "second_only_correct": 17,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "local3_sentence:shuffled",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.041666666666666664,
+        0.2916666666666667
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 10,
+      "first_only_correct": 4
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "none",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.020833333333333332,
+        0.3333333333333333
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.16666666666666666,
+      "second_only_correct": 10,
+      "first_only_correct": 2
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "oracle",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.0
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.0,
+      "second_only_correct": 0,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "adapted_primary:neutral",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.041666666666666664,
+        0.2916666666666667
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 4,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "adapted_primary:real",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.125,
+        0.125
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.0,
+      "second_only_correct": 1,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "adapted_primary:shuffled",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.20833333333333334,
+        0.5833333333333334
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.375,
+      "second_only_correct": 9,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "local3_sentence:neutral",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.041666666666666664,
+        0.2916666666666667
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 4,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "local3_sentence:real",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.08333333333333333,
+        0.4166666666666667
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.25,
+      "second_only_correct": 6,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "local3_sentence:shuffled",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.041666666666666664,
+        0.2916666666666667
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 4,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "none",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.041666666666666664,
+        0.2916666666666667
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 4,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "oracle",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.0
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.0,
+      "second_only_correct": 0,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "adapted_primary:neutral",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.375
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.16666666666666666,
+      "second_only_correct": 5,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "adapted_primary:real",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.0
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.0,
+      "second_only_correct": 0,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "adapted_primary:shuffled",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.20833333333333334,
+        0.5833333333333334
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.375,
+      "second_only_correct": 9,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "local3_sentence:neutral",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.041666666666666664,
+        0.375
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.20833333333333334,
+      "second_only_correct": 5,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "local3_sentence:real",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.25,
+        0.6666666666666666
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.4583333333333333,
+      "second_only_correct": 11,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "local3_sentence:shuffled",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.125,
+        0.375
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.125,
+      "second_only_correct": 6,
+      "first_only_correct": 3
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "none",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.041666666666666664,
+        0.4166666666666667
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.20833333333333334,
+      "second_only_correct": 6,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "Qwen/Qwen3.5-4B",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "oracle",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.0
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.0,
+      "second_only_correct": 0,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "adapted_primary:neutral",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.041666666666666664,
+        0.10416666666666667
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.020833333333333332,
+      "second_only_correct": 3,
+      "first_only_correct": 2
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "adapted_primary:real",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.125
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.0625,
+      "second_only_correct": 3,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "adapted_primary:shuffled",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.020833333333333332,
+        0.22916666666666666
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.10416666666666667,
+      "second_only_correct": 8,
+      "first_only_correct": 3
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "local3_sentence:neutral",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.041666666666666664,
+        0.125
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.041666666666666664,
+      "second_only_correct": 3,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "local3_sentence:real",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.0625
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.020833333333333332,
+      "second_only_correct": 1,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "local3_sentence:shuffled",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.14583333333333334,
+        0.020833333333333332
+      ],
+      "mean_accuracy_difference_second_minus_first": -0.0625,
+      "second_only_correct": 1,
+      "first_only_correct": 4
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "none",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.0625,
+        0.14583333333333334
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.041666666666666664,
+      "second_only_correct": 4,
+      "first_only_correct": 2
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "all",
+      "condition": "oracle",
+      "episodes": 48,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.0625
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.020833333333333332,
+      "second_only_correct": 1,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "adapted_primary:neutral",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.125,
+        0.125
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.0,
+      "second_only_correct": 1,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "adapted_primary:real",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.125
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.041666666666666664,
+      "second_only_correct": 1,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "adapted_primary:shuffled",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.16666666666666666,
+        0.25
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.041666666666666664,
+      "second_only_correct": 4,
+      "first_only_correct": 3
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "local3_sentence:neutral",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.125,
+        0.125
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.0,
+      "second_only_correct": 1,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "local3_sentence:real",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.125
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.041666666666666664,
+      "second_only_correct": 1,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "local3_sentence:shuffled",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.125,
+        0.125
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.0,
+      "second_only_correct": 1,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "none",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.125,
+        0.125
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.0,
+      "second_only_correct": 1,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.5-27b",
+      "condition": "oracle",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.0
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.0,
+      "second_only_correct": 0,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "adapted_primary:neutral",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.08333333333333333,
+        0.16666666666666666
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.041666666666666664,
+      "second_only_correct": 2,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "adapted_primary:real",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.20833333333333334
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.08333333333333333,
+      "second_only_correct": 2,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "adapted_primary:shuffled",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.041666666666666664,
+        0.3333333333333333
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.16666666666666666,
+      "second_only_correct": 4,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "local3_sentence:neutral",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.20833333333333334
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.08333333333333333,
+      "second_only_correct": 2,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "local3_sentence:real",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.0
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.0,
+      "second_only_correct": 0,
+      "first_only_correct": 0
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "local3_sentence:shuffled",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.25,
+        0.0
+      ],
+      "mean_accuracy_difference_second_minus_first": -0.125,
+      "second_only_correct": 0,
+      "first_only_correct": 3
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "none",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        -0.08333333333333333,
+        0.25
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.08333333333333333,
+      "second_only_correct": 3,
+      "first_only_correct": 1
+    },
+    {
+      "judge_first": "anthropic/claude-haiku-5.5",
+      "judge_second": "anthropic/claude-opus-5.5",
+      "protocol": "explicit_reasoned_evidence_sequential",
+      "split": "test",
+      "participant": "qwen/qwen3.8-27b",
+      "condition": "oracle",
+      "episodes": 24,
+      "parent_groups": 24,
+      "parent_bootstrap_95_ci": [
+        0.0,
+        0.125
+      ],
+      "mean_accuracy_difference_second_minus_first": 0.041666666666666664,
+      "second_only_correct": 1,
+      "first_only_correct": 0
+    }
+  ],
+  "limits": [
+    "A perfect sample has a degenerate bootstrap interval, not population certainty.",
+    "Judge API and native runtimes differ even with identical message text.",
+    "No final outcome-dependent exclusions or detector selection.",
+    "Real minus shuffled can reflect damage from shuffled advice; show shuffled minus neutral and fixes/harms.",
+    "Reduced judge packages only support crossjudge claims for their exact shared conditions, selected before fresh outcomes.",
+    "These intervals are unadjusted across frozen detector/judge contrasts; no significance-based detector selection."
+  ],
+  "schema": "judge3_public_crossjudge_summary_v1",
+  "source_report_sha256": "3e923b12aba30d95612615770a3205a1f2d8b8e9f29272a4a63ac4afb354d732",
+  "projection": "Every aggregate retained unchanged; input filesystem paths omitted."
+}

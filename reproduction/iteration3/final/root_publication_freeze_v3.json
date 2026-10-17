@@ -1,0 +1,36 @@
+{
+  "schema": "probity_root_publication_inventory_freeze_v1",
+  "released_at_utc": "2026-10-15T15:11:21.333637+00:00",
+  "release_basis": "Root explicitly released final inventory generation after completed experiments, final report review, and verified storage relocation. This is a publication freeze, not a preregistration of already observed outcomes.",
+  "report": {
+    "path": "docs/probity_iteration3_results.md",
+    "bytes": 34276,
+    "sha256": "98885372f7054a7152253273230cce8591be9eda0992911761c52152db96965c"
+  },
+  "public_validation_receipts": {
+    "path": "runs/iteration3/environment/publication_audit_v1/public_validation_receipts_v1.json",
+    "sha256": "27db1f36013a11f8cd81f5338820e8f8a8023e72c96ccd44b8d93f499c33f26a"
+  },
+  "generator": {
+    "path": "runs/iteration3/environment/publication_audit_v1/build_manifests_v3.py",
+    "bytes": 49457,
+    "sha256": "847e792404e3c73a1a476b4b45078149a2b4e16d5bd1ab8228ae509948e9f730"
+  },
+  "readme_source": {
+    "path": "runs/iteration3/environment/publication_audit_v1/reproduction_README.public_v3.md",
+    "bytes": 11314,
+    "sha256": "75b9510a7fc43785fb4504c1150e7044830f5ba7823c319364b81c20ea487f59"
+  },
+  "publication_base_commit": "ca3952e17af8469be6d0b4ea8843727cd98a291f",
+  "scope": "Create versioned public allowlist and private reproduction candidate manifest. Root handles temporary-index staging and publication. No fresh inference or frozen-protocol change authorized by this artifact.",
+  "supersedes": {
+    "path": "runs/iteration3/environment/publication_audit_v1/root_publication_freeze_v2.json",
+    "sha256": "0a8abf0f8489460a3a7fecbf03e3dcc62ce24785db07370014b21e60e87de56e",
+    "reason": "Private bundle now uses an exact fifteen-member raw-provenance derivative excluding one infrastructure marker; original retained unchanged. Root acknowledged this publication-scope exclusion."
+  },
+  "private_provenance_derivative_receipt": {
+    "path": "runs/iteration3/environment/publication_audit_v1/local_fresh_feature_provenance_private_receipt_v1.json",
+    "bytes": 4103,
+    "sha256": "4df891f9213443d0bb07d9f0b0e9765aa06f8bcadcc28d5a0a0c307e34e1ec21"
+  }
+}

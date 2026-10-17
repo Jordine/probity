@@ -1,0 +1,66 @@
+{
+  "locked_at_utc": "2026-10-14T19:07:49.760393+00:00",
+  "phase": "development head selection before any local3 probe outcomes",
+  "natural_verified_corpus_sha256": "fa1819665c9d9043522a1e71b7296eb2f828d6dcec8b4899f02b8e763a52dc72",
+  "mixed_verified_corpus_sha256": "00da4bc456152132839809fbe9583a60b533a0b0a08afd16a25053cded5491ee",
+  "mixed_counts_by_split": {
+    "train": {
+      "response_pairs": 12,
+      "source_lines": [
+        5,
+        22,
+        82,
+        98,
+        117,
+        134,
+        143
+      ],
+      "claim_pairs": 33
+    },
+    "dev": {
+      "response_pairs": 6,
+      "source_lines": [
+        90,
+        112,
+        128,
+        137
+      ],
+      "claim_pairs": 16
+    }
+  },
+  "trainer_sha256": "673eda3af79f67e86307b986ea6223162a1217378be3271829ad9c3d314d0227",
+  "projection_sha256": "1e670b6a97b33d7e887f25aacfcc4ea6822d7cb79ed02e704283462cba09a7df",
+  "bundle_sha256": "a41f389682668d52754bcb04f13c1261a5d8dde078c1c394e9ca662bc3f885d5",
+  "family_audit_sha256": "a6aa53d70d50d0bf1f799bf167897d3f3aca1f08c3f11533c814bac0070c87e1",
+  "grid": {
+    "layers": [
+      27,
+      35,
+      43,
+      51
+    ],
+    "C": [
+      0.001,
+      0.01
+    ],
+    "tracks": [
+      "natural_bce",
+      "twins_bce",
+      "twins_pairwise",
+      "mixed_pairwise"
+    ],
+    "pooling": "span_mean"
+  },
+  "selection": "Maximize minimum of natural-dev family-macro within-response AUC, paired-source-dev family-macro ordering accuracy, and mixed-source-dev family-macro within-response AUC; tie natural AUC then smaller C. No new final outcomes.",
+  "controls": [
+    "frozen iteration2 local head",
+    "frozen iteration2 TFIDF predictions on matched spans",
+    "fixed word-bigram TFIDF C1 trained on natural train only",
+    "position and negative position",
+    "best of32 random directions selected by same maximin",
+    "whole-response and published DYL broadcasts"
+  ],
+  "annotation_limit": "Silver labels from independent Opus and Qwen complete-source checks, not intent ground truth. Failed verifier variants retained, v4 repaired reason/verdict order and literal-claim binding before feature outcomes. Mixed edits can leave rhetorical contradictions elsewhere; both complete worlds and arguments preserved. Unknown never negative.",
+  "reference_population": "Every sentence/clause in original-source old-dev verified natural-twin response rows, matching participant; response selection is source-sensitive-claim filtered, units never individually selected by labels.",
+  "fresh_annotation_plan": "Both sentence and clause text-only partitions, deduplicate identical coordinates; sentence primary, clause secondary. Independent complete-source Qwen and Opus agreement with scope checks. Budget preflight may restrict to sentences before calls; no test outcome selection."
+}

@@ -1,0 +1,11 @@
+{
+  "created_at_utc": "2026-10-15T12:41:22.784663+00:00",
+  "reason": "Overlap remaining pinned model downloads with already-ready nativecontrols and Qwen3.5 extraction",
+  "changes": "Scheduling only: wait for each pinned checkpoint immediately before use; original command bodies unchanged",
+  "files": {
+    "final_feature_pipeline_v2.sh": "287e90ac18fd2f6db2de6738a9cdddbb26676a53aa4ed267b9e2296d917ca072",
+    "final_feature_pipeline_v3.sh": "c682a0751cb4a574f641a6d7b24259ee19923c580f0f5751adfe42f19e34d5e4",
+    "remote_final_stage_v1.sh": "ede9f3f58fa31f8a325f3e5ebd8a24b5aecae1b2ffb318219bda4d47c4837962",
+    "remote_final_stage_v2.sh": "0b80b5273329ca4cd008fcda05bcf35580ed416317480b4e3c616d15f98910c7"
+  }
+}

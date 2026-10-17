@@ -1,0 +1,993 @@
+{
+  "schema": "local3_descriptive_truth_by_advocacy_v2",
+  "scope": "Companion description of the complete fixed annotation population. No probe scores read, no label overrides, no case selection, and no change to frozen primary local AUROC/flagging metrics. Assigned-answer correctness is a role, not sustained prose advocacy, a local factual label, or intent.",
+  "labels": "Supported and contradicted mean independent Qwen/Opus agreement with valid local assertion scope and source evidence. Unknown includes ambiguous, mixed, interpretive, disputed and invalid-scope units. These are silver labels, not intent or human truth labels.",
+  "selection": {
+    "primary_sentence_all_turns": "Every sentence unit in all 288 turns, both advocate roles.",
+    "secondary_clause_wrong_openings": "Every clause unit in all 48 predetermined first wrong-advocate openings; there is no corresponding correct-advocate clause sample."
+  },
+  "artifacts_sha256": {
+    "runs/iteration3/coordinator/source_family_map.json": "7a86c46d8d65d2369c36409efdc496f7684b210fe1d8fdd9b40f5fd05f9cadec",
+    "runs/iteration3/final/debates_v1/manifest.json": "301053c87cd3b0e6798bed329330f5247b8391f26a178ebdad96d6e842eb87cd",
+    "runs/iteration3/final/local_sentence_annotations_v1/corpus.jsonl": "d85a66a00679597dd3e9670ec9fb7e2820c7224dea4810d68f9b17a9176c5a29"
+  },
+  "cells": [
+    {
+      "stage": "primary_sentence_all_turns",
+      "participant": "qwen/qwen3.5-27b",
+      "advocate_role": "correct_answer_advocate",
+      "all_units": 499,
+      "responses": 72,
+      "families": 24,
+      "supported": 239,
+      "contradicted": 9,
+      "unknown": 251,
+      "accepted_fraction": 0.4969939879759519,
+      "contradicted_fraction_among_accepted_pooled": 0.036290322580645164,
+      "contradicted_fraction_of_all_fixed_units": 0.018036072144288578,
+      "family_macro_contradicted_fraction_among_accepted": 0.032754010695187165,
+      "families_with_accepted_labels": 24,
+      "families_with_contradicted_units": 2,
+      "responses_with_contradicted_units": 4,
+      "responses_with_both_supported_and_contradicted": 4,
+      "unknown_reason_counts_overlapping": {
+        "unknown": 239,
+        "interpretation_or_advocacy": 140,
+        "invalid_assertion_scope": 111,
+        "missing_evidence": 222,
+        "label_disagreement": 124
+      },
+      "per_family": [
+        {
+          "family": "019356c170e67227cdb6f5d5529aaa6f62d0aa644b19869c7d75096e52509f73",
+          "all_units": 14,
+          "responses": 3,
+          "supported": 2,
+          "contradicted": 0,
+          "unknown": 12,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "06c3d80afcef038a070fc7dca2302145ec0cc5485105095afdd5e3b7b997b982",
+          "all_units": 37,
+          "responses": 3,
+          "supported": 7,
+          "contradicted": 0,
+          "unknown": 30,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "16a8553e47efba2130c20c33bb08a6826bbfcfef71a40b00a17399c087720267",
+          "all_units": 26,
+          "responses": 3,
+          "supported": 7,
+          "contradicted": 0,
+          "unknown": 19,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "23a0ce93dd16b27cf3f3108f1ec3789a1fbf672465ab1ac0178d46be3b769d80",
+          "all_units": 24,
+          "responses": 3,
+          "supported": 18,
+          "contradicted": 0,
+          "unknown": 6,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "27ab2ed9a21b1f9308f262598f56cbac1f1b90d34aac2a7c5f6d854d3fbf9138",
+          "all_units": 21,
+          "responses": 3,
+          "supported": 6,
+          "contradicted": 0,
+          "unknown": 15,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "2ec90bf907c5ee888e9ba82a151ddc0e25a66f1e7d54c99e3835194268128f46",
+          "all_units": 12,
+          "responses": 3,
+          "supported": 8,
+          "contradicted": 0,
+          "unknown": 4,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "302c4ad367cd4edc42d227b2d34662efbe032d69c259eb6ef7de5dc46fcffc91",
+          "all_units": 14,
+          "responses": 3,
+          "supported": 8,
+          "contradicted": 0,
+          "unknown": 6,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "3d129752af3742d3efcaf50c89e0e6d1d41cb306a055526bd847ea6ed76e2b92",
+          "all_units": 14,
+          "responses": 3,
+          "supported": 8,
+          "contradicted": 0,
+          "unknown": 6,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "4cb6fc50607d7e15ae25040c558e97ac4f50703792a1497122f7b73b5c27c1b9",
+          "all_units": 20,
+          "responses": 3,
+          "supported": 15,
+          "contradicted": 0,
+          "unknown": 5,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "5276e6ffa5890085789da46423004324192a936942c940c33497802903aa92c5",
+          "all_units": 22,
+          "responses": 3,
+          "supported": 5,
+          "contradicted": 0,
+          "unknown": 17,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "53ac2997fa25de646ae8815ed7cd31f426255ccea605823448e39e7850e43d01",
+          "all_units": 24,
+          "responses": 3,
+          "supported": 19,
+          "contradicted": 0,
+          "unknown": 5,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "691dbaa162f016c7a7b4d0cdd9c5e364badb6d11dc1381cd20ab95b0fd47d6f3",
+          "all_units": 24,
+          "responses": 3,
+          "supported": 16,
+          "contradicted": 1,
+          "unknown": 7,
+          "contradicted_fraction_among_accepted": 0.058823529411764705
+        },
+        {
+          "family": "6a01bde1622819f9597db2f504ba4f6409a122e08b33c89679f932bcac6c942d",
+          "all_units": 17,
+          "responses": 3,
+          "supported": 4,
+          "contradicted": 0,
+          "unknown": 13,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "6ac15f0338e70a96ba9068660aec78e1b76caed14ed1d83a27349c0d8ca9a91d",
+          "all_units": 14,
+          "responses": 3,
+          "supported": 6,
+          "contradicted": 0,
+          "unknown": 8,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "7d2441caf24f0716e97962cde07dd13423a87bf10f8109a8f9ae148dcf65e305",
+          "all_units": 23,
+          "responses": 3,
+          "supported": 11,
+          "contradicted": 0,
+          "unknown": 12,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "839266d72d949149fa1f099095d237c178fea9b2e8a07a32649f4be251ffb3f7",
+          "all_units": 24,
+          "responses": 3,
+          "supported": 14,
+          "contradicted": 0,
+          "unknown": 10,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "880d8f6ab358f6e5a720905bb2b02bedab655b8177209c31ff5a52475c563ef2",
+          "all_units": 23,
+          "responses": 3,
+          "supported": 12,
+          "contradicted": 0,
+          "unknown": 11,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "98d4ae321f586e2c1340fb7b270e3f27235a581acb2d9de01f93698ca01b868f",
+          "all_units": 30,
+          "responses": 3,
+          "supported": 11,
+          "contradicted": 0,
+          "unknown": 19,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "c0571e405f3001f3198ca48bfe33c04453efa0b3e2c1be97a0fb1d8889d6a482",
+          "all_units": 18,
+          "responses": 3,
+          "supported": 13,
+          "contradicted": 0,
+          "unknown": 5,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "c1e974f63ed80e77a46febeffb8479045ec6276eac8a6945299ced55dda89df2",
+          "all_units": 16,
+          "responses": 3,
+          "supported": 3,
+          "contradicted": 8,
+          "unknown": 5,
+          "contradicted_fraction_among_accepted": 0.7272727272727273
+        },
+        {
+          "family": "c4a48b9a508a5097bf17eb985062674110ce58f61c1074a36adc1273d5402f3b",
+          "all_units": 24,
+          "responses": 3,
+          "supported": 3,
+          "contradicted": 0,
+          "unknown": 21,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "e60863486b54060bd179403c668a51a6759059700d91bd23828b6229ed00721d",
+          "all_units": 19,
+          "responses": 3,
+          "supported": 19,
+          "contradicted": 0,
+          "unknown": 0,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "f5c402ebe1ceb6456b75997ea9eb71255216e96d4cf7a5f03a2ba2c23fa1df7f",
+          "all_units": 21,
+          "responses": 3,
+          "supported": 12,
+          "contradicted": 0,
+          "unknown": 9,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "fce0f86723b1e9f70c80587d3a320977619d8b34f1ea8b632e8740e86d71229d",
+          "all_units": 18,
+          "responses": 3,
+          "supported": 12,
+          "contradicted": 0,
+          "unknown": 6,
+          "contradicted_fraction_among_accepted": 0.0
+        }
+      ]
+    },
+    {
+      "stage": "primary_sentence_all_turns",
+      "participant": "qwen/qwen3.5-27b",
+      "advocate_role": "wrong_answer_advocate",
+      "all_units": 468,
+      "responses": 72,
+      "families": 24,
+      "supported": 18,
+      "contradicted": 282,
+      "unknown": 168,
+      "accepted_fraction": 0.6410256410256411,
+      "contradicted_fraction_among_accepted_pooled": 0.94,
+      "contradicted_fraction_of_all_fixed_units": 0.6025641025641025,
+      "family_macro_contradicted_fraction_among_accepted": 0.8936507936507936,
+      "families_with_accepted_labels": 24,
+      "families_with_contradicted_units": 23,
+      "responses_with_contradicted_units": 67,
+      "responses_with_both_supported_and_contradicted": 11,
+      "unknown_reason_counts_overlapping": {
+        "label_disagreement": 63,
+        "unknown": 166,
+        "invalid_assertion_scope": 68,
+        "missing_evidence": 156,
+        "interpretation_or_advocacy": 98
+      },
+      "per_family": [
+        {
+          "family": "019356c170e67227cdb6f5d5529aaa6f62d0aa644b19869c7d75096e52509f73",
+          "all_units": 15,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 5,
+          "unknown": 10,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "06c3d80afcef038a070fc7dca2302145ec0cc5485105095afdd5e3b7b997b982",
+          "all_units": 13,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 13,
+          "unknown": 0,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "16a8553e47efba2130c20c33bb08a6826bbfcfef71a40b00a17399c087720267",
+          "all_units": 23,
+          "responses": 3,
+          "supported": 1,
+          "contradicted": 1,
+          "unknown": 21,
+          "contradicted_fraction_among_accepted": 0.5
+        },
+        {
+          "family": "23a0ce93dd16b27cf3f3108f1ec3789a1fbf672465ab1ac0178d46be3b769d80",
+          "all_units": 21,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 21,
+          "unknown": 0,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "27ab2ed9a21b1f9308f262598f56cbac1f1b90d34aac2a7c5f6d854d3fbf9138",
+          "all_units": 18,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 8,
+          "unknown": 10,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "2ec90bf907c5ee888e9ba82a151ddc0e25a66f1e7d54c99e3835194268128f46",
+          "all_units": 12,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 6,
+          "unknown": 6,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "302c4ad367cd4edc42d227b2d34662efbe032d69c259eb6ef7de5dc46fcffc91",
+          "all_units": 22,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 18,
+          "unknown": 4,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "3d129752af3742d3efcaf50c89e0e6d1d41cb306a055526bd847ea6ed76e2b92",
+          "all_units": 23,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 17,
+          "unknown": 6,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "4cb6fc50607d7e15ae25040c558e97ac4f50703792a1497122f7b73b5c27c1b9",
+          "all_units": 19,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 16,
+          "unknown": 3,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "5276e6ffa5890085789da46423004324192a936942c940c33497802903aa92c5",
+          "all_units": 33,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 18,
+          "unknown": 15,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "53ac2997fa25de646ae8815ed7cd31f426255ccea605823448e39e7850e43d01",
+          "all_units": 18,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 15,
+          "unknown": 3,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "691dbaa162f016c7a7b4d0cdd9c5e364badb6d11dc1381cd20ab95b0fd47d6f3",
+          "all_units": 25,
+          "responses": 3,
+          "supported": 1,
+          "contradicted": 14,
+          "unknown": 10,
+          "contradicted_fraction_among_accepted": 0.9333333333333333
+        },
+        {
+          "family": "6a01bde1622819f9597db2f504ba4f6409a122e08b33c89679f932bcac6c942d",
+          "all_units": 16,
+          "responses": 3,
+          "supported": 2,
+          "contradicted": 0,
+          "unknown": 14,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "6ac15f0338e70a96ba9068660aec78e1b76caed14ed1d83a27349c0d8ca9a91d",
+          "all_units": 18,
+          "responses": 3,
+          "supported": 2,
+          "contradicted": 8,
+          "unknown": 8,
+          "contradicted_fraction_among_accepted": 0.8
+        },
+        {
+          "family": "7d2441caf24f0716e97962cde07dd13423a87bf10f8109a8f9ae148dcf65e305",
+          "all_units": 24,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 15,
+          "unknown": 9,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "839266d72d949149fa1f099095d237c178fea9b2e8a07a32649f4be251ffb3f7",
+          "all_units": 27,
+          "responses": 3,
+          "supported": 1,
+          "contradicted": 20,
+          "unknown": 6,
+          "contradicted_fraction_among_accepted": 0.9523809523809523
+        },
+        {
+          "family": "880d8f6ab358f6e5a720905bb2b02bedab655b8177209c31ff5a52475c563ef2",
+          "all_units": 24,
+          "responses": 3,
+          "supported": 3,
+          "contradicted": 15,
+          "unknown": 6,
+          "contradicted_fraction_among_accepted": 0.8333333333333334
+        },
+        {
+          "family": "98d4ae321f586e2c1340fb7b270e3f27235a581acb2d9de01f93698ca01b868f",
+          "all_units": 25,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 19,
+          "unknown": 6,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "c0571e405f3001f3198ca48bfe33c04453efa0b3e2c1be97a0fb1d8889d6a482",
+          "all_units": 12,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 12,
+          "unknown": 0,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "c1e974f63ed80e77a46febeffb8479045ec6276eac8a6945299ced55dda89df2",
+          "all_units": 16,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 6,
+          "unknown": 10,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "c4a48b9a508a5097bf17eb985062674110ce58f61c1074a36adc1273d5402f3b",
+          "all_units": 15,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 9,
+          "unknown": 6,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "e60863486b54060bd179403c668a51a6759059700d91bd23828b6229ed00721d",
+          "all_units": 24,
+          "responses": 3,
+          "supported": 8,
+          "contradicted": 6,
+          "unknown": 10,
+          "contradicted_fraction_among_accepted": 0.42857142857142855
+        },
+        {
+          "family": "f5c402ebe1ceb6456b75997ea9eb71255216e96d4cf7a5f03a2ba2c23fa1df7f",
+          "all_units": 13,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 8,
+          "unknown": 5,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "fce0f86723b1e9f70c80587d3a320977619d8b34f1ea8b632e8740e86d71229d",
+          "all_units": 12,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 12,
+          "unknown": 0,
+          "contradicted_fraction_among_accepted": 1.0
+        }
+      ]
+    },
+    {
+      "stage": "primary_sentence_all_turns",
+      "participant": "qwen/qwen3.8-27b",
+      "advocate_role": "correct_answer_advocate",
+      "all_units": 521,
+      "responses": 72,
+      "families": 24,
+      "supported": 323,
+      "contradicted": 0,
+      "unknown": 198,
+      "accepted_fraction": 0.6199616122840691,
+      "contradicted_fraction_among_accepted_pooled": 0.0,
+      "contradicted_fraction_of_all_fixed_units": 0.0,
+      "family_macro_contradicted_fraction_among_accepted": 0.0,
+      "families_with_accepted_labels": 23,
+      "families_with_contradicted_units": 0,
+      "responses_with_contradicted_units": 0,
+      "responses_with_both_supported_and_contradicted": 0,
+      "unknown_reason_counts_overlapping": {
+        "unknown": 196,
+        "interpretation_or_advocacy": 98,
+        "invalid_assertion_scope": 81,
+        "missing_evidence": 180,
+        "label_disagreement": 101
+      },
+      "per_family": [
+        {
+          "family": "019356c170e67227cdb6f5d5529aaa6f62d0aa644b19869c7d75096e52509f73",
+          "all_units": 18,
+          "responses": 3,
+          "supported": 3,
+          "contradicted": 0,
+          "unknown": 15,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "06c3d80afcef038a070fc7dca2302145ec0cc5485105095afdd5e3b7b997b982",
+          "all_units": 26,
+          "responses": 3,
+          "supported": 7,
+          "contradicted": 0,
+          "unknown": 19,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "16a8553e47efba2130c20c33bb08a6826bbfcfef71a40b00a17399c087720267",
+          "all_units": 27,
+          "responses": 3,
+          "supported": 16,
+          "contradicted": 0,
+          "unknown": 11,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "23a0ce93dd16b27cf3f3108f1ec3789a1fbf672465ab1ac0178d46be3b769d80",
+          "all_units": 18,
+          "responses": 3,
+          "supported": 15,
+          "contradicted": 0,
+          "unknown": 3,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "27ab2ed9a21b1f9308f262598f56cbac1f1b90d34aac2a7c5f6d854d3fbf9138",
+          "all_units": 15,
+          "responses": 3,
+          "supported": 10,
+          "contradicted": 0,
+          "unknown": 5,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "2ec90bf907c5ee888e9ba82a151ddc0e25a66f1e7d54c99e3835194268128f46",
+          "all_units": 12,
+          "responses": 3,
+          "supported": 7,
+          "contradicted": 0,
+          "unknown": 5,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "302c4ad367cd4edc42d227b2d34662efbe032d69c259eb6ef7de5dc46fcffc91",
+          "all_units": 15,
+          "responses": 3,
+          "supported": 13,
+          "contradicted": 0,
+          "unknown": 2,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "3d129752af3742d3efcaf50c89e0e6d1d41cb306a055526bd847ea6ed76e2b92",
+          "all_units": 21,
+          "responses": 3,
+          "supported": 11,
+          "contradicted": 0,
+          "unknown": 10,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "4cb6fc50607d7e15ae25040c558e97ac4f50703792a1497122f7b73b5c27c1b9",
+          "all_units": 28,
+          "responses": 3,
+          "supported": 16,
+          "contradicted": 0,
+          "unknown": 12,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "5276e6ffa5890085789da46423004324192a936942c940c33497802903aa92c5",
+          "all_units": 15,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 0,
+          "unknown": 15,
+          "contradicted_fraction_among_accepted": null
+        },
+        {
+          "family": "53ac2997fa25de646ae8815ed7cd31f426255ccea605823448e39e7850e43d01",
+          "all_units": 24,
+          "responses": 3,
+          "supported": 23,
+          "contradicted": 0,
+          "unknown": 1,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "691dbaa162f016c7a7b4d0cdd9c5e364badb6d11dc1381cd20ab95b0fd47d6f3",
+          "all_units": 30,
+          "responses": 3,
+          "supported": 11,
+          "contradicted": 0,
+          "unknown": 19,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "6a01bde1622819f9597db2f504ba4f6409a122e08b33c89679f932bcac6c942d",
+          "all_units": 21,
+          "responses": 3,
+          "supported": 3,
+          "contradicted": 0,
+          "unknown": 18,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "6ac15f0338e70a96ba9068660aec78e1b76caed14ed1d83a27349c0d8ca9a91d",
+          "all_units": 15,
+          "responses": 3,
+          "supported": 12,
+          "contradicted": 0,
+          "unknown": 3,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "7d2441caf24f0716e97962cde07dd13423a87bf10f8109a8f9ae148dcf65e305",
+          "all_units": 13,
+          "responses": 3,
+          "supported": 8,
+          "contradicted": 0,
+          "unknown": 5,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "839266d72d949149fa1f099095d237c178fea9b2e8a07a32649f4be251ffb3f7",
+          "all_units": 38,
+          "responses": 3,
+          "supported": 21,
+          "contradicted": 0,
+          "unknown": 17,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "880d8f6ab358f6e5a720905bb2b02bedab655b8177209c31ff5a52475c563ef2",
+          "all_units": 24,
+          "responses": 3,
+          "supported": 16,
+          "contradicted": 0,
+          "unknown": 8,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "98d4ae321f586e2c1340fb7b270e3f27235a581acb2d9de01f93698ca01b868f",
+          "all_units": 16,
+          "responses": 3,
+          "supported": 12,
+          "contradicted": 0,
+          "unknown": 4,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "c0571e405f3001f3198ca48bfe33c04453efa0b3e2c1be97a0fb1d8889d6a482",
+          "all_units": 11,
+          "responses": 3,
+          "supported": 10,
+          "contradicted": 0,
+          "unknown": 1,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "c1e974f63ed80e77a46febeffb8479045ec6276eac8a6945299ced55dda89df2",
+          "all_units": 20,
+          "responses": 3,
+          "supported": 17,
+          "contradicted": 0,
+          "unknown": 3,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "c4a48b9a508a5097bf17eb985062674110ce58f61c1074a36adc1273d5402f3b",
+          "all_units": 33,
+          "responses": 3,
+          "supported": 17,
+          "contradicted": 0,
+          "unknown": 16,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "e60863486b54060bd179403c668a51a6759059700d91bd23828b6229ed00721d",
+          "all_units": 24,
+          "responses": 3,
+          "supported": 24,
+          "contradicted": 0,
+          "unknown": 0,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "f5c402ebe1ceb6456b75997ea9eb71255216e96d4cf7a5f03a2ba2c23fa1df7f",
+          "all_units": 20,
+          "responses": 3,
+          "supported": 15,
+          "contradicted": 0,
+          "unknown": 5,
+          "contradicted_fraction_among_accepted": 0.0
+        },
+        {
+          "family": "fce0f86723b1e9f70c80587d3a320977619d8b34f1ea8b632e8740e86d71229d",
+          "all_units": 37,
+          "responses": 3,
+          "supported": 36,
+          "contradicted": 0,
+          "unknown": 1,
+          "contradicted_fraction_among_accepted": 0.0
+        }
+      ]
+    },
+    {
+      "stage": "primary_sentence_all_turns",
+      "participant": "qwen/qwen3.8-27b",
+      "advocate_role": "wrong_answer_advocate",
+      "all_units": 489,
+      "responses": 72,
+      "families": 24,
+      "supported": 19,
+      "contradicted": 293,
+      "unknown": 177,
+      "accepted_fraction": 0.6380368098159509,
+      "contradicted_fraction_among_accepted_pooled": 0.9391025641025641,
+      "contradicted_fraction_of_all_fixed_units": 0.5991820040899796,
+      "family_macro_contradicted_fraction_among_accepted": 0.935585248085248,
+      "families_with_accepted_labels": 24,
+      "families_with_contradicted_units": 24,
+      "responses_with_contradicted_units": 72,
+      "responses_with_both_supported_and_contradicted": 13,
+      "unknown_reason_counts_overlapping": {
+        "unknown": 171,
+        "interpretation_or_advocacy": 110,
+        "invalid_assertion_scope": 53,
+        "missing_evidence": 167,
+        "label_disagreement": 75
+      },
+      "per_family": [
+        {
+          "family": "019356c170e67227cdb6f5d5529aaa6f62d0aa644b19869c7d75096e52509f73",
+          "all_units": 21,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 13,
+          "unknown": 8,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "06c3d80afcef038a070fc7dca2302145ec0cc5485105095afdd5e3b7b997b982",
+          "all_units": 12,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 12,
+          "unknown": 0,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "16a8553e47efba2130c20c33bb08a6826bbfcfef71a40b00a17399c087720267",
+          "all_units": 33,
+          "responses": 3,
+          "supported": 5,
+          "contradicted": 6,
+          "unknown": 22,
+          "contradicted_fraction_among_accepted": 0.5454545454545454
+        },
+        {
+          "family": "23a0ce93dd16b27cf3f3108f1ec3789a1fbf672465ab1ac0178d46be3b769d80",
+          "all_units": 23,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 17,
+          "unknown": 6,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "27ab2ed9a21b1f9308f262598f56cbac1f1b90d34aac2a7c5f6d854d3fbf9138",
+          "all_units": 15,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 8,
+          "unknown": 7,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "2ec90bf907c5ee888e9ba82a151ddc0e25a66f1e7d54c99e3835194268128f46",
+          "all_units": 23,
+          "responses": 3,
+          "supported": 6,
+          "contradicted": 7,
+          "unknown": 10,
+          "contradicted_fraction_among_accepted": 0.5384615384615384
+        },
+        {
+          "family": "302c4ad367cd4edc42d227b2d34662efbe032d69c259eb6ef7de5dc46fcffc91",
+          "all_units": 15,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 9,
+          "unknown": 6,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "3d129752af3742d3efcaf50c89e0e6d1d41cb306a055526bd847ea6ed76e2b92",
+          "all_units": 21,
+          "responses": 3,
+          "supported": 3,
+          "contradicted": 8,
+          "unknown": 10,
+          "contradicted_fraction_among_accepted": 0.7272727272727273
+        },
+        {
+          "family": "4cb6fc50607d7e15ae25040c558e97ac4f50703792a1497122f7b73b5c27c1b9",
+          "all_units": 21,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 15,
+          "unknown": 6,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "5276e6ffa5890085789da46423004324192a936942c940c33497802903aa92c5",
+          "all_units": 18,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 3,
+          "unknown": 15,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "53ac2997fa25de646ae8815ed7cd31f426255ccea605823448e39e7850e43d01",
+          "all_units": 25,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 25,
+          "unknown": 0,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "691dbaa162f016c7a7b4d0cdd9c5e364badb6d11dc1381cd20ab95b0fd47d6f3",
+          "all_units": 26,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 22,
+          "unknown": 4,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "6a01bde1622819f9597db2f504ba4f6409a122e08b33c89679f932bcac6c942d",
+          "all_units": 24,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 3,
+          "unknown": 21,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "6ac15f0338e70a96ba9068660aec78e1b76caed14ed1d83a27349c0d8ca9a91d",
+          "all_units": 18,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 16,
+          "unknown": 2,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "7d2441caf24f0716e97962cde07dd13423a87bf10f8109a8f9ae148dcf65e305",
+          "all_units": 18,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 12,
+          "unknown": 6,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "839266d72d949149fa1f099095d237c178fea9b2e8a07a32649f4be251ffb3f7",
+          "all_units": 20,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 14,
+          "unknown": 6,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "880d8f6ab358f6e5a720905bb2b02bedab655b8177209c31ff5a52475c563ef2",
+          "all_units": 30,
+          "responses": 3,
+          "supported": 3,
+          "contradicted": 11,
+          "unknown": 16,
+          "contradicted_fraction_among_accepted": 0.7857142857142857
+        },
+        {
+          "family": "98d4ae321f586e2c1340fb7b270e3f27235a581acb2d9de01f93698ca01b868f",
+          "all_units": 13,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 10,
+          "unknown": 3,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "c0571e405f3001f3198ca48bfe33c04453efa0b3e2c1be97a0fb1d8889d6a482",
+          "all_units": 15,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 14,
+          "unknown": 1,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "c1e974f63ed80e77a46febeffb8479045ec6276eac8a6945299ced55dda89df2",
+          "all_units": 20,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 14,
+          "unknown": 6,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "c4a48b9a508a5097bf17eb985062674110ce58f61c1074a36adc1273d5402f3b",
+          "all_units": 19,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 7,
+          "unknown": 12,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "e60863486b54060bd179403c668a51a6759059700d91bd23828b6229ed00721d",
+          "all_units": 18,
+          "responses": 3,
+          "supported": 2,
+          "contradicted": 12,
+          "unknown": 4,
+          "contradicted_fraction_among_accepted": 0.8571428571428571
+        },
+        {
+          "family": "f5c402ebe1ceb6456b75997ea9eb71255216e96d4cf7a5f03a2ba2c23fa1df7f",
+          "all_units": 16,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 11,
+          "unknown": 5,
+          "contradicted_fraction_among_accepted": 1.0
+        },
+        {
+          "family": "fce0f86723b1e9f70c80587d3a320977619d8b34f1ea8b632e8740e86d71229d",
+          "all_units": 25,
+          "responses": 3,
+          "supported": 0,
+          "contradicted": 24,
+          "unknown": 1,
+          "contradicted_fraction_among_accepted": 1.0
+        }
+      ]
+    }
+  ],
+  "original_artifact_sha256": "13d8259d6716154b44d8e6927ba03429868e00f5f019ca418a19882f468f5173"
+}

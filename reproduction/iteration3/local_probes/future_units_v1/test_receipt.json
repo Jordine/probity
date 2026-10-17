@@ -1,0 +1,21 @@
+{
+  "schema": "future_units_offline_regression_receipt_v1",
+  "created_at_utc": "2026-10-15T14:37:01.943608+00:00",
+  "command": "python3 -m unittest tests.test_local3_future_units -v",
+  "exit_code": 0,
+  "test_methods_passed": 8,
+  "boundary_fixtures": 12,
+  "invalid_contract_mutations_rejected": 9,
+  "seeded_character_conservation_cases": 80,
+  "other_checks": [
+    "unclosed quotation retains complete remainder",
+    "raw JSON escaping and Unicode surrogate offsets remain exact",
+    "complete source and final paragraph retained",
+    "full reason longer than600characters retained without mutation",
+    "accurate quotation and false attribution remain separate atomic labels with mixed whole-unit unknown"
+  ],
+  "source_sha256": "a1f0c8d41e780155f6be13d4908641cfa68b23a519dc0a311def480961612fd7",
+  "test_sha256": "d47decb15764c23e71ae49d9dc74affc85e981e07a31c7d2c9203cd1dc44383b",
+  "dry_run_summary_sha256": "fac6f4d1a329f5a61b98f49f0277ef56b967b19f095b69b6cfb37afd02414316",
+  "models_called": 0
+}

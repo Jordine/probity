@@ -1,0 +1,880 @@
+{
+  "schema": "probity_cost_forecast_v1",
+  "status": "planning_only_no_paid_calls",
+  "price_date_utc": "2026-10-16",
+  "currency": "USD",
+  "unit_costs": {
+    "generation": {
+      "qwen/qwen3.5-27b": {
+        "preparation": {
+          "input_tokens": 5898.375,
+          "output_tokens_including_reasoning": 5024.666666666667,
+          "historical_usd": 0.0116678725,
+          "forecast_usd": 0.014597710833333334
+        },
+        "no_feedback": {
+          "input_tokens": 41559.125,
+          "output_tokens_including_reasoning": 1712.25,
+          "historical_usd": 0.012738127916666666,
+          "forecast_usd": 0.0152572225
+        },
+        "feedback": {
+          "input_tokens": 43511.5,
+          "output_tokens_including_reasoning": 1728.9583333333333,
+          "historical_usd": 0.014128944375,
+          "forecast_usd": 0.015808281666666667
+        }
+      },
+      "qwen/qwen3.8-27b": {
+        "preparation": {
+          "input_tokens": 5945.916666666667,
+          "output_tokens_including_reasoning": 5030.0,
+          "historical_usd": 0.009369030625,
+          "forecast_usd": 0.01249302
+        },
+        "no_feedback": {
+          "input_tokens": 41591.375,
+          "output_tokens_including_reasoning": 1742.9583333333333,
+          "historical_usd": 0.0047723320416666664,
+          "forecast_usd": 0.013816438333333333
+        },
+        "feedback": {
+          "input_tokens": 43234.0,
+          "output_tokens_including_reasoning": 1576.25,
+          "historical_usd": 0.005511059791666667,
+          "forecast_usd": 0.01384391
+        }
+      }
+    },
+    "labels_per_trajectory": {
+      "none": 0,
+      "qwen": 0.0216691025,
+      "hybrid": 0.07713250249999999,
+      "dual": 0.2989861025
+    },
+    "prose_and_context_checks_per_trajectory": 0.005357132916666667,
+    "source_question_check": 0.0013215333333333335,
+    "source_knowledge_per_question_model": 0.0014107858333333332,
+    "judge_per_presentation": {
+      "haiku": {
+        "raw": 0.0003289291666666667,
+        "response": 0.0003695291666666667,
+        "sentence": 0.0007997625,
+        "clause": 0.00113450625,
+        "three_displays_mean": 0.000767932638888889
+      },
+      "opus": {
+        "raw": 0.013305333333333334,
+        "response": 0.014850583333333334,
+        "sentence": 0.03205991666666667,
+        "clause": 0.04544966666666666,
+        "three_displays_mean": 0.03078672222222222
+      }
+    },
+    "gpu_hourly_usd": 1.35,
+    "gpu_seconds_per_trajectory": {
+      "response_offline": [
+        15,
+        25
+      ],
+      "all_features_offline": [
+        24,
+        48
+      ],
+      "response_live_feedback": [
+        40,
+        60
+      ],
+      "all_features_live_feedback": [
+        60,
+        90
+      ]
+    },
+    "native_judge_seconds_per_presentation": [
+      0.6,
+      1
+    ],
+    "setup_gpu_hours": [
+      0.75,
+      1
+    ],
+    "transfer_usd": [
+      0.4,
+      0.8
+    ],
+    "contingency_fraction": 0.25
+  },
+  "evidence_sha256": {
+    "generation_cost_audit.json": "e6481764af1a7ebd0bd722e428756f7860ad29c0c13c70fdd95b654dfb748c3c",
+    "annotation_judge_cost_audit.json": "01c6549076de523e9659386d067c9180fbf7364bd19df0e345b3ea7dd5a01390",
+    "openrouter_models_snapshot.json": "cf56fc7969c28ee5c6efc29c9f6252afec3253007be777acf88b8fbbe7339e15",
+    "vast_price_snapshot.json": "2277af5f353e5c93e5f8ab56207260a676e5d156a1c3a5af4566294bc1779ab7",
+    "gpu_scoring_cost_audit.json": "94b46d87a65bfda57b181bf4b0e599e28a34c59f74546114d7a954252f8228f9"
+  },
+  "scenarios": {
+    "all166_3seeds_none": {
+      "configuration": {
+        "questions": 166,
+        "seeds": 3,
+        "prompts": 1,
+        "feedback_policies": 1,
+        "judge_views": null,
+        "judge_crossing": "matched",
+        "display": "response",
+        "labels": "none",
+        "api_judges": [
+          "haiku"
+        ],
+        "native_judge": true,
+        "all_features": true,
+        "fresh_preparation": true,
+        "judge_controls": 1,
+        "answer_orders": 1,
+        "opening_orders": 1,
+        "matched_c_views": 1
+      },
+      "counts": {
+        "matched_units": 996,
+        "original_trajectories": 996,
+        "feedback_trajectories": 996,
+        "trajectories": 1992,
+        "public_turns": 11952,
+        "preparation_calls": 1992,
+        "presentations_per_judge": 3984
+      },
+      "components_usd": {
+        "generation": 56.227842455,
+        "validity_checks": 11.359164199999999,
+        "factual_annotation": 0,
+        "api_judges": 1.3913290000000003,
+        "gpu_and_transfer": 44.43495
+      },
+      "payable_gpu_hours_range": [
+        24.654,
+        40.28666666666667
+      ],
+      "base_cost_range_usd": [
+        102.661235655,
+        124.165335655
+      ],
+      "budget_range_usd": [
+        128.32654456875,
+        155.20666956875002
+      ]
+    },
+    "all166_3seeds_qwen": {
+      "configuration": {
+        "questions": 166,
+        "seeds": 3,
+        "prompts": 1,
+        "feedback_policies": 1,
+        "judge_views": null,
+        "judge_crossing": "matched",
+        "display": "response",
+        "labels": "qwen",
+        "api_judges": [
+          "haiku"
+        ],
+        "native_judge": true,
+        "all_features": true,
+        "fresh_preparation": true,
+        "judge_controls": 1,
+        "answer_orders": 1,
+        "opening_orders": 1,
+        "matched_c_views": 1
+      },
+      "counts": {
+        "matched_units": 996,
+        "original_trajectories": 996,
+        "feedback_trajectories": 996,
+        "trajectories": 1992,
+        "public_turns": 11952,
+        "preparation_calls": 1992,
+        "presentations_per_judge": 3984
+      },
+      "components_usd": {
+        "generation": 56.227842455,
+        "validity_checks": 11.359164199999999,
+        "factual_annotation": 43.16485218,
+        "api_judges": 1.3913290000000003,
+        "gpu_and_transfer": 44.43495
+      },
+      "payable_gpu_hours_range": [
+        24.654,
+        40.28666666666667
+      ],
+      "base_cost_range_usd": [
+        145.826087835,
+        167.330187835
+      ],
+      "budget_range_usd": [
+        182.28260979375,
+        209.16273479375002
+      ]
+    },
+    "all166_3seeds_hybrid": {
+      "configuration": {
+        "questions": 166,
+        "seeds": 3,
+        "prompts": 1,
+        "feedback_policies": 1,
+        "judge_views": null,
+        "judge_crossing": "matched",
+        "display": "response",
+        "labels": "hybrid",
+        "api_judges": [
+          "haiku"
+        ],
+        "native_judge": true,
+        "all_features": true,
+        "fresh_preparation": true,
+        "judge_controls": 1,
+        "answer_orders": 1,
+        "opening_orders": 1,
+        "matched_c_views": 1
+      },
+      "counts": {
+        "matched_units": 996,
+        "original_trajectories": 996,
+        "feedback_trajectories": 996,
+        "trajectories": 1992,
+        "public_turns": 11952,
+        "preparation_calls": 1992,
+        "presentations_per_judge": 3984
+      },
+      "components_usd": {
+        "generation": 56.227842455,
+        "validity_checks": 11.359164199999999,
+        "factual_annotation": 153.64794497999998,
+        "api_judges": 1.3913290000000003,
+        "gpu_and_transfer": 44.43495
+      },
+      "payable_gpu_hours_range": [
+        24.654,
+        40.28666666666667
+      ],
+      "base_cost_range_usd": [
+        256.30918063499996,
+        277.81328063499996
+      ],
+      "budget_range_usd": [
+        320.3864757937499,
+        347.26660079374994
+      ]
+    },
+    "all166_3seeds_dual": {
+      "configuration": {
+        "questions": 166,
+        "seeds": 3,
+        "prompts": 1,
+        "feedback_policies": 1,
+        "judge_views": null,
+        "judge_crossing": "matched",
+        "display": "response",
+        "labels": "dual",
+        "api_judges": [
+          "haiku"
+        ],
+        "native_judge": true,
+        "all_features": true,
+        "fresh_preparation": true,
+        "judge_controls": 1,
+        "answer_orders": 1,
+        "opening_orders": 1,
+        "matched_c_views": 1
+      },
+      "counts": {
+        "matched_units": 996,
+        "original_trajectories": 996,
+        "feedback_trajectories": 996,
+        "trajectories": 1992,
+        "public_turns": 11952,
+        "preparation_calls": 1992,
+        "presentations_per_judge": 3984
+      },
+      "components_usd": {
+        "generation": 56.227842455,
+        "validity_checks": 11.359164199999999,
+        "factual_annotation": 595.5803161800001,
+        "api_judges": 1.3913290000000003,
+        "gpu_and_transfer": 44.43495
+      },
+      "payable_gpu_hours_range": [
+        24.654,
+        40.28666666666667
+      ],
+      "base_cost_range_usd": [
+        698.2415518350001,
+        719.7456518350001
+      ],
+      "budget_range_usd": [
+        872.8019397937501,
+        899.6820647937501
+      ]
+    },
+    "current24_3seeds": {
+      "configuration": {
+        "questions": 24,
+        "seeds": 3,
+        "prompts": 1,
+        "feedback_policies": 1,
+        "judge_views": null,
+        "judge_crossing": "matched",
+        "display": "response",
+        "labels": "hybrid",
+        "api_judges": [
+          "haiku"
+        ],
+        "native_judge": true,
+        "all_features": true,
+        "fresh_preparation": true,
+        "judge_controls": 1,
+        "answer_orders": 1,
+        "opening_orders": 1,
+        "matched_c_views": 1
+      },
+      "counts": {
+        "matched_units": 144,
+        "original_trajectories": 144,
+        "feedback_trajectories": 144,
+        "trajectories": 288,
+        "public_turns": 1728,
+        "preparation_calls": 288,
+        "presentations_per_judge": 576
+      },
+      "components_usd": {
+        "generation": 8.12932662,
+        "validity_checks": 1.6422888000000002,
+        "factual_annotation": 22.21416072,
+        "api_judges": 0.201156,
+        "gpu_and_transfer": 7.94805
+      },
+      "payable_gpu_hours_range": [
+        4.2059999999999995,
+        6.68
+      ],
+      "base_cost_range_usd": [
+        38.265032139999995,
+        42.004932139999994
+      ],
+      "budget_range_usd": [
+        47.83129017499999,
+        52.50616517499999
+      ]
+    },
+    "fresh35_3seeds": {
+      "configuration": {
+        "questions": 35,
+        "seeds": 3,
+        "prompts": 1,
+        "feedback_policies": 1,
+        "judge_views": null,
+        "judge_crossing": "matched",
+        "display": "response",
+        "labels": "hybrid",
+        "api_judges": [
+          "haiku"
+        ],
+        "native_judge": true,
+        "all_features": true,
+        "fresh_preparation": true,
+        "judge_controls": 1,
+        "answer_orders": 1,
+        "opening_orders": 1,
+        "matched_c_views": 1
+      },
+      "counts": {
+        "matched_units": 210,
+        "original_trajectories": 210,
+        "feedback_trajectories": 210,
+        "trajectories": 420,
+        "public_turns": 2520,
+        "preparation_calls": 420,
+        "presentations_per_judge": 840
+      },
+      "components_usd": {
+        "generation": 11.855267987500001,
+        "validity_checks": 2.3950045,
+        "factual_annotation": 32.39565105,
+        "api_judges": 0.2933525,
+        "gpu_and_transfer": 10.7745
+      },
+      "payable_gpu_hours_range": [
+        5.79,
+        9.283333333333333
+      ],
+      "base_cost_range_usd": [
+        55.155776037500004,
+        60.271776037500004
+      ],
+      "budget_range_usd": [
+        68.944720046875,
+        75.339720046875
+      ]
+    },
+    "all166_3seeds_5prompts": {
+      "configuration": {
+        "questions": 166,
+        "seeds": 3,
+        "prompts": 5,
+        "feedback_policies": 1,
+        "judge_views": null,
+        "judge_crossing": "matched",
+        "display": "response",
+        "labels": "hybrid",
+        "api_judges": [
+          "haiku"
+        ],
+        "native_judge": true,
+        "all_features": true,
+        "fresh_preparation": true,
+        "judge_controls": 1,
+        "answer_orders": 1,
+        "opening_orders": 1,
+        "matched_c_views": 1
+      },
+      "counts": {
+        "matched_units": 4980,
+        "original_trajectories": 4980,
+        "feedback_trajectories": 4980,
+        "trajectories": 9960,
+        "public_turns": 59760,
+        "preparation_calls": 9960,
+        "presentations_per_judge": 19920
+      },
+      "components_usd": {
+        "generation": 281.139212275,
+        "validity_checks": 54.04479928000001,
+        "factual_annotation": 768.2397248999999,
+        "api_judges": 6.956645,
+        "gpu_and_transfer": 215.04975000000002
+      },
+      "payable_gpu_hours_range": [
+        120.27,
+        197.43333333333334
+      ],
+      "base_cost_range_usd": [
+        1273.144881455,
+        1377.715381455
+      ],
+      "budget_range_usd": [
+        1591.43110181875,
+        1722.14422681875
+      ]
+    },
+    "all166_3seeds_5prompts_dual": {
+      "configuration": {
+        "questions": 166,
+        "seeds": 3,
+        "prompts": 5,
+        "feedback_policies": 1,
+        "judge_views": null,
+        "judge_crossing": "matched",
+        "display": "response",
+        "labels": "dual",
+        "api_judges": [
+          "haiku"
+        ],
+        "native_judge": true,
+        "all_features": true,
+        "fresh_preparation": true,
+        "judge_controls": 1,
+        "answer_orders": 1,
+        "opening_orders": 1,
+        "matched_c_views": 1
+      },
+      "counts": {
+        "matched_units": 4980,
+        "original_trajectories": 4980,
+        "feedback_trajectories": 4980,
+        "trajectories": 9960,
+        "public_turns": 59760,
+        "preparation_calls": 9960,
+        "presentations_per_judge": 19920
+      },
+      "components_usd": {
+        "generation": 281.139212275,
+        "validity_checks": 54.04479928000001,
+        "factual_annotation": 2977.9015809,
+        "api_judges": 6.956645,
+        "gpu_and_transfer": 215.04975000000002
+      },
+      "payable_gpu_hours_range": [
+        120.27,
+        197.43333333333334
+      ],
+      "base_cost_range_usd": [
+        3482.806737455,
+        3587.3772374550003
+      ],
+      "budget_range_usd": [
+        4353.50842181875,
+        4484.2215468187505
+      ]
+    },
+    "all166_offline108views": {
+      "configuration": {
+        "questions": 166,
+        "seeds": 3,
+        "prompts": 1,
+        "feedback_policies": 1,
+        "judge_views": 108,
+        "judge_crossing": "offline",
+        "display": "three_displays_mean",
+        "labels": "hybrid",
+        "api_judges": [
+          "haiku"
+        ],
+        "native_judge": true,
+        "all_features": true,
+        "fresh_preparation": true,
+        "judge_controls": 1,
+        "answer_orders": 1,
+        "opening_orders": 1,
+        "matched_c_views": null
+      },
+      "counts": {
+        "matched_units": 996,
+        "original_trajectories": 996,
+        "feedback_trajectories": 996,
+        "trajectories": 1992,
+        "public_turns": 11952,
+        "preparation_calls": 1992,
+        "presentations_per_judge": 217128
+      },
+      "components_usd": {
+        "generation": 56.227842455,
+        "validity_checks": 11.359164199999999,
+        "factual_annotation": 153.64794497999998,
+        "api_judges": 165.86518310000002,
+        "gpu_and_transfer": 108.37815000000003
+      },
+      "payable_gpu_hours_range": [
+        60.178,
+        99.49333333333334
+      ],
+      "base_cost_range_usd": [
+        468.740434735,
+        522.216134735
+      ],
+      "budget_range_usd": [
+        585.9255434187501,
+        652.77016841875
+      ]
+    },
+    "all166_feedback108_5prompts": {
+      "configuration": {
+        "questions": 166,
+        "seeds": 3,
+        "prompts": 5,
+        "feedback_policies": 108,
+        "judge_views": null,
+        "judge_crossing": "matched",
+        "display": "three_displays_mean",
+        "labels": "hybrid",
+        "api_judges": [
+          "haiku"
+        ],
+        "native_judge": true,
+        "all_features": true,
+        "fresh_preparation": true,
+        "judge_controls": 1,
+        "answer_orders": 1,
+        "opening_orders": 1,
+        "matched_c_views": 108
+      },
+      "counts": {
+        "matched_units": 4980,
+        "original_trajectories": 4980,
+        "feedback_trajectories": 537840,
+        "trajectories": 542820,
+        "public_turns": 3256920,
+        "preparation_calls": 9960,
+        "presentations_per_judge": 1618500
+      },
+      "components_usd": {
+        "generation": 8181.372638025001,
+        "validity_checks": 2908.646645255,
+        "factual_annotation": 41869.06500705,
+        "api_judges": 1004.5991112500001,
+        "gpu_and_transfer": 15681.31125
+      },
+      "payable_gpu_hours_range": [
+        9267.7,
+        13962.983333333334
+      ],
+      "base_cost_range_usd": [
+        66475.47840158,
+        72814.51090158
+      ],
+      "budget_range_usd": [
+        83094.348001975,
+        91018.138626975
+      ]
+    },
+    "all166_feedback108_5prompts_dual": {
+      "configuration": {
+        "questions": 166,
+        "seeds": 3,
+        "prompts": 5,
+        "feedback_policies": 108,
+        "judge_views": null,
+        "judge_crossing": "matched",
+        "display": "three_displays_mean",
+        "labels": "dual",
+        "api_judges": [
+          "haiku"
+        ],
+        "native_judge": true,
+        "all_features": true,
+        "fresh_preparation": true,
+        "judge_controls": 1,
+        "answer_orders": 1,
+        "opening_orders": 1,
+        "matched_c_views": 108
+      },
+      "counts": {
+        "matched_units": 4980,
+        "original_trajectories": 4980,
+        "feedback_trajectories": 537840,
+        "trajectories": 542820,
+        "public_turns": 3256920,
+        "preparation_calls": 9960,
+        "presentations_per_judge": 1618500
+      },
+      "components_usd": {
+        "generation": 8181.372638025001,
+        "validity_checks": 2908.646645255,
+        "factual_annotation": 162295.63615905002,
+        "api_judges": 1004.5991112500001,
+        "gpu_and_transfer": 15681.31125
+      },
+      "payable_gpu_hours_range": [
+        9267.7,
+        13962.983333333334
+      ],
+      "base_cost_range_usd": [
+        186902.04955358003,
+        193241.08205358003
+      ],
+      "budget_range_usd": [
+        233627.56194197503,
+        241551.35256697505
+      ]
+    },
+    "all166_feedback108_5prompts_all_judges": {
+      "configuration": {
+        "questions": 166,
+        "seeds": 3,
+        "prompts": 5,
+        "feedback_policies": 108,
+        "judge_views": null,
+        "judge_crossing": "matched",
+        "display": "three_displays_mean",
+        "labels": "hybrid",
+        "api_judges": [
+          "haiku",
+          "opus"
+        ],
+        "native_judge": true,
+        "all_features": true,
+        "fresh_preparation": true,
+        "judge_controls": 1,
+        "answer_orders": 1,
+        "opening_orders": 1,
+        "matched_c_views": 108
+      },
+      "counts": {
+        "matched_units": 4980,
+        "original_trajectories": 4980,
+        "feedback_trajectories": 537840,
+        "trajectories": 542820,
+        "public_turns": 3256920,
+        "preparation_calls": 9960,
+        "presentations_per_judge": 1618500
+      },
+      "components_usd": {
+        "generation": 8181.372638025001,
+        "validity_checks": 2908.646645255,
+        "factual_annotation": 41869.06500705,
+        "api_judges": 41343.66151124999,
+        "gpu_and_transfer": 15681.31125
+      },
+      "payable_gpu_hours_range": [
+        9267.7,
+        13962.983333333334
+      ],
+      "base_cost_range_usd": [
+        106814.54080157999,
+        113153.57330157999
+      ],
+      "budget_range_usd": [
+        133518.176001975,
+        141441.966626975
+      ]
+    },
+    "all166_feedback108_5prompts_dual_all_judges": {
+      "configuration": {
+        "questions": 166,
+        "seeds": 3,
+        "prompts": 5,
+        "feedback_policies": 108,
+        "judge_views": null,
+        "judge_crossing": "matched",
+        "display": "three_displays_mean",
+        "labels": "dual",
+        "api_judges": [
+          "haiku",
+          "opus"
+        ],
+        "native_judge": true,
+        "all_features": true,
+        "fresh_preparation": true,
+        "judge_controls": 1,
+        "answer_orders": 1,
+        "opening_orders": 1,
+        "matched_c_views": 108
+      },
+      "counts": {
+        "matched_units": 4980,
+        "original_trajectories": 4980,
+        "feedback_trajectories": 537840,
+        "trajectories": 542820,
+        "public_turns": 3256920,
+        "preparation_calls": 9960,
+        "presentations_per_judge": 1618500
+      },
+      "components_usd": {
+        "generation": 8181.372638025001,
+        "validity_checks": 2908.646645255,
+        "factual_annotation": 162295.63615905002,
+        "api_judges": 41343.66151124999,
+        "gpu_and_transfer": 15681.31125
+      },
+      "payable_gpu_hours_range": [
+        9267.7,
+        13962.983333333334
+      ],
+      "base_cost_range_usd": [
+        227241.11195358002,
+        233580.14445358003
+      ],
+      "budget_range_usd": [
+        284051.389941975,
+        291975.18056697503
+      ]
+    },
+    "all166_3seeds_opus_addition": {
+      "configuration": {
+        "questions": 166,
+        "seeds": 3,
+        "prompts": 1,
+        "feedback_policies": 1,
+        "judge_views": null,
+        "judge_crossing": "matched",
+        "display": "response",
+        "labels": "hybrid",
+        "api_judges": [
+          "haiku",
+          "opus"
+        ],
+        "native_judge": true,
+        "all_features": true,
+        "fresh_preparation": true,
+        "judge_controls": 1,
+        "answer_orders": 1,
+        "opening_orders": 1,
+        "matched_c_views": 1
+      },
+      "counts": {
+        "matched_units": 996,
+        "original_trajectories": 996,
+        "feedback_trajectories": 996,
+        "trajectories": 1992,
+        "public_turns": 11952,
+        "preparation_calls": 1992,
+        "presentations_per_judge": 3984
+      },
+      "components_usd": {
+        "generation": 56.227842455,
+        "validity_checks": 11.359164199999999,
+        "factual_annotation": 153.64794497999998,
+        "api_judges": 57.477914999999996,
+        "gpu_and_transfer": 44.43495
+      },
+      "payable_gpu_hours_range": [
+        24.654,
+        40.28666666666667
+      ],
+      "base_cost_range_usd": [
+        312.395766635,
+        333.89986663499997
+      ],
+      "budget_range_usd": [
+        390.49470829374997,
+        417.37483329374993
+      ]
+    },
+    "all166_3seeds_full_counterbalance": {
+      "configuration": {
+        "questions": 166,
+        "seeds": 3,
+        "prompts": 1,
+        "feedback_policies": 1,
+        "judge_views": null,
+        "judge_crossing": "matched",
+        "display": "response",
+        "labels": "hybrid",
+        "api_judges": [
+          "haiku"
+        ],
+        "native_judge": true,
+        "all_features": true,
+        "fresh_preparation": true,
+        "judge_controls": 1,
+        "answer_orders": 2,
+        "opening_orders": 2,
+        "matched_c_views": 1
+      },
+      "counts": {
+        "matched_units": 3984,
+        "original_trajectories": 3984,
+        "feedback_trajectories": 3984,
+        "trajectories": 7968,
+        "public_turns": 47808,
+        "preparation_calls": 3984,
+        "presentations_per_judge": 15936
+      },
+      "components_usd": {
+        "generation": 170.94663400000002,
+        "validity_checks": 43.37339051,
+        "factual_annotation": 614.5917799199999,
+        "api_judges": 5.565316000000001,
+        "gpu_and_transfer": 172.39605
+      },
+      "payable_gpu_hours_range": [
+        96.366,
+        158.14666666666668
+      ],
+      "base_cost_range_usd": [
+        964.9712204299999,
+        1048.77512043
+      ],
+      "budget_range_usd": [
+        1206.2140255374998,
+        1310.9689005375
+      ]
+    }
+  },
+  "limits": [
+    "Ranges are workload allowances plus 25% contingency, not confidence intervals or provider quotes.",
+    "Token lengths from the current 24-family protocol are proxies for future sampling/prompts; no assumed cache discount.",
+    "GPU planning seconds include API waits for feedback; setup/transfer is once per campaign, not per debate.",
+    "All-feature scoring shares two forwards per public action across six layers and linear heads; new heads need fitting and validation.",
+    "Full 108 combinations is hypothetical: six candidate probe configurations x six layers x three displays, not 108 ready compatible checkpoints.",
+    "Hybrid annotation means Qwen on all transcripts and Opus on a random 20% audit; other labels remain single-annotator.",
+    "Original temperature-zero runs are not automatically three independent seeds; these totals price new trajectories.",
+    "Existing cached artifacts are not deducted; additional work may cost less when protocol-identical requests are reused.",
+    "New training-corpus creation, human review, engineering, taxes and credit-purchase fees are excluded."
+  ]
+}

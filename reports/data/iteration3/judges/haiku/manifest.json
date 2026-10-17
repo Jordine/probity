@@ -1,0 +1,58 @@
+{
+  "schema": "judge3_audited_table_export_v2",
+  "created_at_utc": "2026-10-15T13:56:50.402386+00:00",
+  "judges": [
+    "anthropic/claude-haiku-5.5"
+  ],
+  "input_sha256": {
+    "/root/projects/probity-benchmark/runs/iteration3/judge_controls/haiku_table_export_spec_v1.json": "ebe20d38999f87517fdccd361abc6f44e926a7fb07b018d1150a995a529e8a75",
+    "/root/projects/probity-benchmark/runs/iteration3/final/judge_package_v1/package.json": "5f7b4d92e0585b3920ab5bda1d82daf88f457c153f1f4cfe8d45e922998066a0",
+    "/root/projects/probity-benchmark/runs/iteration3/final/judge_package_v1/compiled/jobs.jsonl": "487aa4cd7de93cc2c3e6e65efae19f6da4b6b72cbf9d292afbbc89aa4a93a505",
+    "/root/projects/probity-benchmark/runs/iteration3/final/haiku_judge_v1/manifest.json": "ff4cac301c959c21b775b4859822fff47a93d4c7ee1d248fb711ea4ed3432861",
+    "/root/projects/probity-benchmark/runs/iteration3/final/haiku_judge_v1/evaluations.jsonl": "2bfdaffd9064a62f32655676280217b52dc6aaf1313a9ea5ddc139ca0864774b",
+    "/root/projects/probity-benchmark/runs/iteration3/final/haiku_judge_v1/analysis/prompt_repeatability.json": "6ab49d98789e2018906684d6be1184630a9ca33addd3415494fe443acc5bd544",
+    "/root/projects/probity-benchmark/runs/iteration3/final/haiku_judge_v1/requests.jsonl": "2fcde6a157d8dafabc5d2d58ec0b541fbe64689ab3377712119d8438ebf44c00",
+    "/root/projects/probity-benchmark/runs/iteration3/final/haiku_generation_audit_v1.json": "fc2d0e7f1892f7c7748aefd0dd62eb51539e9e94c68a67ea6d9017c1b484adac",
+    "/root/projects/probity-benchmark/runs/iteration3/final/haiku_judge_v1/analysis/analysis.json": "33a100512236e3f55f40ba64cf49c6359ab714c3cebf2fbb0ca2b0e05539ed44",
+    "/root/projects/probity-benchmark/runs/iteration3/final/haiku_judge_v1/analysis/receipt_audit.json": "06c3fc46e187a3aebab59e8e1facc84141ad57cbb30eb2038f680f1d141d2d5c"
+  },
+  "projector_source_sha256": "ce79c84f967da55f885330f974db563581d3d6f1d551809a2e20abd061d5071b",
+  "outputs": {
+    "accuracies": {
+      "path": "runs/iteration3/final/judge_tables_haiku_v1/accuracies.csv",
+      "rows": 66,
+      "sha256": "55e6857fa987e9e0d918246a5f84ddeb5eeff873a33dadb23ca3b740afbe0577"
+    },
+    "all_paired_contrasts": {
+      "path": "runs/iteration3/final/judge_tables_haiku_v1/all_paired_contrasts.csv",
+      "rows": 123,
+      "sha256": "f73d367fc7fc1bd944bfdf91e1645e2b389fdb5ef2e472178a828e959d6b2770"
+    },
+    "real_minus_neutral": {
+      "path": "runs/iteration3/final/judge_tables_haiku_v1/real_minus_neutral.csv",
+      "rows": 20,
+      "sha256": "d00031cc2d0d1164f16766f50ef5c9fd0af55db81de8bf1b112235eaa5fda75d"
+    },
+    "exact_prompt_summary": {
+      "path": "runs/iteration3/final/judge_tables_haiku_v1/exact_prompt_summary.csv",
+      "rows": 1,
+      "sha256": "cd4369961f2cfabad99f612d20e26e4a2bedf281e14ed74698f6856083f24569"
+    },
+    "exact_prompt_groups": {
+      "path": "runs/iteration3/final/judge_tables_haiku_v1/exact_prompt_groups.csv",
+      "rows": 97,
+      "sha256": "c12266df7d45357c02175c7487d3a1c2de9d5b49c7bf737ddc418dfd49d7a189"
+    }
+  },
+  "inference_or_bootstrap_rerun": false,
+  "interpretation": [
+    "Estimates, family bootstrap intervals, fixes, harms and denominators are copied from the complete audited analyses; no outcome-based selection.",
+    "Participant all pools only the detector's declared model coverage. Published FIBS has Qwen3.5 coverage only.",
+    "The matched-neutral table includes every frozen detector; the prespecified-primary flag identifies adapted_primary and local3_sentence without selecting on outcomes.",
+    "All paired contrasts retain their own matched denominators; do not subtract an unmatched pooled raw baseline cell for a restricted detector.",
+    "Exact-message repeats are descriptive observations within a judge run, not extra independent families. Zero repeated groups means unmeasured repeatability, not zero noise.",
+    "Logical agreement includes cached native jobs. Generation-aware agreement counts only distinct resolved generation receipts; cache-only native repeats leave sampling repeatability unmeasured.",
+    "Original native evaluations and manifest remain immutable. If a native analysis view is used, its sole added field is answer equal to the existing parsed.answer, with original and derived hashes recorded.",
+    "Complete-request hashes and provider/model/fingerprint metadata remain distinct from message equality. Missing metadata is unknown."
+  ]
+}

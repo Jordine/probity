@@ -1,0 +1,41 @@
+{
+  "schema": "local3_descriptive_clause_recovery_completion_audit_v1",
+  "status": "all_complete_lossless_reuse_unit_evidence_cost_invariants_passed",
+  "descriptive_only": true,
+  "verified_rows": 48,
+  "verified_units": 771,
+  "successful_jobs": 50,
+  "original_valid_jobs_reused": 48,
+  "canonical_earliest_qwen_jobs": 1,
+  "new_paid_requests_including_retries": 1,
+  "new_paid_finish_reasons": {
+    "stop": 1
+  },
+  "new_paid_cost_usd": 0.141468,
+  "original_stage_cost_usd": 3.202842664,
+  "combined_stage_cost_usd": 3.344310664,
+  "ledger_entry": {
+    "kind": "api",
+    "status": "settled",
+    "amount_usd": 0.141468,
+    "original_reservation_usd": 1.61,
+    "created_at_unix": 1792073723.4207294,
+    "note": "Recorded charges plus full reservations for unresolved in-flight calls; see requests.jsonl.",
+    "settled_at_unix": 1792073775.3022912,
+    "reservation_exceeded": false
+  },
+  "ledger_key": "api:/root/projects/probity-benchmark/runs/iteration3/final/local_opening_clause_annotations_v2",
+  "artifacts_sha256": {
+    "/root/projects/probity-benchmark/runs/iteration3/local_probes/finish_clause_lossless_recovery_v1.py": "7ed64d3ca9922ba510b5a1650dbe6661a5faf74160662bca823ba25ac65110e4",
+    "runs/iteration3/local_probes/clause_lossless_recovery_preparation_v1/plan.json": "b3750af142e6cb50c12c90fa1ee78eccc94397683fb34a6c97e28ee4421f6ce3",
+    "runs/iteration3/local_probes/clause_lossless_recovery_preparation_v1/canonical_earliest_qwen_receipt.json": "97f78c99c523cda646db46c009d1602d76748997c1324e2b5fa83673e7d2b7d5",
+    "runs/iteration3/final/local_opening_clause_annotations_v2/lossless_recovery_release_receipt.json": "598b341b05f1de8a371c4646b63cf0d17e64cfab04a8b844107c1cff3be95c91",
+    "runs/iteration3/final/clause_lossless_recovery_release_v1.json": "25bd64ba95f89df6102cd5b6e616fe2b300afa80dae25dfa5e55b6a566098408",
+    "runs/iteration3/final/local_opening_clause_annotations_v2/api_manifest.json": "5677b5d63342f44c821cdc6dcd2184ae3438695f3ff457e0ddfae4dccefa7d3e",
+    "runs/iteration3/final/local_opening_clause_annotations_v2/requests.jsonl": "e7b69426893a14c18f5d4c93d866aefa2d91d6b3e8abf35b53a888f0e8d6c1c7",
+    "runs/iteration3/final/local_opening_clause_annotations_v2/manifest.json": "aa22c3da184d964b6064f040118d709fbae28803ca5b75680dba9f10b3d6d4c3",
+    "runs/iteration3/final/local_opening_clause_annotations_v2/summary.json": "333ce81851b937d896645e50c87e18570ad190aa38cf3da33407f2d06c0efcde",
+    "runs/iteration3/final/local_opening_clause_annotations_v2/corpus.jsonl": "b60fed94aceae2e2f33289b35a97174d72c5f67f6531397e4d61f22e54688101"
+  },
+  "scope": "Full fixed secondary corpus only. Original failed batch remains immutable. Exactly one historical Qwen explanatory reason retains all976 characters under a descriptive-only local schema amendment; labels, evidence and copied text are unchanged. No truncated or shortened content. Only the genuinely missing Opus job was paid again. Original primary sentence evaluation unchanged."
+}
