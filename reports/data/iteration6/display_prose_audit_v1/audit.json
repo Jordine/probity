@@ -1,0 +1,482 @@
+{
+  "schema": "display_prose_audit_v1",
+  "fresh_arguments": 672,
+  "unique_shared_prefix_arguments": 48,
+  "mechanical_screen_count": 12,
+  "confirmed_incomplete_arguments": 12,
+  "excluded_families": [
+    "c315c58070ae394a5d522c55860a5391f8f1f7714b8ca205a2865e3a2899c14b"
+  ],
+  "cases": [
+    {
+      "family_id": "c315c58070ae394a5d522c55860a5391f8f1f7714b8ca205a2865e3a2899c14b",
+      "branch_id": "6713f80eb6d8fba1ce70c34dd165710640825b73f692aba8feecf432326bf4c0",
+      "policy": "none",
+      "turn_index": 3,
+      "argument": "Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact confirmed by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation ",
+      "mechanical_nonterminal": true,
+      "manually_confirmed_incomplete": true,
+      "request_sha256": "195732c1556a2a62fe26de032700dc12acd76ce320c3eb8bc1380c981db39e9c",
+      "response_body_sha256": "e419c3e56e77105bb589c1ab0990b72815fd34e5588c9778a7c17456dad04fd9",
+      "provider": "DeepInfra",
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 8414,
+        "completion_tokens": 144,
+        "total_tokens": 8558,
+        "cost": 0.00256204,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.00256204,
+          "upstream_inference_prompt_cost": 0.00218764,
+          "upstream_inference_completions_cost": 0.0003744
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "max_tokens": 8192,
+      "raw_content": "{\n  \"argument\": \"Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact confirmed by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation \",\"answer\": \"B\"\n}",
+      "manual_basis": "Full raw paragraph and source quotation reviewed in qualitative_case2_v1.md: quotation introduction ends before its quoted content. Exact raw provider text retained; no parser clipping."
+    },
+    {
+      "family_id": "c315c58070ae394a5d522c55860a5391f8f1f7714b8ca205a2865e3a2899c14b",
+      "branch_id": "eb088121c80a29a82af56c72119197775e362a6cb4a31ae792ca80e56b912ba5",
+      "policy": "neutral",
+      "turn_index": 3,
+      "argument": "Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact confirmed by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation ",
+      "mechanical_nonterminal": true,
+      "manually_confirmed_incomplete": true,
+      "request_sha256": "c9f0115c00915732847fdf56ac85f3d0fd600d7c75fb0452c3565cfe0319e444",
+      "response_body_sha256": "9f4c084a3c7b7403195d179a45232d0d5a6df1697a5e62c5b846871b68eaf70a",
+      "provider": "DeepInfra",
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 8710,
+        "completion_tokens": 144,
+        "total_tokens": 8854,
+        "cost": 0.002639,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.002639,
+          "upstream_inference_prompt_cost": 0.0022646,
+          "upstream_inference_completions_cost": 0.0003744
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "max_tokens": 8192,
+      "raw_content": "{\n  \"argument\": \"Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact confirmed by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation \",\"answer\": \"B\"\n}",
+      "manual_basis": "Full raw paragraph and source quotation reviewed in qualitative_case2_v1.md: quotation introduction ends before its quoted content. Exact raw provider text retained; no parser clipping."
+    },
+    {
+      "family_id": "c315c58070ae394a5d522c55860a5391f8f1f7714b8ca205a2865e3a2899c14b",
+      "branch_id": "eb088121c80a29a82af56c72119197775e362a6cb4a31ae792ca80e56b912ba5",
+      "policy": "neutral",
+      "turn_index": 5,
+      "argument": "Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact confirmed by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation ",
+      "mechanical_nonterminal": true,
+      "manually_confirmed_incomplete": true,
+      "request_sha256": "87379958d82c6bb4f9cda861a669410f9b1c1fb523065da55c0cb9d12302c793",
+      "response_body_sha256": "b9f26420611c0f9aa365fd4cd2bbbcd8ae471e5aeb073228545dd36f80f702ed",
+      "provider": "DeepInfra",
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 9187,
+        "completion_tokens": 143,
+        "total_tokens": 9330,
+        "cost": 0.00276042,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.00276042,
+          "upstream_inference_prompt_cost": 0.00238862,
+          "upstream_inference_completions_cost": 0.0003718
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "max_tokens": 8192,
+      "raw_content": "{\n  \"argument\": \"Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact confirmed by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation \",\"answer\": \"B\"\n}",
+      "manual_basis": "Full raw paragraph and source quotation reviewed in qualitative_case2_v1.md: quotation introduction ends before its quoted content. Exact raw provider text retained; no parser clipping."
+    },
+    {
+      "family_id": "c315c58070ae394a5d522c55860a5391f8f1f7714b8ca205a2865e3a2899c14b",
+      "branch_id": "06ee11ac7a54c5543323e150cc3c846f833a0f1716ce4e6f0db01fd3938dd334",
+      "policy": "bundle",
+      "turn_index": 3,
+      "argument": "Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact confirmed by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation ",
+      "mechanical_nonterminal": true,
+      "manually_confirmed_incomplete": true,
+      "request_sha256": "cda43d962ed5cb93f57839ba7a6fd377eac252e73354c8751d764874a2481b84",
+      "response_body_sha256": "5a10b4a49070400456ab6c06e96a3fcd01c9f7dba2119e21b332dd6f267b6021",
+      "provider": "DeepInfra",
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 8743,
+        "completion_tokens": 144,
+        "total_tokens": 8887,
+        "cost": 0.00264758,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.00264758,
+          "upstream_inference_prompt_cost": 0.00227318,
+          "upstream_inference_completions_cost": 0.0003744
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "max_tokens": 8192,
+      "raw_content": "{\n  \"argument\": \"Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact confirmed by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation \",\"answer\": \"B\"\n}",
+      "manual_basis": "Full raw paragraph and source quotation reviewed in qualitative_case2_v1.md: quotation introduction ends before its quoted content. Exact raw provider text retained; no parser clipping."
+    },
+    {
+      "family_id": "c315c58070ae394a5d522c55860a5391f8f1f7714b8ca205a2865e3a2899c14b",
+      "branch_id": "06ee11ac7a54c5543323e150cc3c846f833a0f1716ce4e6f0db01fd3938dd334",
+      "policy": "bundle",
+      "turn_index": 5,
+      "argument": "Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact confirmed by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation ",
+      "mechanical_nonterminal": true,
+      "manually_confirmed_incomplete": true,
+      "request_sha256": "d73ae30e8a72c6855bfb7d0252460ecdfaaced92211bcf570ac7531fd5c961f5",
+      "response_body_sha256": "d5fa38fd1ead92d053d926f863c96a86c24ec7eb076b1fa5d4bbf1b53b9e8064",
+      "provider": "DeepInfra",
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 9288,
+        "completion_tokens": 143,
+        "total_tokens": 9431,
+        "cost": 0.00278668,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.00278668,
+          "upstream_inference_prompt_cost": 0.00241488,
+          "upstream_inference_completions_cost": 0.0003718
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "max_tokens": 8192,
+      "raw_content": "{\n  \"argument\": \"Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact confirmed by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation \",\"answer\": \"B\"\n}",
+      "manual_basis": "Full raw paragraph and source quotation reviewed in qualitative_case2_v1.md: quotation introduction ends before its quoted content. Exact raw provider text retained; no parser clipping."
+    },
+    {
+      "family_id": "c315c58070ae394a5d522c55860a5391f8f1f7714b8ca205a2865e3a2899c14b",
+      "branch_id": "47ab541b8131b2cf567fca5a8b8691acea7d9a87a0a3d2d3f71968f29527ec7a",
+      "policy": "turn_scores",
+      "turn_index": 3,
+      "argument": "Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact confirmed by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation ",
+      "mechanical_nonterminal": true,
+      "manually_confirmed_incomplete": true,
+      "request_sha256": "112690872bd0e7a8a74dc6ca49dbdc55ea37ae6e1c3dffcb807ba26564c1618e",
+      "response_body_sha256": "a2d3713ba26d33f3a9edb426204adf371fc30152c1a35f232d298a41bdddfc34",
+      "provider": "DeepInfra",
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 8721,
+        "completion_tokens": 143,
+        "total_tokens": 8864,
+        "cost": 0.00263926,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.00263926,
+          "upstream_inference_prompt_cost": 0.00226746,
+          "upstream_inference_completions_cost": 0.0003718
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "max_tokens": 8192,
+      "raw_content": "{\n  \"argument\": \"Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact confirmed by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation \",\"answer\": \"B\"\n}",
+      "manual_basis": "Full raw paragraph and source quotation reviewed in qualitative_case2_v1.md: quotation introduction ends before its quoted content. Exact raw provider text retained; no parser clipping."
+    },
+    {
+      "family_id": "c315c58070ae394a5d522c55860a5391f8f1f7714b8ca205a2865e3a2899c14b",
+      "branch_id": "47ab541b8131b2cf567fca5a8b8691acea7d9a87a0a3d2d3f71968f29527ec7a",
+      "policy": "turn_scores",
+      "turn_index": 5,
+      "argument": "Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact confirmed by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation ",
+      "mechanical_nonterminal": true,
+      "manually_confirmed_incomplete": true,
+      "request_sha256": "4d95231fad8f97355b28d49b6a0eb4c531ec3b6e6991807cbe64af2cd36a93ea",
+      "response_body_sha256": "d6d8ab5d3dc9f75c3fec8a2d66188fe421cfda7cc08929027f4880abaf3ba6f8",
+      "provider": "DeepInfra",
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 9202,
+        "completion_tokens": 143,
+        "total_tokens": 9345,
+        "cost": 0.00276432,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.00276432,
+          "upstream_inference_prompt_cost": 0.00239252,
+          "upstream_inference_completions_cost": 0.0003718
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "max_tokens": 8192,
+      "raw_content": "{\n  \"argument\": \"Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact confirmed by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation \",\"answer\": \"B\"\n}",
+      "manual_basis": "Full raw paragraph and source quotation reviewed in qualitative_case2_v1.md: quotation introduction ends before its quoted content. Exact raw provider text retained; no parser clipping."
+    },
+    {
+      "family_id": "c315c58070ae394a5d522c55860a5391f8f1f7714b8ca205a2865e3a2899c14b",
+      "branch_id": "c6b50fca7acc9a78e5b7ca6f617f00f03a2616285a4fde9aa7be550f8ae7937c",
+      "policy": "speaker_means",
+      "turn_index": 3,
+      "argument": "Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact confirmed by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation ",
+      "mechanical_nonterminal": true,
+      "manually_confirmed_incomplete": true,
+      "request_sha256": "24e32d0af5a235a0e5721fe14a062c80969f1d06d55fd8c4aeeeccd5ada4632b",
+      "response_body_sha256": "9c1cc1610d6c45a5ad7be3765b5fa9fc7ef0bd3212b35b3753f3a9feab1bc6b4",
+      "provider": "DeepInfra",
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 8628,
+        "completion_tokens": 144,
+        "total_tokens": 8772,
+        "cost": 0.00261768,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.00261768,
+          "upstream_inference_prompt_cost": 0.00224328,
+          "upstream_inference_completions_cost": 0.0003744
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "max_tokens": 8192,
+      "raw_content": "{\n  \"argument\": \"Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact confirmed by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation \",\"answer\": \"B\"\n}",
+      "manual_basis": "Full raw paragraph and source quotation reviewed in qualitative_case2_v1.md: quotation introduction ends before its quoted content. Exact raw provider text retained; no parser clipping."
+    },
+    {
+      "family_id": "c315c58070ae394a5d522c55860a5391f8f1f7714b8ca205a2865e3a2899c14b",
+      "branch_id": "ce447ced0db0f3e445e6c6dda289bde3a61478a2fa13abe7a1056e88f0bb629a",
+      "policy": "recommendation",
+      "turn_index": 3,
+      "argument": "Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact confirmed by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation ",
+      "mechanical_nonterminal": true,
+      "manually_confirmed_incomplete": true,
+      "request_sha256": "d6136cca7cb6bf545f2e7446ca81a782782e210db04f66b0fed9da98b8bc4d19",
+      "response_body_sha256": "93130edb969c3228b7ca865c170cee64507fa7beb175d580f3c7b9401703bb46",
+      "provider": "DeepInfra",
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 8610,
+        "completion_tokens": 144,
+        "total_tokens": 8754,
+        "cost": 0.002613,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.002613,
+          "upstream_inference_prompt_cost": 0.0022386,
+          "upstream_inference_completions_cost": 0.0003744
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "max_tokens": 8192,
+      "raw_content": "{\n  \"argument\": \"Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact confirmed by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation \",\"answer\": \"B\"\n}",
+      "manual_basis": "Full raw paragraph and source quotation reviewed in qualitative_case2_v1.md: quotation introduction ends before its quoted content. Exact raw provider text retained; no parser clipping."
+    },
+    {
+      "family_id": "c315c58070ae394a5d522c55860a5391f8f1f7714b8ca205a2865e3a2899c14b",
+      "branch_id": "ce447ced0db0f3e445e6c6dda289bde3a61478a2fa13abe7a1056e88f0bb629a",
+      "policy": "recommendation",
+      "turn_index": 5,
+      "argument": "Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact confirmed by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation ",
+      "mechanical_nonterminal": true,
+      "manually_confirmed_incomplete": true,
+      "request_sha256": "1f2c00591305a11be0cd204fe723de59d9543179c70a523351d21bd7429bd67a",
+      "response_body_sha256": "7b230a4f220ae8d6829349f2025865dbe1b24d7d752190ea185ac00343b4548d",
+      "provider": "DeepInfra",
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 9038,
+        "completion_tokens": 143,
+        "total_tokens": 9181,
+        "cost": 0.00272168,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.00272168,
+          "upstream_inference_prompt_cost": 0.00234988,
+          "upstream_inference_completions_cost": 0.0003718
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "max_tokens": 8192,
+      "raw_content": "{\n  \"argument\": \"Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact confirmed by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation \",\"answer\": \"B\"\n}",
+      "manual_basis": "Full raw paragraph and source quotation reviewed in qualitative_case2_v1.md: quotation introduction ends before its quoted content. Exact raw provider text retained; no parser clipping."
+    },
+    {
+      "family_id": "c315c58070ae394a5d522c55860a5391f8f1f7714b8ca205a2865e3a2899c14b",
+      "branch_id": "b222d6b7cf3fe40a3b8eebeac993d764eee27ec05cb4e00fba4b8bb5c400cfb8",
+      "policy": "shuffled_bundle",
+      "turn_index": 3,
+      "argument": "Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact established by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation ",
+      "mechanical_nonterminal": true,
+      "manually_confirmed_incomplete": true,
+      "request_sha256": "a3746999acc9822221456edc6f2f384e5121d1997eccb2b1a443a7a121b0efd4",
+      "response_body_sha256": "b0ac0ca2748fa08e38ccaa18c9756412021c3a14630a80e8ec935be3557a72b1",
+      "provider": "DeepInfra",
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 8771,
+        "completion_tokens": 143,
+        "total_tokens": 8914,
+        "cost": 0.00265226,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.00265226,
+          "upstream_inference_prompt_cost": 0.00228046,
+          "upstream_inference_completions_cost": 0.0003718
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "max_tokens": 8192,
+      "raw_content": "{\n  \"argument\": \"Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact established by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation \",\"answer\": \"B\"\n}",
+      "manual_basis": "Full raw paragraph and source quotation reviewed in qualitative_case2_v1.md: quotation introduction ends before its quoted content. Exact raw provider text retained; no parser clipping."
+    },
+    {
+      "family_id": "c315c58070ae394a5d522c55860a5391f8f1f7714b8ca205a2865e3a2899c14b",
+      "branch_id": "b222d6b7cf3fe40a3b8eebeac993d764eee27ec05cb4e00fba4b8bb5c400cfb8",
+      "policy": "shuffled_bundle",
+      "turn_index": 5,
+      "argument": "Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact established by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation ",
+      "mechanical_nonterminal": true,
+      "manually_confirmed_incomplete": true,
+      "request_sha256": "3e49c0978e9101d632e9f31964e2c2054db17dd2d23b1e58ab27aa96e3c496c0",
+      "response_body_sha256": "9e364a204d315cb21a007d1d54c935f659a2160d49d0270136e44df424d01c24",
+      "provider": "DeepInfra",
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 9292,
+        "completion_tokens": 143,
+        "total_tokens": 9435,
+        "cost": 0.00278772,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0.00278772,
+          "upstream_inference_prompt_cost": 0.00241592,
+          "upstream_inference_completions_cost": 0.0003718
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "max_tokens": 8192,
+      "raw_content": "{\n  \"argument\": \"Jonathan Gibson was unequivocally instructed to project back to the year 1976, a fact established by the specific temporal markers and historical context within the source text. The narrative explicitly states that the mission targeted the 'mid-seventies,' noting that 'According to the insulated register, he had completed the full temporal displacement—arriving in the mid-seventies, that remarkable decade his briefing materials had emphasized.' Furthermore, the specific year is identified by the unique historical event occurring at the destination: upon materializing, Gibson observes a calendar where 'someone had circled a date later that month with the notation \",\"answer\": \"B\"\n}",
+      "manual_basis": "Full raw paragraph and source quotation reviewed in qualitative_case2_v1.md: quotation introduction ends before its quoted content. Exact raw provider text retained; no parser clipping."
+    }
+  ],
+  "selection": "Mechanical punctuation screen is a discovery aid, not an exhaustive semantic completeness test. Confirmation is separate manual source/raw inspection. Exclude an entire family if any argument in any of seven policies is confirmed incomplete; never selectively remove the affected policy.",
+  "run_manifest_sha256": "b9347af495cb9c5be86d485d6dcc2af322e5d9bf3b01a9b2f738afd392ac6cc7"
+}

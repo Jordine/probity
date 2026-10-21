@@ -1,0 +1,324 @@
+{
+  "schema": "iteration6_paired_factual_behavior_v1",
+  "results": [
+    {
+      "tier": "primary_label",
+      "role": "all",
+      "metrics": {
+        "contradiction_fraction": {
+          "families": 116,
+          "questions": 165,
+          "matched_turns": 938,
+          "A": 0.4160814632366357,
+          "B": 0.38945279457132914,
+          "B_minus_A": -0.0266286686653066,
+          "delta_ci95": [
+            -0.0472474571246123,
+            -0.005460605386790735
+          ]
+        },
+        "eligible_coverage": {
+          "families": 116,
+          "questions": 166,
+          "matched_turns": 996,
+          "A": 0.7124313478025869,
+          "B": 0.7170303666076169,
+          "B_minus_A": 0.004599018805030145,
+          "delta_ci95": [
+            -0.026240631305329574,
+            0.03632063371321423
+          ]
+        },
+        "primary_annotation_coverage": {
+          "families": 116,
+          "questions": 166,
+          "matched_turns": 996,
+          "A": 1.0,
+          "B": 1.0,
+          "B_minus_A": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "coverage": {
+        "A": {
+          "turns": 996,
+          "all_ineligible_turns": 24
+        },
+        "B": {
+          "turns": 996,
+          "all_ineligible_turns": 39
+        }
+      }
+    },
+    {
+      "tier": "primary_label",
+      "role": "correct_advocate",
+      "metrics": {
+        "contradiction_fraction": {
+          "families": 116,
+          "questions": 164,
+          "matched_turns": 475,
+          "A": 0.046610449735449734,
+          "B": 0.048345990695128634,
+          "B_minus_A": 0.0017355409596788922,
+          "delta_ci95": [
+            -0.02564036558109834,
+            0.029787105455208907
+          ]
+        },
+        "eligible_coverage": {
+          "families": 116,
+          "questions": 166,
+          "matched_turns": 498,
+          "A": 0.734800953388259,
+          "B": 0.7271286473679184,
+          "B_minus_A": -0.007672306020340787,
+          "delta_ci95": [
+            -0.04373230865473691,
+            0.027575450416738832
+          ]
+        },
+        "primary_annotation_coverage": {
+          "families": 116,
+          "questions": 166,
+          "matched_turns": 498,
+          "A": 1.0,
+          "B": 1.0,
+          "B_minus_A": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "coverage": {
+        "A": {
+          "turns": 498,
+          "all_ineligible_turns": 9
+        },
+        "B": {
+          "turns": 498,
+          "all_ineligible_turns": 17
+        }
+      }
+    },
+    {
+      "tier": "primary_label",
+      "role": "wrong_advocate",
+      "metrics": {
+        "contradiction_fraction": {
+          "families": 114,
+          "questions": 162,
+          "matched_turns": 463,
+          "A": 0.8094315650236703,
+          "B": 0.7500006328953698,
+          "B_minus_A": -0.05943093212830056,
+          "delta_ci95": [
+            -0.1032946713374345,
+            -0.018647928480713585
+          ]
+        },
+        "eligible_coverage": {
+          "families": 116,
+          "questions": 166,
+          "matched_turns": 498,
+          "A": 0.6900617422169146,
+          "B": 0.7069320858473158,
+          "B_minus_A": 0.016870343630401095,
+          "delta_ci95": [
+            -0.02252296657020077,
+            0.05753642752654961
+          ]
+        },
+        "primary_annotation_coverage": {
+          "families": 116,
+          "questions": 166,
+          "matched_turns": 498,
+          "A": 1.0,
+          "B": 1.0,
+          "B_minus_A": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "coverage": {
+        "A": {
+          "turns": 498,
+          "all_ineligible_turns": 15
+        },
+        "B": {
+          "turns": 498,
+          "all_ineligible_turns": 22
+        }
+      }
+    },
+    {
+      "tier": "consensus_label",
+      "role": "all",
+      "metrics": {
+        "contradiction_fraction": {
+          "families": 12,
+          "questions": 16,
+          "matched_turns": 84,
+          "A": 0.5423611111111111,
+          "B": 0.5402777777777777,
+          "B_minus_A": -0.002083333333333326,
+          "delta_ci95": [
+            -0.020833333333333315,
+            0.014583333333333337
+          ]
+        },
+        "eligible_coverage": {
+          "families": 116,
+          "questions": 166,
+          "matched_turns": 996,
+          "A": 0.14681932451329002,
+          "B": 0.055254230523627074,
+          "B_minus_A": -0.09156509398966296,
+          "delta_ci95": [
+            -0.13266565062093078,
+            -0.05488595461251712
+          ]
+        },
+        "primary_annotation_coverage": {
+          "families": 116,
+          "questions": 166,
+          "matched_turns": 996,
+          "A": 1.0,
+          "B": 1.0,
+          "B_minus_A": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "coverage": {
+        "A": {
+          "turns": 996,
+          "all_ineligible_turns": 780
+        },
+        "B": {
+          "turns": 996,
+          "all_ineligible_turns": 908
+        }
+      }
+    },
+    {
+      "tier": "consensus_label",
+      "role": "correct_advocate",
+      "metrics": {
+        "contradiction_fraction": {
+          "families": 11,
+          "questions": 15,
+          "matched_turns": 41,
+          "A": 0.056818181818181816,
+          "B": 0.053030303030303025,
+          "B_minus_A": -0.0037878787878787897,
+          "delta_ci95": [
+            -0.01136363636363637,
+            0.0
+          ]
+        },
+        "eligible_coverage": {
+          "families": 116,
+          "questions": 166,
+          "matched_turns": 498,
+          "A": 0.137932936316557,
+          "B": 0.05088202426564496,
+          "B_minus_A": -0.08705091205091205,
+          "delta_ci95": [
+            -0.12425626855583752,
+            -0.052497384679496766
+          ]
+        },
+        "primary_annotation_coverage": {
+          "families": 116,
+          "questions": 166,
+          "matched_turns": 498,
+          "A": 1.0,
+          "B": 1.0,
+          "B_minus_A": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "coverage": {
+        "A": {
+          "turns": 498,
+          "all_ineligible_turns": 389
+        },
+        "B": {
+          "turns": 498,
+          "all_ineligible_turns": 454
+        }
+      }
+    },
+    {
+      "tier": "consensus_label",
+      "role": "wrong_advocate",
+      "metrics": {
+        "contradiction_fraction": {
+          "families": 12,
+          "questions": 15,
+          "matched_turns": 43,
+          "A": 0.9722222222222222,
+          "B": 0.9726851851851852,
+          "B_minus_A": 0.0004629629629629613,
+          "delta_ci95": [
+            -0.02777777777777779,
+            0.029166666666666674
+          ]
+        },
+        "eligible_coverage": {
+          "families": 116,
+          "questions": 166,
+          "matched_turns": 498,
+          "A": 0.15570571271002304,
+          "B": 0.0596264367816092,
+          "B_minus_A": -0.09607927592841387,
+          "delta_ci95": [
+            -0.1439233649093563,
+            -0.053696604022573924
+          ]
+        },
+        "primary_annotation_coverage": {
+          "families": 116,
+          "questions": 166,
+          "matched_turns": 498,
+          "A": 1.0,
+          "B": 1.0,
+          "B_minus_A": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "coverage": {
+        "A": {
+          "turns": 498,
+          "all_ineligible_turns": 391
+        },
+        "B": {
+          "turns": 498,
+          "all_ineligible_turns": 454
+        }
+      }
+    }
+  ],
+  "label_units": 13029,
+  "primary_annotated_units": 13029,
+  "complete_primary_labels": true,
+  "weighting": "Pair A/B by question and turn; average matched turns per question then questions per source family. Equal family weight.",
+  "limits": "Automatic factuality labels, not intent. Contradiction fraction conditions on eligible sentences, not all generated claims. Unknowns and missing labels are excluded. Coverage reported separately. Historical A/B differ in awareness from turn1; not shared-prefix intervention.",
+  "labels_sha256": "9f0ea5ca9c667793b297cbdda33ad064578600908fb87f26e038c907e261bca5",
+  "script_sha256": "f93f6556c818503b2de7debceedc20b4ddd84de4d2d23a64df533ffab0fa84aa"
+}

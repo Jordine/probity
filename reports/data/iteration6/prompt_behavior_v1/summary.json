@@ -1,0 +1,148 @@
+{
+  "status": {
+    "schema": "grid6_prompt8_v1",
+    "families": 8,
+    "complete_plans": 32,
+    "required_plans": 32,
+    "complete_debates": 32,
+    "required_debates": 32,
+    "scored_public_turns": 192,
+    "required_public_turns": 192,
+    "generated_public_turns": 192,
+    "complete_judgments": 32,
+    "required_judgments": 32,
+    "api_committed_usd": 0.8364087650000003,
+    "complete": true
+  },
+  "complete_four_cell_families": 8,
+  "family_ids": [
+    "90020eb36ba3238899c346fc1e230d4398e27d8877c98db234ed102a4fd9e8b0",
+    "e54e2b35358bb077e627f0eb3ff67079708e47bc3b51a2a7d857c7fc81a1b781",
+    "6857433d8b59687568702aa93c1b7d8f476717c9b13de95c6047d81b86847310",
+    "6ac15f0338e70a96ba9068660aec78e1b76caed14ed1d83a27349c0d8ca9a91d",
+    "c315c58070ae394a5d522c55860a5391f8f1f7714b8ca205a2865e3a2899c14b",
+    "a091b9fc86c8a7b636e9bc9de425fb29e43c13804d650c1f8a41f20cc97e95b4",
+    "bae59b112c9ddc7883212dd2cfa0bfbb4748f2e69010f69468eadbbe98d84e31",
+    "b5f09ea6677d08f4bd59068b4bb47055073dda7928bfa282ac6a4650dec1f096"
+  ],
+  "contrasts": [
+    {
+      "metric": "judge_correct",
+      "level": "selective",
+      "contrast": "feedback_on_minus_off",
+      "families": 8,
+      "estimate": 0.125,
+      "lower95": 0.0,
+      "upper95": 0.375
+    },
+    {
+      "metric": "judge_correct",
+      "level": "explicit",
+      "contrast": "feedback_on_minus_off",
+      "families": 8,
+      "estimate": 0.125,
+      "lower95": 0.0,
+      "upper95": 0.375
+    },
+    {
+      "metric": "words",
+      "level": "selective",
+      "contrast": "feedback_on_minus_off",
+      "families": 8,
+      "estimate": 9.020833333333334,
+      "lower95": 1.104166666666666,
+      "upper95": 16.500000000000004
+    },
+    {
+      "metric": "words",
+      "level": "explicit",
+      "contrast": "feedback_on_minus_off",
+      "families": 8,
+      "estimate": 1.3125000000000089,
+      "lower95": -7.062499999999989,
+      "upper95": 9.312500000000005
+    },
+    {
+      "metric": "exact_self_repeat",
+      "level": "selective",
+      "contrast": "feedback_on_minus_off",
+      "families": 8,
+      "estimate": -0.125,
+      "lower95": -0.375,
+      "upper95": 0.0
+    },
+    {
+      "metric": "exact_self_repeat",
+      "level": "explicit",
+      "contrast": "feedback_on_minus_off",
+      "families": 8,
+      "estimate": -0.125,
+      "lower95": -0.375,
+      "upper95": 0.0
+    },
+    {
+      "metric": "assigned_answer_deviations",
+      "level": "selective",
+      "contrast": "feedback_on_minus_off",
+      "families": 8,
+      "estimate": 0.0,
+      "lower95": 0.0,
+      "upper95": 0.0
+    },
+    {
+      "metric": "assigned_answer_deviations",
+      "level": "explicit",
+      "contrast": "feedback_on_minus_off",
+      "families": 8,
+      "estimate": 0.0,
+      "lower95": 0.0,
+      "upper95": 0.0
+    },
+    {
+      "metric": "authentic_assignment_mean_percentile",
+      "level": "selective",
+      "contrast": "feedback_on_minus_off",
+      "families": 8,
+      "estimate": 0.6077083333333335,
+      "lower95": -0.52075,
+      "upper95": 1.996625
+    },
+    {
+      "metric": "authentic_assignment_mean_percentile",
+      "level": "explicit",
+      "contrast": "feedback_on_minus_off",
+      "families": 8,
+      "estimate": -0.17354166666666704,
+      "lower95": -1.1306229166666657,
+      "upper95": 0.8680416666666666
+    },
+    {
+      "metric": "incorrect_assignment_mean_percentile",
+      "level": "selective",
+      "contrast": "feedback_on_minus_off",
+      "families": 8,
+      "estimate": 4.687458333333335,
+      "lower95": 0.781415625000002,
+      "upper95": 9.114458333333333
+    },
+    {
+      "metric": "incorrect_assignment_mean_percentile",
+      "level": "explicit",
+      "contrast": "feedback_on_minus_off",
+      "families": 8,
+      "estimate": 1.38870833333333,
+      "lower95": -1.4759166666666719,
+      "upper95": 3.992999999999994
+    }
+  ],
+  "uncertainty": "10,000 paired family bootstrap draws, seed 8166; 8 families maximum, one independently generated trajectory per condition; exploratory, no seed variance estimate. Scores grouped by assigned role do not constitute local factual labels.",
+  "scope": "Original selective/explicit instruction blocks in current private-plan/JSON/full-context/native-feedback harness; not end-to-end original runtime. Fresh6turns, no historical prefix. Shared new plans within feedback pairs. Feedback begins after first complete round. No externally supplied false account.",
+  "qualitative_family_ids": [
+    "90020eb36ba3238899c346fc1e230d4398e27d8877c98db234ed102a4fd9e8b0",
+    "e54e2b35358bb077e627f0eb3ff67079708e47bc3b51a2a7d857c7fc81a1b781"
+  ],
+  "provenance": {
+    "run_manifest_sha256": "815e7a9a7fde28b2eecb4ad5f38f2236594e157ca4dddae00733eb9ca8fbd602",
+    "script_sha256": "966f00614d541674461364df591a39faefb22092ea1785dfbe7a2531a4c1ef88"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "analysis_sha256": "bf4a4392ecc8e1f3047b9f43bf13c67a5c8ef0cb4d9b7672237850586c635c30",
+  "renderer_sha256": "8daa13e35eec4e5a161d599823c3c3906db46bdc9bcd916ad0d390e578cec13d",
+  "accuracy_cells": 24,
+  "contrasts": 30,
+  "outputs": {
+    "01_effects_all.pdf": "3ce0b6ec2240020857d7732d51a63f9387f410bebc3879256de141595c7f3bb6",
+    "01_effects_all.png": "01631453e1cda7f76150db193afc9e426da45d0609b01185bc40091503e0cf3f",
+    "01_effects_all.svg": "d42d3e4b24fa4c88315caf39f7909a0276e41c825f0b4dbe3e6f1bbb7241e41c",
+    "01_grid_all.pdf": "ec4f76164be3f0e2c13d2b643f3888a3143b85075d78614b1afb259f276e27ec",
+    "01_grid_all.png": "a5c200a6744ed8f8c20ff50a3a810e1feab03cc088d19149413979830bafc9a2",
+    "01_grid_all.svg": "382f90035280cac5ab511c46185f9ff3856525886d971c4a5ed7eb3f009a11e5",
+    "02_effects_qwen3.5-27b.pdf": "933fe0ab3b7716b4448086af5e7b50b30ab51fed13da17d950063f230dc1f5ea",
+    "02_effects_qwen3.5-27b.png": "8bb1398229fd954879b71ca801ed7cb28df06a29d7f18bb16cb8887e4e404533",
+    "02_effects_qwen3.5-27b.svg": "ce19964bc84d14aac9cef31abfa2f948a65dde31b8f46a169920be37e37b7aad",
+    "02_grid_qwen3.5-27b.pdf": "3bfb9b1a6a5767d795d75159991bed3901ec24ba3ed48476d9863781649f0c19",
+    "02_grid_qwen3.5-27b.png": "6674903eb25f36e100cadcfd0187e60b23997a33da21d8cd77db092bbbbcbfc9",
+    "02_grid_qwen3.5-27b.svg": "61de44bd57764ad6e0127ebaac285d6c67f74789e55faaf571d2da1563dd1577",
+    "03_effects_qwen3.8-27b.pdf": "d3abb8598c594d264fb2f42366d8a23beca99654d768b5a322d45426bbc30fd8",
+    "03_effects_qwen3.8-27b.png": "68fd648c5d14d9223da92a5f02afead3fc68f415231f74deaee6d3505f9570a0",
+    "03_effects_qwen3.8-27b.svg": "2ee3ef4adc6a1049984cf9f8007d506bf81ce97b8d1fa60caf9fb5c2ce9f317d",
+    "03_grid_qwen3.8-27b.pdf": "6432847b62c93c2b4ae4d9465038f95f9bf452afce25b608beb9656bb2af112e",
+    "03_grid_qwen3.8-27b.png": "b2f8478d4897d880bac9f0432222cc26cb377587329e69f20de4ea717bb9a7d9",
+    "03_grid_qwen3.8-27b.svg": "7d869e18912ad37d6276e41d3ddc08690098b3bd506cbeb7798c2038d6307e3e",
+    "accuracy.csv": "134c5be4ddb9fdf30222dbb80a99d379c5ac96e97b30ae8c8a917c1ea8257837",
+    "contrasts.csv": "1c4407abf9b20929f5f4f1590922e4cd09f2174fc229e67716ce6a000c412019",
+    "grid_summary.json": "91bd5437b4d84352cbb908f24b10c803cab39079e526b5da0bd856fc90996d3f",
+    "probity_2x2_plots.pdf": "9ba660ce49af3d1ad8660d4310c759154a9cc2052b34ad33cab922e490bd7c2f"
+  }
+}

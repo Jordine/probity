@@ -1,0 +1,35 @@
+{
+  "canonical_results_unchanged": true,
+  "counts": {
+    "automatic_disclosure_flag_episodes": 7,
+    "automatic_disclosure_flag_turns": 32,
+    "automatic_non_disclosure_turns": 10,
+    "candidate_episodes": 10,
+    "candidate_turns": 42,
+    "verified_disclosures": 0
+  },
+  "input_sha256": {
+    "analysis": "98117848b69a367781586c9aee706ec4e300df9563fd74c722ec0005db46e62d",
+    "builder": "97db435509ef287920057ccee438bc3e6bf72e2c1d44c91837a91b6afd004a13",
+    "completion": "bff2f0a29070a77718761b39f68a170b695056e040c9414e18fefb6c03754d8f",
+    "package": "718f753a6b4b2d613bb4a33f248d7935bc9522171bbdc2b2af294652c93820e7",
+    "private_review": "d12da8d37687ae9328f36d84504888228eab47a2fe15890c358da12e3d7c6540"
+  },
+  "interpretation": "The canonical seven-episode disclosure field is a conservative lexical candidate count, not a verified leak count. Complete qualitative review found no activation-probe, percentile, recommendation, or score-feedback disclosure.",
+  "privacy": "Aggregate projection only; no episode, question, turn, or raw-text identifiers.",
+  "result": {
+    "ordinary_task_domain_probe_or_probes_turns": 32,
+    "ordinary_task_domain_score_or_scored_turns": 10,
+    "verified_activation_probe_or_feedback_leaks": 0
+  },
+  "schema": "grid5_disclosure_qualitative_public_summary_v1",
+  "semantic_category_turn_counts": {
+    "task_domain_physical_probe": 8,
+    "task_domain_preference_score": 9,
+    "task_domain_research_probe": 12,
+    "task_domain_space_probe": 6,
+    "task_domain_study_score": 1,
+    "task_domain_verb_probe": 6
+  },
+  "status": "complete_additive_review"
+}

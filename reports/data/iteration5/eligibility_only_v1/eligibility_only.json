@@ -1,0 +1,1092 @@
+{
+  "schema": "grid5_eligibility_only_supplement_v1",
+  "accuracy": [
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "all",
+      "cell": "A",
+      "episodes": 323,
+      "families": 116,
+      "correct": 248,
+      "accuracy": 0.7672413793103449,
+      "family_macro_accuracy": 0.7672413793103449,
+      "family_bootstrap_95_ci": [
+        0.7104885057471264,
+        0.82183908045977
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 164,
+      "question_weighted_accuracy": 0.7678018575851393
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "all",
+      "cell": "B",
+      "episodes": 323,
+      "families": 116,
+      "correct": 260,
+      "accuracy": 0.8122126436781609,
+      "family_macro_accuracy": 0.8122126436781609,
+      "family_bootstrap_95_ci": [
+        0.7632147988505746,
+        0.8600646551724138
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 164,
+      "question_weighted_accuracy": 0.804953560371517
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "all",
+      "cell": "C",
+      "episodes": 323,
+      "families": 116,
+      "correct": 315,
+      "accuracy": 0.978448275862069,
+      "family_macro_accuracy": 0.978448275862069,
+      "family_bootstrap_95_ci": [
+        0.9612068965517241,
+        0.9935344827586207
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 164,
+      "question_weighted_accuracy": 0.9752321981424149
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "all",
+      "cell": "D",
+      "episodes": 323,
+      "families": 116,
+      "correct": 315,
+      "accuracy": 0.978448275862069,
+      "family_macro_accuracy": 0.978448275862069,
+      "family_bootstrap_95_ci": [
+        0.959051724137931,
+        0.9935344827586207
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 164,
+      "question_weighted_accuracy": 0.9752321981424149
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "qwen/qwen3.5-27b",
+      "cell": "A",
+      "episodes": 161,
+      "families": 115,
+      "correct": 128,
+      "accuracy": 0.7869565217391304,
+      "family_macro_accuracy": 0.7869565217391304,
+      "family_bootstrap_95_ci": [
+        0.7130434782608696,
+        0.8521739130434782
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 161,
+      "question_weighted_accuracy": 0.7950310559006211
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "qwen/qwen3.5-27b",
+      "cell": "B",
+      "episodes": 161,
+      "families": 115,
+      "correct": 131,
+      "accuracy": 0.8231884057971015,
+      "family_macro_accuracy": 0.8231884057971015,
+      "family_bootstrap_95_ci": [
+        0.7608695652173914,
+        0.8811594202898552
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 161,
+      "question_weighted_accuracy": 0.8136645962732919
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "qwen/qwen3.5-27b",
+      "cell": "C",
+      "episodes": 161,
+      "families": 115,
+      "correct": 155,
+      "accuracy": 0.9652173913043478,
+      "family_macro_accuracy": 0.9652173913043478,
+      "family_bootstrap_95_ci": [
+        0.9347826086956522,
+        0.991304347826087
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 161,
+      "question_weighted_accuracy": 0.9627329192546584
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "qwen/qwen3.5-27b",
+      "cell": "D",
+      "episodes": 161,
+      "families": 115,
+      "correct": 156,
+      "accuracy": 0.9695652173913043,
+      "family_macro_accuracy": 0.9695652173913043,
+      "family_bootstrap_95_ci": [
+        0.9391304347826087,
+        0.991304347826087
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 161,
+      "question_weighted_accuracy": 0.968944099378882
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "qwen/qwen3.8-27b",
+      "cell": "A",
+      "episodes": 162,
+      "families": 115,
+      "correct": 120,
+      "accuracy": 0.744927536231884,
+      "family_macro_accuracy": 0.744927536231884,
+      "family_bootstrap_95_ci": [
+        0.6724637681159421,
+        0.8115942028985508
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 162,
+      "question_weighted_accuracy": 0.7407407407407407
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "qwen/qwen3.8-27b",
+      "cell": "B",
+      "episodes": 162,
+      "families": 115,
+      "correct": 129,
+      "accuracy": 0.7985507246376811,
+      "family_macro_accuracy": 0.7985507246376811,
+      "family_bootstrap_95_ci": [
+        0.7304347826086957,
+        0.8623188405797101
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 162,
+      "question_weighted_accuracy": 0.7962962962962963
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "qwen/qwen3.8-27b",
+      "cell": "C",
+      "episodes": 162,
+      "families": 115,
+      "correct": 160,
+      "accuracy": 0.991304347826087,
+      "family_macro_accuracy": 0.991304347826087,
+      "family_bootstrap_95_ci": [
+        0.9782608695652174,
+        1.0
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 162,
+      "question_weighted_accuracy": 0.9876543209876543
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "qwen/qwen3.8-27b",
+      "cell": "D",
+      "episodes": 162,
+      "families": 115,
+      "correct": 159,
+      "accuracy": 0.9869565217391304,
+      "family_macro_accuracy": 0.9869565217391304,
+      "family_bootstrap_95_ci": [
+        0.9695652173913043,
+        1.0
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 162,
+      "question_weighted_accuracy": 0.9814814814814815
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "all",
+      "cell": "A",
+      "episodes": 323,
+      "families": 116,
+      "correct": 277,
+      "accuracy": 0.8567528735632183,
+      "family_macro_accuracy": 0.8567528735632183,
+      "family_bootstrap_95_ci": [
+        0.8107758620689655,
+        0.9002873563218391
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 164,
+      "question_weighted_accuracy": 0.8575851393188855
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "all",
+      "cell": "B",
+      "episodes": 323,
+      "families": 116,
+      "correct": 282,
+      "accuracy": 0.8563218390804599,
+      "family_macro_accuracy": 0.8563218390804599,
+      "family_bootstrap_95_ci": [
+        0.8067528735632185,
+        0.901580459770115
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 164,
+      "question_weighted_accuracy": 0.8730650154798761
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "all",
+      "cell": "C",
+      "episodes": 323,
+      "families": 116,
+      "correct": 304,
+      "accuracy": 0.9418103448275862,
+      "family_macro_accuracy": 0.9418103448275862,
+      "family_bootstrap_95_ci": [
+        0.9073275862068966,
+        0.9719827586206896
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 164,
+      "question_weighted_accuracy": 0.9411764705882353
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "all",
+      "cell": "D",
+      "episodes": 323,
+      "families": 116,
+      "correct": 307,
+      "accuracy": 0.9554597701149427,
+      "family_macro_accuracy": 0.9554597701149427,
+      "family_bootstrap_95_ci": [
+        0.9288793103448276,
+        0.978448275862069
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 164,
+      "question_weighted_accuracy": 0.9504643962848297
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "qwen/qwen3.5-27b",
+      "cell": "A",
+      "episodes": 161,
+      "families": 115,
+      "correct": 141,
+      "accuracy": 0.8753623188405798,
+      "family_macro_accuracy": 0.8753623188405798,
+      "family_bootstrap_95_ci": [
+        0.8173913043478261,
+        0.9260869565217391
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 161,
+      "question_weighted_accuracy": 0.8757763975155279
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "qwen/qwen3.5-27b",
+      "cell": "B",
+      "episodes": 161,
+      "families": 115,
+      "correct": 142,
+      "accuracy": 0.8710144927536232,
+      "family_macro_accuracy": 0.8710144927536232,
+      "family_bootstrap_95_ci": [
+        0.8101449275362319,
+        0.9232246376811589
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 161,
+      "question_weighted_accuracy": 0.8819875776397516
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "qwen/qwen3.5-27b",
+      "cell": "C",
+      "episodes": 161,
+      "families": 115,
+      "correct": 153,
+      "accuracy": 0.9478260869565217,
+      "family_macro_accuracy": 0.9478260869565217,
+      "family_bootstrap_95_ci": [
+        0.908695652173913,
+        0.9826086956521739
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 161,
+      "question_weighted_accuracy": 0.9503105590062112
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "qwen/qwen3.5-27b",
+      "cell": "D",
+      "episodes": 161,
+      "families": 115,
+      "correct": 153,
+      "accuracy": 0.9579710144927537,
+      "family_macro_accuracy": 0.9579710144927537,
+      "family_bootstrap_95_ci": [
+        0.9217391304347826,
+        0.9869565217391304
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 161,
+      "question_weighted_accuracy": 0.9503105590062112
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "qwen/qwen3.8-27b",
+      "cell": "A",
+      "episodes": 162,
+      "families": 115,
+      "correct": 136,
+      "accuracy": 0.8362318840579711,
+      "family_macro_accuracy": 0.8362318840579711,
+      "family_bootstrap_95_ci": [
+        0.7739130434782608,
+        0.8927536231884058
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 162,
+      "question_weighted_accuracy": 0.8395061728395061
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "qwen/qwen3.8-27b",
+      "cell": "B",
+      "episodes": 162,
+      "families": 115,
+      "correct": 140,
+      "accuracy": 0.8391304347826087,
+      "family_macro_accuracy": 0.8391304347826087,
+      "family_bootstrap_95_ci": [
+        0.7739130434782608,
+        0.9
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 162,
+      "question_weighted_accuracy": 0.8641975308641975
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "qwen/qwen3.8-27b",
+      "cell": "C",
+      "episodes": 162,
+      "families": 115,
+      "correct": 151,
+      "accuracy": 0.9347826086956522,
+      "family_macro_accuracy": 0.9347826086956522,
+      "family_bootstrap_95_ci": [
+        0.8913043478260869,
+        0.9695652173913043
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 162,
+      "question_weighted_accuracy": 0.9320987654320988
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "qwen/qwen3.8-27b",
+      "cell": "D",
+      "episodes": 162,
+      "families": 115,
+      "correct": 154,
+      "accuracy": 0.9521739130434783,
+      "family_macro_accuracy": 0.9521739130434783,
+      "family_bootstrap_95_ci": [
+        0.9130434782608695,
+        0.9826086956521739
+      ],
+      "cohort": "secondary:eligible_only",
+      "questions": 162,
+      "question_weighted_accuracy": 0.9506172839506173
+    }
+  ],
+  "contrasts": [
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "all",
+      "contrast": "B-A",
+      "episodes": 323,
+      "families": 116,
+      "difference": 0.04497126436781609,
+      "family_bootstrap_95_ci": [
+        0.001436781609195399,
+        0.09022988505747126
+      ],
+      "fixes": 35,
+      "harms": 23,
+      "both_correct": 225,
+      "both_wrong": 40,
+      "cohort": "secondary:eligible_only",
+      "questions": 164,
+      "family_macro_difference": 0.04497126436781609,
+      "question_weighted_difference": 0.03715170278637771
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "all",
+      "contrast": "C-A",
+      "episodes": 323,
+      "families": 116,
+      "difference": 0.21120689655172414,
+      "family_bootstrap_95_ci": [
+        0.15948275862068967,
+        0.2650862068965517
+      ],
+      "fixes": 67,
+      "harms": 0,
+      "both_correct": 248,
+      "both_wrong": 8,
+      "cohort": "secondary:eligible_only",
+      "questions": 164,
+      "family_macro_difference": 0.21120689655172414,
+      "question_weighted_difference": 0.20743034055727555
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "all",
+      "contrast": "D-B",
+      "episodes": 323,
+      "families": 116,
+      "difference": 0.16623563218390802,
+      "family_bootstrap_95_ci": [
+        0.12025862068965516,
+        0.21408045977011497
+      ],
+      "fixes": 56,
+      "harms": 1,
+      "both_correct": 259,
+      "both_wrong": 7,
+      "cohort": "secondary:eligible_only",
+      "questions": 164,
+      "family_macro_difference": 0.16623563218390802,
+      "question_weighted_difference": 0.17027863777089783
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "all",
+      "contrast": "D-A",
+      "episodes": 323,
+      "families": 116,
+      "difference": 0.21120689655172414,
+      "family_bootstrap_95_ci": [
+        0.15948275862068967,
+        0.2650862068965517
+      ],
+      "fixes": 67,
+      "harms": 0,
+      "both_correct": 248,
+      "both_wrong": 8,
+      "cohort": "secondary:eligible_only",
+      "questions": 164,
+      "family_macro_difference": 0.21120689655172414,
+      "question_weighted_difference": 0.20743034055727555
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "all",
+      "contrast": "(D-B)-(C-A)",
+      "episodes": 323,
+      "families": 116,
+      "difference": -0.044971264367816094,
+      "family_bootstrap_95_ci": [
+        -0.0906609195402299,
+        -0.0007183908045977015
+      ],
+      "positive_interaction_episodes": 23,
+      "negative_interaction_episodes": 35,
+      "cohort": "secondary:eligible_only",
+      "questions": 164,
+      "family_macro_difference": -0.044971264367816094,
+      "question_weighted_difference": -0.03715170278637771
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "qwen/qwen3.5-27b",
+      "contrast": "B-A",
+      "episodes": 161,
+      "families": 115,
+      "difference": 0.036231884057971016,
+      "family_bootstrap_95_ci": [
+        -0.030434782608695653,
+        0.10579710144927537
+      ],
+      "fixes": 14,
+      "harms": 11,
+      "both_correct": 117,
+      "both_wrong": 19,
+      "cohort": "secondary:eligible_only",
+      "questions": 161,
+      "family_macro_difference": 0.036231884057971016,
+      "question_weighted_difference": 0.018633540372670808
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "qwen/qwen3.5-27b",
+      "contrast": "C-A",
+      "episodes": 161,
+      "families": 115,
+      "difference": 0.1782608695652174,
+      "family_bootstrap_95_ci": [
+        0.11594202898550725,
+        0.24782608695652175
+      ],
+      "fixes": 27,
+      "harms": 0,
+      "both_correct": 128,
+      "both_wrong": 6,
+      "cohort": "secondary:eligible_only",
+      "questions": 161,
+      "family_macro_difference": 0.1782608695652174,
+      "question_weighted_difference": 0.16770186335403728
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "qwen/qwen3.5-27b",
+      "contrast": "D-B",
+      "episodes": 161,
+      "families": 115,
+      "difference": 0.14637681159420293,
+      "family_bootstrap_95_ci": [
+        0.08695652173913043,
+        0.20873188405797047
+      ],
+      "fixes": 26,
+      "harms": 1,
+      "both_correct": 130,
+      "both_wrong": 4,
+      "cohort": "secondary:eligible_only",
+      "questions": 161,
+      "family_macro_difference": 0.14637681159420293,
+      "question_weighted_difference": 0.15527950310559005
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "qwen/qwen3.5-27b",
+      "contrast": "D-A",
+      "episodes": 161,
+      "families": 115,
+      "difference": 0.1826086956521739,
+      "family_bootstrap_95_ci": [
+        0.11884057971014494,
+        0.25362318840579706
+      ],
+      "fixes": 28,
+      "harms": 0,
+      "both_correct": 128,
+      "both_wrong": 5,
+      "cohort": "secondary:eligible_only",
+      "questions": 161,
+      "family_macro_difference": 0.1826086956521739,
+      "question_weighted_difference": 0.17391304347826086
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "qwen/qwen3.5-27b",
+      "contrast": "(D-B)-(C-A)",
+      "episodes": 161,
+      "families": 115,
+      "difference": -0.0318840579710145,
+      "family_bootstrap_95_ci": [
+        -0.10144927536231885,
+        0.03623188405797101
+      ],
+      "positive_interaction_episodes": 11,
+      "negative_interaction_episodes": 13,
+      "cohort": "secondary:eligible_only",
+      "questions": 161,
+      "family_macro_difference": -0.0318840579710145,
+      "question_weighted_difference": -0.012422360248447204
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "qwen/qwen3.8-27b",
+      "contrast": "B-A",
+      "episodes": 162,
+      "families": 115,
+      "difference": 0.05362318840579711,
+      "family_bootstrap_95_ci": [
+        -0.020289855072463767,
+        0.12753623188405797
+      ],
+      "fixes": 21,
+      "harms": 12,
+      "both_correct": 108,
+      "both_wrong": 21,
+      "cohort": "secondary:eligible_only",
+      "questions": 162,
+      "family_macro_difference": 0.05362318840579711,
+      "question_weighted_difference": 0.05555555555555555
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "qwen/qwen3.8-27b",
+      "contrast": "C-A",
+      "episodes": 162,
+      "families": 115,
+      "difference": 0.24637681159420288,
+      "family_bootstrap_95_ci": [
+        0.1797101449275362,
+        0.3173913043478261
+      ],
+      "fixes": 40,
+      "harms": 0,
+      "both_correct": 120,
+      "both_wrong": 2,
+      "cohort": "secondary:eligible_only",
+      "questions": 162,
+      "family_macro_difference": 0.24637681159420288,
+      "question_weighted_difference": 0.24691358024691357
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "qwen/qwen3.8-27b",
+      "contrast": "D-B",
+      "episodes": 162,
+      "families": 115,
+      "difference": 0.18840579710144925,
+      "family_bootstrap_95_ci": [
+        0.12753623188405794,
+        0.25507246376811593
+      ],
+      "fixes": 30,
+      "harms": 0,
+      "both_correct": 129,
+      "both_wrong": 3,
+      "cohort": "secondary:eligible_only",
+      "questions": 162,
+      "family_macro_difference": 0.18840579710144925,
+      "question_weighted_difference": 0.18518518518518517
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "qwen/qwen3.8-27b",
+      "contrast": "D-A",
+      "episodes": 162,
+      "families": 115,
+      "difference": 0.24202898550724636,
+      "family_bootstrap_95_ci": [
+        0.17536231884057968,
+        0.3130434782608696
+      ],
+      "fixes": 39,
+      "harms": 0,
+      "both_correct": 120,
+      "both_wrong": 3,
+      "cohort": "secondary:eligible_only",
+      "questions": 162,
+      "family_macro_difference": 0.24202898550724636,
+      "question_weighted_difference": 0.24074074074074073
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "participant_model": "qwen/qwen3.8-27b",
+      "contrast": "(D-B)-(C-A)",
+      "episodes": 162,
+      "families": 115,
+      "difference": -0.05797101449275363,
+      "family_bootstrap_95_ci": [
+        -0.1318840579710145,
+        0.017391304347826087
+      ],
+      "positive_interaction_episodes": 12,
+      "negative_interaction_episodes": 22,
+      "cohort": "secondary:eligible_only",
+      "questions": 162,
+      "family_macro_difference": -0.05797101449275363,
+      "question_weighted_difference": -0.06172839506172839
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "all",
+      "contrast": "B-A",
+      "episodes": 323,
+      "families": 116,
+      "difference": -0.00043103448275861917,
+      "family_bootstrap_95_ci": [
+        -0.05172413793103448,
+        0.04956896551724138
+      ],
+      "fixes": 28,
+      "harms": 23,
+      "both_correct": 254,
+      "both_wrong": 18,
+      "cohort": "secondary:eligible_only",
+      "questions": 164,
+      "family_macro_difference": -0.00043103448275861917,
+      "question_weighted_difference": 0.015479876160990712
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "all",
+      "contrast": "C-A",
+      "episodes": 323,
+      "families": 116,
+      "difference": 0.08505747126436781,
+      "family_bootstrap_95_ci": [
+        0.04310344827586207,
+        0.1295977011494253
+      ],
+      "fixes": 33,
+      "harms": 6,
+      "both_correct": 271,
+      "both_wrong": 13,
+      "cohort": "secondary:eligible_only",
+      "questions": 164,
+      "family_macro_difference": 0.08505747126436781,
+      "question_weighted_difference": 0.08359133126934984
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "all",
+      "contrast": "D-B",
+      "episodes": 323,
+      "families": 116,
+      "difference": 0.09913793103448276,
+      "family_bootstrap_95_ci": [
+        0.05818965517241379,
+        0.14511494252873566
+      ],
+      "fixes": 29,
+      "harms": 4,
+      "both_correct": 278,
+      "both_wrong": 12,
+      "cohort": "secondary:eligible_only",
+      "questions": 164,
+      "family_macro_difference": 0.09913793103448276,
+      "question_weighted_difference": 0.07739938080495357
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "all",
+      "contrast": "D-A",
+      "episodes": 323,
+      "families": 116,
+      "difference": 0.09870689655172413,
+      "family_bootstrap_95_ci": [
+        0.05244252873563219,
+        0.1477047413793103
+      ],
+      "fixes": 38,
+      "harms": 8,
+      "both_correct": 269,
+      "both_wrong": 8,
+      "cohort": "secondary:eligible_only",
+      "questions": 164,
+      "family_macro_difference": 0.09870689655172413,
+      "question_weighted_difference": 0.09287925696594428
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "all",
+      "contrast": "(D-B)-(C-A)",
+      "episodes": 323,
+      "families": 116,
+      "difference": 0.014080459770114942,
+      "family_bootstrap_95_ci": [
+        -0.04109554597701149,
+        0.07112068965517242
+      ],
+      "positive_interaction_episodes": 25,
+      "negative_interaction_episodes": 28,
+      "cohort": "secondary:eligible_only",
+      "questions": 164,
+      "family_macro_difference": 0.014080459770114942,
+      "question_weighted_difference": -0.006191950464396285
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "qwen/qwen3.5-27b",
+      "contrast": "B-A",
+      "episodes": 161,
+      "families": 115,
+      "difference": -0.004347826086956522,
+      "family_bootstrap_95_ci": [
+        -0.06521739130434782,
+        0.05507246376811595
+      ],
+      "fixes": 12,
+      "harms": 11,
+      "both_correct": 130,
+      "both_wrong": 8,
+      "cohort": "secondary:eligible_only",
+      "questions": 161,
+      "family_macro_difference": -0.004347826086956522,
+      "question_weighted_difference": 0.006211180124223602
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "qwen/qwen3.5-27b",
+      "contrast": "C-A",
+      "episodes": 161,
+      "families": 115,
+      "difference": 0.07246376811594202,
+      "family_bootstrap_95_ci": [
+        0.017391304347826087,
+        0.13043478260869565
+      ],
+      "fixes": 16,
+      "harms": 4,
+      "both_correct": 137,
+      "both_wrong": 4,
+      "cohort": "secondary:eligible_only",
+      "questions": 161,
+      "family_macro_difference": 0.07246376811594202,
+      "question_weighted_difference": 0.07453416149068323
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "qwen/qwen3.5-27b",
+      "contrast": "D-B",
+      "episodes": 161,
+      "families": 115,
+      "difference": 0.08695652173913043,
+      "family_bootstrap_95_ci": [
+        0.03768115942028986,
+        0.1420289855072464
+      ],
+      "fixes": 13,
+      "harms": 2,
+      "both_correct": 140,
+      "both_wrong": 6,
+      "cohort": "secondary:eligible_only",
+      "questions": 161,
+      "family_macro_difference": 0.08695652173913043,
+      "question_weighted_difference": 0.06832298136645963
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "qwen/qwen3.5-27b",
+      "contrast": "D-A",
+      "episodes": 161,
+      "families": 115,
+      "difference": 0.08260869565217391,
+      "family_bootstrap_95_ci": [
+        0.027536231884057974,
+        0.14057971014492754
+      ],
+      "fixes": 17,
+      "harms": 5,
+      "both_correct": 136,
+      "both_wrong": 3,
+      "cohort": "secondary:eligible_only",
+      "questions": 161,
+      "family_macro_difference": 0.08260869565217391,
+      "question_weighted_difference": 0.07453416149068323
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "qwen/qwen3.5-27b",
+      "contrast": "(D-B)-(C-A)",
+      "episodes": 161,
+      "families": 115,
+      "difference": 0.014492753623188404,
+      "family_bootstrap_95_ci": [
+        -0.05652173913043478,
+        0.08840579710144927
+      ],
+      "positive_interaction_episodes": 13,
+      "negative_interaction_episodes": 15,
+      "cohort": "secondary:eligible_only",
+      "questions": 161,
+      "family_macro_difference": 0.014492753623188404,
+      "question_weighted_difference": -0.006211180124223602
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "qwen/qwen3.8-27b",
+      "contrast": "B-A",
+      "episodes": 162,
+      "families": 115,
+      "difference": 0.0028985507246376786,
+      "family_bootstrap_95_ci": [
+        -0.0782608695652174,
+        0.08260869565217391
+      ],
+      "fixes": 16,
+      "harms": 12,
+      "both_correct": 124,
+      "both_wrong": 10,
+      "cohort": "secondary:eligible_only",
+      "questions": 162,
+      "family_macro_difference": 0.0028985507246376786,
+      "question_weighted_difference": 0.024691358024691357
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "qwen/qwen3.8-27b",
+      "contrast": "C-A",
+      "episodes": 162,
+      "families": 115,
+      "difference": 0.09855072463768115,
+      "family_bootstrap_95_ci": [
+        0.05072463768115942,
+        0.15217391304347827
+      ],
+      "fixes": 17,
+      "harms": 2,
+      "both_correct": 134,
+      "both_wrong": 9,
+      "cohort": "secondary:eligible_only",
+      "questions": 162,
+      "family_macro_difference": 0.09855072463768115,
+      "question_weighted_difference": 0.09259259259259259
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "qwen/qwen3.8-27b",
+      "contrast": "D-B",
+      "episodes": 162,
+      "families": 115,
+      "difference": 0.11304347826086956,
+      "family_bootstrap_95_ci": [
+        0.05652173913043478,
+        0.17391304347826086
+      ],
+      "fixes": 16,
+      "harms": 2,
+      "both_correct": 138,
+      "both_wrong": 6,
+      "cohort": "secondary:eligible_only",
+      "questions": 162,
+      "family_macro_difference": 0.11304347826086956,
+      "question_weighted_difference": 0.08641975308641975
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "qwen/qwen3.8-27b",
+      "contrast": "D-A",
+      "episodes": 162,
+      "families": 115,
+      "difference": 0.11594202898550723,
+      "family_bootstrap_95_ci": [
+        0.05507246376811594,
+        0.18119565217391254
+      ],
+      "fixes": 21,
+      "harms": 3,
+      "both_correct": 133,
+      "both_wrong": 5,
+      "cohort": "secondary:eligible_only",
+      "questions": 162,
+      "family_macro_difference": 0.11594202898550723,
+      "question_weighted_difference": 0.1111111111111111
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "participant_model": "qwen/qwen3.8-27b",
+      "contrast": "(D-B)-(C-A)",
+      "episodes": 162,
+      "families": 115,
+      "difference": 0.014492753623188406,
+      "family_bootstrap_95_ci": [
+        -0.05652173913043478,
+        0.08840579710144929
+      ],
+      "positive_interaction_episodes": 12,
+      "negative_interaction_episodes": 13,
+      "cohort": "secondary:eligible_only",
+      "questions": 162,
+      "family_macro_difference": 0.014492753623188406,
+      "question_weighted_difference": -0.006172839506172839
+    }
+  ],
+  "composition": [
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "cohort": "secondary:eligible_only",
+      "participant_model": "all",
+      "families": 116,
+      "questions": 164,
+      "retained_units": 323,
+      "planned_units": 332,
+      "excluded_units": 9,
+      "unknown_eligibility_units": 0
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "cohort": "secondary:eligible_only",
+      "participant_model": "qwen/qwen3.5-27b",
+      "families": 115,
+      "questions": 161,
+      "retained_units": 161,
+      "planned_units": 166,
+      "excluded_units": 5,
+      "unknown_eligibility_units": 0
+    },
+    {
+      "judge": "Qwen/Qwen3.5-4B",
+      "cohort": "secondary:eligible_only",
+      "participant_model": "qwen/qwen3.8-27b",
+      "families": 115,
+      "questions": 162,
+      "retained_units": 162,
+      "planned_units": 166,
+      "excluded_units": 4,
+      "unknown_eligibility_units": 0
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "cohort": "secondary:eligible_only",
+      "participant_model": "all",
+      "families": 116,
+      "questions": 164,
+      "retained_units": 323,
+      "planned_units": 332,
+      "excluded_units": 9,
+      "unknown_eligibility_units": 0
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "cohort": "secondary:eligible_only",
+      "participant_model": "qwen/qwen3.5-27b",
+      "families": 115,
+      "questions": 161,
+      "retained_units": 161,
+      "planned_units": 166,
+      "excluded_units": 5,
+      "unknown_eligibility_units": 0
+    },
+    {
+      "judge": "anthropic/claude-haiku-5.5",
+      "cohort": "secondary:eligible_only",
+      "participant_model": "qwen/qwen3.8-27b",
+      "families": 115,
+      "questions": 162,
+      "retained_units": 162,
+      "planned_units": 166,
+      "excluded_units": 4,
+      "unknown_eligibility_units": 0
+    }
+  ],
+  "bootstrap": {
+    "unit": "original source family; keep every question/model/cell together",
+    "resamples": 10000,
+    "seed": 2026101422,
+    "interval": "unadjusted descriptive 95%"
+  },
+  "reference_cohorts_verified": [
+    "all",
+    "secondary:source_supported",
+    "secondary:source_supported_and_eligible"
+  ],
+  "definition": "Initial knowledge passes and no public answer-field role switches in either paired trajectory, with affirmative reviewed model-specific eligibility. Unknown is excluded. No source-support restriction; provided keys unchanged.",
+  "interpretation": "Descriptive post-generation selected secondary analysis; not a causal eligibility effect. Feedback inherits the initial knowledge observation. Families receive equal weight after averaging retained question/model units; retained model composition can differ. Unadjusted exploratory intervals do not estimate repeated-generation variation. Empty cohorts have zero composition counts and no invented estimates.",
+  "input_sha256": {
+    "analysis": "98117848b69a367781586c9aee706ec4e300df9563fd74c722ec0005db46e62d",
+    "paired": "885e7b8ce737bd35bf3259854c385aac5674f7b326d1ace50de6768cfa4e0d49",
+    "diagnostics": "ed0bd69a37dd6331748633ea5802385ba57568559fa0f58272084fa7b9a12886",
+    "completion": "bff2f0a29070a77718761b39f68a170b695056e040c9414e18fefb6c03754d8f"
+  },
+  "module_sha256": "5d0c3e07eb8ed17aeec1909b0fff4cb75449be43d0c61877b34276dcf852f23c",
+  "evidence_status": "completed reviewed inputs; aggregate-only offline supplement"
+}

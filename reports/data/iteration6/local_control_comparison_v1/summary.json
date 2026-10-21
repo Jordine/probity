@@ -1,0 +1,155 @@
+{
+  "schema": "grid6_posthoc_local_control_difference_v1",
+  "posthoc": true,
+  "bootstrap_replicates": 10000,
+  "seed": 62109,
+  "results": [
+    {
+      "role": "all",
+      "local_probe": "local3:local3",
+      "control": "local3:random_direction",
+      "control_description": "Development-selected random direction (best of 32)",
+      "mixed_arguments": 378,
+      "families": 83,
+      "local_auroc": 0.8144802579408861,
+      "control_auroc": 0.7051192801031441,
+      "paired_difference": 0.10936097783774204,
+      "ci95": [
+        0.04974555933484506,
+        0.16716705028731707
+      ]
+    },
+    {
+      "role": "all",
+      "local_probe": "local3:local3",
+      "control": "length",
+      "control_description": "Token count",
+      "mixed_arguments": 378,
+      "families": 83,
+      "local_auroc": 0.8144802579408861,
+      "control_auroc": 0.5864306261326485,
+      "paired_difference": 0.22804963180823767,
+      "ci95": [
+        0.1569797213229335,
+        0.2968966747418769
+      ]
+    },
+    {
+      "role": "all",
+      "local_probe": "local3:local3",
+      "control": "position",
+      "control_description": "Relative position",
+      "mixed_arguments": 378,
+      "families": 83,
+      "local_auroc": 0.8144802579408861,
+      "control_auroc": 0.5693958832889555,
+      "paired_difference": 0.2450843746519306,
+      "ci95": [
+        0.17956339162685978,
+        0.3077285371864223
+      ]
+    },
+    {
+      "role": "correct_advocate",
+      "local_probe": "local3:local3",
+      "control": "local3:random_direction",
+      "control_description": "Development-selected random direction (best of 32)",
+      "mixed_arguments": 100,
+      "families": 34,
+      "local_auroc": 0.6767740429505136,
+      "control_auroc": 0.6094502801120448,
+      "paired_difference": 0.06732376283846873,
+      "ci95": [
+        -0.0492329598506069,
+        0.18739376167133517
+      ]
+    },
+    {
+      "role": "correct_advocate",
+      "local_probe": "local3:local3",
+      "control": "length",
+      "control_description": "Token count",
+      "mixed_arguments": 100,
+      "families": 34,
+      "local_auroc": 0.6767740429505136,
+      "control_auroc": 0.4811928104575164,
+      "paired_difference": 0.1955812324929972,
+      "ci95": [
+        0.04530602240896359,
+        0.3471562791783378
+      ]
+    },
+    {
+      "role": "correct_advocate",
+      "local_probe": "local3:local3",
+      "control": "position",
+      "control_description": "Relative position",
+      "mixed_arguments": 100,
+      "families": 34,
+      "local_auroc": 0.6767740429505136,
+      "control_auroc": 0.5211951447245565,
+      "paired_difference": 0.15557889822595705,
+      "ci95": [
+        -0.007205007002801104,
+        0.3172041316526611
+      ]
+    },
+    {
+      "role": "wrong_advocate",
+      "local_probe": "local3:local3",
+      "control": "local3:random_direction",
+      "control_description": "Development-selected random direction (best of 32)",
+      "mixed_arguments": 278,
+      "families": 75,
+      "local_auroc": 0.8604317139650473,
+      "control_auroc": 0.6967008497675165,
+      "paired_difference": 0.16373086419753083,
+      "ci95": [
+        0.09096885361552029,
+        0.2358916181657848
+      ]
+    },
+    {
+      "role": "wrong_advocate",
+      "local_probe": "local3:local3",
+      "control": "length",
+      "control_description": "Token count",
+      "mixed_arguments": 278,
+      "families": 75,
+      "local_auroc": 0.8604317139650473,
+      "control_auroc": 0.6227622093955426,
+      "paired_difference": 0.23766950456950453,
+      "ci95": [
+        0.15730752004168672,
+        0.3171749761503927
+      ]
+    },
+    {
+      "role": "wrong_advocate",
+      "local_probe": "local3:local3",
+      "control": "position",
+      "control_description": "Relative position",
+      "mixed_arguments": 278,
+      "families": 75,
+      "local_auroc": 0.8604317139650473,
+      "control_auroc": 0.5810660024279073,
+      "paired_difference": 0.27936571153714007,
+      "ci95": [
+        0.208687181795277,
+        0.34807126543209876
+      ]
+    }
+  ],
+  "weighting": "AUROC per mixed-label argument, mean within source family, equal mean over families; paired family bootstrap for each local-minus-control contrast.",
+  "limitations": [
+    "Frozen local head and controls; no selection on current outcomes.",
+    "Random-direction control was selected from32 on prior development data and is not an independent random null.",
+    "This post-hoc comparison was added after seeing elevated control performance.",
+    "Conditional on retained automated labels, historically exposed families and one generation; no human-gold or seed-variance claim."
+  ],
+  "inputs_sha256": {
+    "reports/data/iteration6/probe_factuality_v1/joined_units.jsonl": "148446d87c23a5e5a9adc849c710aa5c643aa1bd69b44dace05a0c759f14fdb4",
+    "reports/data/iteration6/probe_factuality_v1/metrics.json": "f584fd90321a155fbf70b07865ebb341bd1e9d117b306dc298aee773bcdc4e6e"
+  },
+  "script_sha256": "dc3ea4d3352b01230d6638369e779de6b35f33198a9c7a7d4d06dc1a49fe9304"
+}

@@ -23,7 +23,7 @@ from .qwen_extract import (
 
 
 def intervals(row):
-    if row["source"] != "api_debate_silver":
+    if row["source"] not in {"api_debate_silver", "natural_context_twins"}:
         return [], None
     argument, mapping = argument_mapping(row["response"])
     result = []
@@ -105,6 +105,7 @@ def main():
         "chat_template_sha256": sha256(runtime.tokenizer.chat_template),
         "dyl_contrast": "No. score minus Yes. score, read at period before EOT",
         "scope": "Unpadded teacher-forced API-text replay. No live-generation or padded-execution equivalence claim. All contexts and responses complete.",
+        "returned_reasoning": "When supplied, every returned reasoning character precedes the scored final response in an explicit think block. Final response pooling excludes the reasoning. No claim about opaque provider-side serialization or unreturned internal reasoning.",
         "pooling": "Span mean and last overlapping token. Response mean and argument mean exclude no response text; argument mean excludes JSON scaffolding. Phrase units are punctuation-derived, not guaranteed assertions.",
         "versions": {
             n: importlib.metadata.version(n)
@@ -140,8 +141,20 @@ def main():
             if saved["row"] != row:
                 raise ValueError("resume row differs")
             continue
-        yes = serialize(runtime.tokenizer, row["messages"], row["response"], "Yes.")
-        no = serialize(runtime.tokenizer, row["messages"], row["response"], "No.")
+        yes = serialize(
+            runtime.tokenizer,
+            row["messages"],
+            row["response"],
+            "Yes.",
+            reasoning=row.get("response_reasoning"),
+        )
+        no = serialize(
+            runtime.tokenizer,
+            row["messages"],
+            row["response"],
+            "No.",
+            reasoning=row.get("response_reasoning"),
+        )
         if yes["ids"][: yes["followup_start"]] != no["ids"][: no["followup_start"]]:
             raise ValueError("DYL arm changed original action context")
         acts, _ = runtime.forward(yes["ids"])
@@ -217,6 +230,8 @@ def main():
             "dyl_causality_relative_rms": arm_delta,
             "serialized_yes_sha256": sha256(yes["text"]),
             "serialized_no_sha256": sha256(no["text"]),
+            "returned_reasoning_range": yes["returned_reasoning_range"],
+            "returned_reasoning_sha256": yes["returned_reasoning_sha256"],
         }
         tmp = dest.with_suffix(".tmp")
         torch.save(cache, tmp)

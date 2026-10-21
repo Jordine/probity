@@ -1,0 +1,78 @@
+{
+  "schema": "judge3_audited_table_export_v2",
+  "created_at_utc": "2026-10-15T14:01:31.317683+00:00",
+  "judges": [
+    "Qwen/Qwen3.5-4B",
+    "anthropic/claude-haiku-5.5",
+    "anthropic/claude-opus-5.5"
+  ],
+  "input_sha256": {
+    "/root/projects/probity-benchmark/runs/iteration3/judge_controls/final_table_export_spec_v1.json": "676fbfc8f174568241b46342d5e79323cf82615384394704acea58c1409e4d78",
+    "/root/projects/probity-benchmark/runs/iteration3/final/native_judge_analysis_view_v1/native_analysis_view_provenance.json": "69e25b41271647877a9bdd177b5d07c8b170126b65b4c213390ba4a9a87b624a",
+    "/root/projects/probity-benchmark/runs/iteration3/final/judge_package_v1/package.json": "5f7b4d92e0585b3920ab5bda1d82daf88f457c153f1f4cfe8d45e922998066a0",
+    "/root/projects/probity-benchmark/runs/iteration3/final/judge_package_v1/compiled/jobs.jsonl": "487aa4cd7de93cc2c3e6e65efae19f6da4b6b72cbf9d292afbbc89aa4a93a505",
+    "/root/projects/probity-benchmark/runs/iteration3/final/native_judge_v1/manifest.json": "8ca22c784e0847d69e6e197972a8d3fc655be6016189401bad3a0dec87fd5741",
+    "/root/projects/probity-benchmark/runs/iteration3/final/native_judge_v1/evaluations.jsonl": "e7308602d45f27f7fda331b1d1503b6e2f3bbf6029f8294e5f1665c2d7e53449",
+    "/root/projects/probity-benchmark/runs/iteration3/final/native_judge_analysis_v1/prompt_repeatability.json": "60b1ffa4a6fbc745311f3783e662d301ca57b079ab6149b6895d87a8fbcf50fb",
+    "/root/projects/probity-benchmark/runs/iteration3/final/native_generation_audit_v1.json": "abdb445804bba0856a64977b8a90c9bc3685a42971ef7f9859d3038254a085a9",
+    "/root/projects/probity-benchmark/runs/iteration3/final/native_judge_analysis_v1/analysis.json": "385246960a6279dcbd3f456726364ad7178d3fc37b78e5e351c3f477cd490879",
+    "/root/projects/probity-benchmark/runs/iteration3/final/native_judge_analysis_v1/receipt_audit.json": "1bac07c411177f60f0666e0953d5403eb913ad230d190ec7baa8e7f88465dcea",
+    "/root/projects/probity-benchmark/runs/iteration3/final/native_judge_analysis_view_v1/evaluations.jsonl": "956294bd3396e3ebef25bc7aff21518920e88a9efe0d182f7d888d210d2bce55",
+    "/root/projects/probity-benchmark/runs/iteration3/final/native_judge_analysis_view_v1/manifest.json": "8ca22c784e0847d69e6e197972a8d3fc655be6016189401bad3a0dec87fd5741",
+    "/root/projects/probity-benchmark/runs/iteration3/final/haiku_judge_v1/manifest.json": "ff4cac301c959c21b775b4859822fff47a93d4c7ee1d248fb711ea4ed3432861",
+    "/root/projects/probity-benchmark/runs/iteration3/final/haiku_judge_v1/evaluations.jsonl": "2bfdaffd9064a62f32655676280217b52dc6aaf1313a9ea5ddc139ca0864774b",
+    "/root/projects/probity-benchmark/runs/iteration3/final/haiku_judge_v1/analysis/prompt_repeatability.json": "6ab49d98789e2018906684d6be1184630a9ca33addd3415494fe443acc5bd544",
+    "/root/projects/probity-benchmark/runs/iteration3/final/haiku_judge_v1/requests.jsonl": "2fcde6a157d8dafabc5d2d58ec0b541fbe64689ab3377712119d8438ebf44c00",
+    "/root/projects/probity-benchmark/runs/iteration3/final/haiku_generation_audit_v1.json": "fc2d0e7f1892f7c7748aefd0dd62eb51539e9e94c68a67ea6d9017c1b484adac",
+    "/root/projects/probity-benchmark/runs/iteration3/final/haiku_judge_v1/analysis/analysis.json": "33a100512236e3f55f40ba64cf49c6359ab714c3cebf2fbb0ca2b0e05539ed44",
+    "/root/projects/probity-benchmark/runs/iteration3/final/haiku_judge_v1/analysis/receipt_audit.json": "06c3fc46e187a3aebab59e8e1facc84141ad57cbb30eb2038f680f1d141d2d5c",
+    "/root/projects/probity-benchmark/runs/iteration3/final/opus_package_v1/package.json": "e368fa655538cea03e18b9d409df8a5499fc50df567a29406d1274a6e5858a25",
+    "/root/projects/probity-benchmark/runs/iteration3/final/opus_package_v1/compiled/jobs.jsonl": "28fd265dd9ff1ae73d5a901ce535b4da2ef673fd44475d6761d8a31e496063ff",
+    "/root/projects/probity-benchmark/runs/iteration3/final/opus_judge_v1/manifest.json": "aed55e3455b5cf989046fb9a57b4dc7cd68e45b93b4f0854fcf7a9fefb036029",
+    "/root/projects/probity-benchmark/runs/iteration3/final/opus_judge_v1/evaluations.jsonl": "f7c723937f8d0d4c7b60a25d64c3e5dc9a64b10fa7ab70b5bd6ca4529448617e",
+    "/root/projects/probity-benchmark/runs/iteration3/final/opus_judge_v1/analysis/prompt_repeatability.json": "4b7277c4eb71cf37f137f938ce84dc85f45403bc9360f20b62cbe2dcc3639f6f",
+    "/root/projects/probity-benchmark/runs/iteration3/final/opus_judge_v1/requests.jsonl": "528cf55a9abf085ac850e4021ef4b3b25e54a01909186be0e1346cd91063732e",
+    "/root/projects/probity-benchmark/runs/iteration3/final/opus_generation_audit_v1.json": "c73281d71899cf6f74f7656019fe3906aa6ad0ef72172014bf677cf217355f2d",
+    "/root/projects/probity-benchmark/runs/iteration3/final/opus_judge_v1/analysis/analysis.json": "e7de4bf6b6f8025c59899b6f81a1c897b5b5573a4a28872220cd6a8d6de15343",
+    "/root/projects/probity-benchmark/runs/iteration3/final/opus_judge_v1/analysis/receipt_audit.json": "a4db78d2301e218fc62e160365c4b4f2f7b1f6e7071df98fb50ad316de69974b"
+  },
+  "projector_source_sha256": "ce79c84f967da55f885330f974db563581d3d6f1d551809a2e20abd061d5071b",
+  "outputs": {
+    "accuracies": {
+      "path": "runs/iteration3/final/judge_tables_v1/accuracies.csv",
+      "rows": 156,
+      "sha256": "124c8b8de93808e127bd45f70453f209efd34bdf55484e1428509ea2b589ae41"
+    },
+    "all_paired_contrasts": {
+      "path": "runs/iteration3/final/judge_tables_v1/all_paired_contrasts.csv",
+      "rows": 285,
+      "sha256": "0a9a2d88634066cb34403f0f86c9dc2a31e94bce04dfc7241e9ee9db68603573"
+    },
+    "real_minus_neutral": {
+      "path": "runs/iteration3/final/judge_tables_v1/real_minus_neutral.csv",
+      "rows": 46,
+      "sha256": "f32e387469dbf36cc4d0ba3719a9f4b630f9595faa34f8ac0a07baa812955026"
+    },
+    "exact_prompt_summary": {
+      "path": "runs/iteration3/final/judge_tables_v1/exact_prompt_summary.csv",
+      "rows": 3,
+      "sha256": "5a55bd68405008262439977856e86ecbf7fbe0ebeb2a7ba553ee66402cdf5d38"
+    },
+    "exact_prompt_groups": {
+      "path": "runs/iteration3/final/judge_tables_v1/exact_prompt_groups.csv",
+      "rows": 194,
+      "sha256": "68a33753697a128b716488db45c9f301fd24a3cf1476836f811f2e4f1799c38d"
+    }
+  },
+  "inference_or_bootstrap_rerun": false,
+  "interpretation": [
+    "Estimates, family bootstrap intervals, fixes, harms and denominators are copied from the complete audited analyses; no outcome-based selection.",
+    "Participant all pools only the detector's declared model coverage. Published FIBS has Qwen3.5 coverage only.",
+    "The matched-neutral table includes every frozen detector; the prespecified-primary flag identifies adapted_primary and local3_sentence without selecting on outcomes.",
+    "All paired contrasts retain their own matched denominators; do not subtract an unmatched pooled raw baseline cell for a restricted detector.",
+    "Exact-message repeats are descriptive observations within a judge run, not extra independent families. Zero repeated groups means unmeasured repeatability, not zero noise.",
+    "Logical agreement includes cached native jobs. Generation-aware agreement counts only distinct resolved generation receipts; cache-only native repeats leave sampling repeatability unmeasured.",
+    "Original native evaluations and manifest remain immutable. If a native analysis view is used, its sole added field is answer equal to the existing parsed.answer, with original and derived hashes recorded.",
+    "Complete-request hashes and provider/model/fingerprint metadata remain distinct from message equality. Missing metadata is unknown."
+  ]
+}

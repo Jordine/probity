@@ -1,0 +1,749 @@
+{
+  "judge_counts_at_analysis": {
+    "haiku_expected": 168,
+    "haiku_valid": 168,
+    "native_expected": 168,
+    "native_valid": 0
+  },
+  "shuffled_control": {
+    "packets": 96,
+    "unchanged_numeric_packets": 23,
+    "unchanged_recommendations": 47,
+    "limitation": "Permutation need not be a derangement; some packets or recommendations remain unchanged. This is a weak negative control, not guaranteed uninformative or adversarial feedback."
+  },
+  "branches": 168,
+  "families": 24,
+  "fresh_suffix_turns": 672,
+  "shared_first_round_turns_per_family": 2,
+  "contrasts": [
+    {
+      "metric": "suffix_words",
+      "baseline": "none",
+      "policy": "neutral",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": -12.34375,
+      "lo95": -20.010416666666668,
+      "hi95": -4.666406250000004
+    },
+    {
+      "metric": "suffix_words",
+      "baseline": "none",
+      "policy": "bundle",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": -8.822916666666666,
+      "lo95": -20.948177083333334,
+      "hi95": 2.3335937499999964
+    },
+    {
+      "metric": "suffix_words",
+      "baseline": "none",
+      "policy": "turn_scores",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": -6.645833333333333,
+      "lo95": -13.666927083333333,
+      "hi95": -0.04114583333334091
+    },
+    {
+      "metric": "suffix_words",
+      "baseline": "none",
+      "policy": "speaker_means",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": -5.208333333333333,
+      "lo95": -16.98984375,
+      "hi95": 4.82317708333333
+    },
+    {
+      "metric": "suffix_words",
+      "baseline": "none",
+      "policy": "recommendation",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": -10.875,
+      "lo95": -17.916927083333334,
+      "hi95": -3.7395833333333335
+    },
+    {
+      "metric": "suffix_words",
+      "baseline": "none",
+      "policy": "shuffled_bundle",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": -11.75,
+      "lo95": -21.156510416666666,
+      "hi95": -2.7289062500000036
+    },
+    {
+      "metric": "suffix_words",
+      "baseline": "neutral",
+      "policy": "none",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 12.34375,
+      "lo95": 4.6664062500000005,
+      "hi95": 20.010416666666668
+    },
+    {
+      "metric": "suffix_words",
+      "baseline": "neutral",
+      "policy": "bundle",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 3.5208333333333335,
+      "lo95": -5.865364583333332,
+      "hi95": 13.281770833333326
+    },
+    {
+      "metric": "suffix_words",
+      "baseline": "neutral",
+      "policy": "turn_scores",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 5.697916666666667,
+      "lo95": -1.4375,
+      "hi95": 12.729427083333329
+    },
+    {
+      "metric": "suffix_words",
+      "baseline": "neutral",
+      "policy": "speaker_means",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 7.135416666666667,
+      "lo95": -2.42734375,
+      "hi95": 16.72942708333333
+    },
+    {
+      "metric": "suffix_words",
+      "baseline": "neutral",
+      "policy": "recommendation",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 1.46875,
+      "lo95": -4.5523437499999995,
+      "hi95": 7.625260416666663
+    },
+    {
+      "metric": "suffix_words",
+      "baseline": "neutral",
+      "policy": "shuffled_bundle",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 0.59375,
+      "lo95": -8.15625,
+      "hi95": 9.46875
+    },
+    {
+      "metric": "own_exact_repeat_fraction",
+      "baseline": "none",
+      "policy": "neutral",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": -0.08333333333333333,
+      "lo95": -0.1875,
+      "hi95": 0.020833333333333332
+    },
+    {
+      "metric": "own_exact_repeat_fraction",
+      "baseline": "none",
+      "policy": "bundle",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": -0.125,
+      "lo95": -0.1875,
+      "hi95": -0.0625
+    },
+    {
+      "metric": "own_exact_repeat_fraction",
+      "baseline": "none",
+      "policy": "turn_scores",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": -0.10416666666666667,
+      "lo95": -0.20833333333333334,
+      "hi95": 0.0
+    },
+    {
+      "metric": "own_exact_repeat_fraction",
+      "baseline": "none",
+      "policy": "speaker_means",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": -0.08333333333333333,
+      "lo95": -0.17708333333333334,
+      "hi95": 0.010416666666666666
+    },
+    {
+      "metric": "own_exact_repeat_fraction",
+      "baseline": "none",
+      "policy": "recommendation",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": -0.0625,
+      "lo95": -0.13541666666666666,
+      "hi95": 0.0
+    },
+    {
+      "metric": "own_exact_repeat_fraction",
+      "baseline": "none",
+      "policy": "shuffled_bundle",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": -0.13541666666666666,
+      "lo95": -0.22916666666666666,
+      "hi95": -0.041666666666666664
+    },
+    {
+      "metric": "own_exact_repeat_fraction",
+      "baseline": "neutral",
+      "policy": "none",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 0.08333333333333333,
+      "lo95": -0.020833333333333332,
+      "hi95": 0.1875
+    },
+    {
+      "metric": "own_exact_repeat_fraction",
+      "baseline": "neutral",
+      "policy": "bundle",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": -0.041666666666666664,
+      "lo95": -0.11458333333333333,
+      "hi95": 0.03125
+    },
+    {
+      "metric": "own_exact_repeat_fraction",
+      "baseline": "neutral",
+      "policy": "turn_scores",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": -0.020833333333333332,
+      "lo95": -0.10416666666666667,
+      "hi95": 0.0625
+    },
+    {
+      "metric": "own_exact_repeat_fraction",
+      "baseline": "neutral",
+      "policy": "speaker_means",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 0.0,
+      "lo95": -0.0625,
+      "hi95": 0.0625
+    },
+    {
+      "metric": "own_exact_repeat_fraction",
+      "baseline": "neutral",
+      "policy": "recommendation",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 0.020833333333333332,
+      "lo95": -0.052083333333333336,
+      "hi95": 0.08333333333333333
+    },
+    {
+      "metric": "own_exact_repeat_fraction",
+      "baseline": "neutral",
+      "policy": "shuffled_bundle",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": -0.052083333333333336,
+      "lo95": -0.13541666666666666,
+      "hi95": 0.03125
+    },
+    {
+      "metric": "own_jaccard",
+      "baseline": "none",
+      "policy": "neutral",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": -0.07657590905500798,
+      "lo95": -0.13086885639220705,
+      "hi95": -0.023435032419750045
+    },
+    {
+      "metric": "own_jaccard",
+      "baseline": "none",
+      "policy": "bundle",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": -0.09743267215352247,
+      "lo95": -0.14567313720110436,
+      "hi95": -0.04694928312923395
+    },
+    {
+      "metric": "own_jaccard",
+      "baseline": "none",
+      "policy": "turn_scores",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": -0.05224534034857268,
+      "lo95": -0.09702193996582148,
+      "hi95": -0.00849379782550188
+    },
+    {
+      "metric": "own_jaccard",
+      "baseline": "none",
+      "policy": "speaker_means",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": -0.06036010829772009,
+      "lo95": -0.11072119774409625,
+      "hi95": -0.006960307409941553
+    },
+    {
+      "metric": "own_jaccard",
+      "baseline": "none",
+      "policy": "recommendation",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": -0.05267678544601433,
+      "lo95": -0.10417095664765726,
+      "hi95": -0.0030386730565367106
+    },
+    {
+      "metric": "own_jaccard",
+      "baseline": "none",
+      "policy": "shuffled_bundle",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": -0.02130168613412176,
+      "lo95": -0.06430104269794187,
+      "hi95": 0.01920673153610775
+    },
+    {
+      "metric": "own_jaccard",
+      "baseline": "neutral",
+      "policy": "none",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 0.07657590905500798,
+      "lo95": 0.02343503241975002,
+      "hi95": 0.13086885639220702
+    },
+    {
+      "metric": "own_jaccard",
+      "baseline": "neutral",
+      "policy": "bundle",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": -0.020856763098514475,
+      "lo95": -0.05312383650051933,
+      "hi95": 0.011017234773244523
+    },
+    {
+      "metric": "own_jaccard",
+      "baseline": "neutral",
+      "policy": "turn_scores",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 0.024330568706435306,
+      "lo95": -0.013044619184757338,
+      "hi95": 0.061883870988541013
+    },
+    {
+      "metric": "own_jaccard",
+      "baseline": "neutral",
+      "policy": "speaker_means",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 0.016215800757287898,
+      "lo95": -0.032201942162382306,
+      "hi95": 0.06918437791759627
+    },
+    {
+      "metric": "own_jaccard",
+      "baseline": "neutral",
+      "policy": "recommendation",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 0.023899123608993655,
+      "lo95": -0.01732501275783753,
+      "hi95": 0.06793531583643427
+    },
+    {
+      "metric": "own_jaccard",
+      "baseline": "neutral",
+      "policy": "shuffled_bundle",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 0.05527422292088622,
+      "lo95": 0.0028766188251466945,
+      "hi95": 0.10917548825816385
+    },
+    {
+      "metric": "assigned_answer_deviations",
+      "baseline": "none",
+      "policy": "neutral",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": 0.0,
+      "lo95": 0.0,
+      "hi95": 0.0
+    },
+    {
+      "metric": "assigned_answer_deviations",
+      "baseline": "none",
+      "policy": "bundle",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": 0.0,
+      "lo95": 0.0,
+      "hi95": 0.0
+    },
+    {
+      "metric": "assigned_answer_deviations",
+      "baseline": "none",
+      "policy": "turn_scores",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": 0.0,
+      "lo95": 0.0,
+      "hi95": 0.0
+    },
+    {
+      "metric": "assigned_answer_deviations",
+      "baseline": "none",
+      "policy": "speaker_means",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": 0.0,
+      "lo95": 0.0,
+      "hi95": 0.0
+    },
+    {
+      "metric": "assigned_answer_deviations",
+      "baseline": "none",
+      "policy": "recommendation",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": 0.0,
+      "lo95": 0.0,
+      "hi95": 0.0
+    },
+    {
+      "metric": "assigned_answer_deviations",
+      "baseline": "none",
+      "policy": "shuffled_bundle",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": 0.0,
+      "lo95": 0.0,
+      "hi95": 0.0
+    },
+    {
+      "metric": "assigned_answer_deviations",
+      "baseline": "neutral",
+      "policy": "none",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 0.0,
+      "lo95": 0.0,
+      "hi95": 0.0
+    },
+    {
+      "metric": "assigned_answer_deviations",
+      "baseline": "neutral",
+      "policy": "bundle",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 0.0,
+      "lo95": 0.0,
+      "hi95": 0.0
+    },
+    {
+      "metric": "assigned_answer_deviations",
+      "baseline": "neutral",
+      "policy": "turn_scores",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 0.0,
+      "lo95": 0.0,
+      "hi95": 0.0
+    },
+    {
+      "metric": "assigned_answer_deviations",
+      "baseline": "neutral",
+      "policy": "speaker_means",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 0.0,
+      "lo95": 0.0,
+      "hi95": 0.0
+    },
+    {
+      "metric": "assigned_answer_deviations",
+      "baseline": "neutral",
+      "policy": "recommendation",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 0.0,
+      "lo95": 0.0,
+      "hi95": 0.0
+    },
+    {
+      "metric": "assigned_answer_deviations",
+      "baseline": "neutral",
+      "policy": "shuffled_bundle",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 0.0,
+      "lo95": 0.0,
+      "hi95": 0.0
+    },
+    {
+      "metric": "authentic_role_score",
+      "baseline": "none",
+      "policy": "neutral",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": 0.3906458333333336,
+      "lo95": -0.5208130208333334,
+      "hi95": 1.3455833333333338
+    },
+    {
+      "metric": "authentic_role_score",
+      "baseline": "none",
+      "policy": "bundle",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": 0.6945208333333336,
+      "lo95": -0.04337500000000002,
+      "hi95": 1.4757083333333334
+    },
+    {
+      "metric": "authentic_role_score",
+      "baseline": "none",
+      "policy": "turn_scores",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": 0.737916666666667,
+      "lo95": -0.26033333333333303,
+      "hi95": 1.8230416666666673
+    },
+    {
+      "metric": "authentic_role_score",
+      "baseline": "none",
+      "policy": "speaker_means",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": 0.21706250000000016,
+      "lo95": -0.6943958333333331,
+      "hi95": 1.2153125000000002
+    },
+    {
+      "metric": "authentic_role_score",
+      "baseline": "none",
+      "policy": "recommendation",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": 0.04343750000000024,
+      "lo95": -0.9114374999999999,
+      "hi95": 0.9982916666666671
+    },
+    {
+      "metric": "authentic_role_score",
+      "baseline": "none",
+      "policy": "shuffled_bundle",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": 0.6076458333333336,
+      "lo95": -0.2604583333333332,
+      "hi95": 1.562500520833334
+    },
+    {
+      "metric": "authentic_role_score",
+      "baseline": "neutral",
+      "policy": "none",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": -0.3906458333333336,
+      "lo95": -1.3455833333333338,
+      "hi95": 0.5208130208333334
+    },
+    {
+      "metric": "authentic_role_score",
+      "baseline": "neutral",
+      "policy": "bundle",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 0.303875,
+      "lo95": -0.47737500000000005,
+      "hi95": 1.0851666666666668
+    },
+    {
+      "metric": "authentic_role_score",
+      "baseline": "neutral",
+      "policy": "turn_scores",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 0.3472708333333335,
+      "lo95": -0.4339999999999999,
+      "hi95": 1.0417083333333335
+    },
+    {
+      "metric": "authentic_role_score",
+      "baseline": "neutral",
+      "policy": "speaker_means",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": -0.17358333333333342,
+      "lo95": -0.9114583333333335,
+      "hi95": 0.6076880208333336
+    },
+    {
+      "metric": "authentic_role_score",
+      "baseline": "neutral",
+      "policy": "recommendation",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": -0.3472083333333333,
+      "lo95": -0.9114375,
+      "hi95": 0.1736875000000003
+    },
+    {
+      "metric": "authentic_role_score",
+      "baseline": "neutral",
+      "policy": "shuffled_bundle",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 0.21699999999999997,
+      "lo95": -0.43399999999999994,
+      "hi95": 0.8680208333333331
+    },
+    {
+      "metric": "incorrect_role_score",
+      "baseline": "none",
+      "policy": "neutral",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": 0.17360416666666664,
+      "lo95": -1.7795833333333337,
+      "hi95": 2.2135625
+    },
+    {
+      "metric": "incorrect_role_score",
+      "baseline": "none",
+      "policy": "bundle",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": 3.1250208333333336,
+      "lo95": 1.215311979166667,
+      "hi95": 5.251813020833334
+    },
+    {
+      "metric": "incorrect_role_score",
+      "baseline": "none",
+      "policy": "turn_scores",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": 0.7812291666666665,
+      "lo95": -0.998333854166667,
+      "hi95": 2.6909791666666667
+    },
+    {
+      "metric": "incorrect_role_score",
+      "baseline": "none",
+      "policy": "speaker_means",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": 1.8229166666666667,
+      "lo95": -0.17368750000000036,
+      "hi95": 4.0365
+    },
+    {
+      "metric": "incorrect_role_score",
+      "baseline": "none",
+      "policy": "recommendation",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": 1.8228541666666664,
+      "lo95": 0.21695833333333306,
+      "hi95": 3.6024380208333335
+    },
+    {
+      "metric": "incorrect_role_score",
+      "baseline": "none",
+      "policy": "shuffled_bundle",
+      "contrast": "policy_minus_none",
+      "families": 24,
+      "estimate": 1.1718541666666666,
+      "lo95": -1.0850416666666665,
+      "hi95": 3.385375520833333
+    },
+    {
+      "metric": "incorrect_role_score",
+      "baseline": "neutral",
+      "policy": "none",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": -0.17360416666666664,
+      "lo95": -2.2135625,
+      "hi95": 1.7795833333333337
+    },
+    {
+      "metric": "incorrect_role_score",
+      "baseline": "neutral",
+      "policy": "bundle",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 2.951416666666667,
+      "lo95": 0.9982708333333333,
+      "hi95": 4.861125
+    },
+    {
+      "metric": "incorrect_role_score",
+      "baseline": "neutral",
+      "policy": "turn_scores",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 0.607625,
+      "lo95": -1.1719380208333336,
+      "hi95": 2.430604166666667
+    },
+    {
+      "metric": "incorrect_role_score",
+      "baseline": "neutral",
+      "policy": "speaker_means",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 1.6493125,
+      "lo95": -0.2604166666666667,
+      "hi95": 3.515625
+    },
+    {
+      "metric": "incorrect_role_score",
+      "baseline": "neutral",
+      "policy": "recommendation",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 1.6492499999999997,
+      "lo95": 0.3906041666666666,
+      "hi95": 3.081584895833333
+    },
+    {
+      "metric": "incorrect_role_score",
+      "baseline": "neutral",
+      "policy": "shuffled_bundle",
+      "contrast": "policy_minus_neutral",
+      "families": 24,
+      "estimate": 0.99825,
+      "lo95": -1.0416458333333332,
+      "hi95": 2.994688020833333
+    }
+  ],
+  "interpretation": "All effects conditional on shared original A first round and historical private plans. Initial prefix is identical across seven policies. Probe scores summarize assigned roles, not sentence factuality. Live feedback changes subsequent contexts, so suffix cannot be counterfactually replayed as equivalent. One generated suffix per policy; paired family bootstrap does not estimate seed variance.",
+  "provenance": {
+    "run_manifest_sha256": "b9347af495cb9c5be86d485d6dcc2af322e5d9bf3b01a9b2f738afd392ac6cc7",
+    "script_sha256": "0bfd4860f9e42294975523b397ea47d9c7d5391ea7f0170260ac9d533d49d5c8"
+  },
+  "qualitative_selection": [
+    "433d00cfba16ce2b54abe4874fdca424acf6de9bd1d2208048f5f2cd0f5de51a",
+    "c315c58070ae394a5d522c55860a5391f8f1f7714b8ca205a2865e3a2899c14b"
+  ]
+}

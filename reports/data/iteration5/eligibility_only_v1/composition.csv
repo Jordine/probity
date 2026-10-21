@@ -1,0 +1,7 @@
+judge,cohort,participant_model,families,questions,retained_units,planned_units,excluded_units,unknown_eligibility_units
+Qwen/Qwen3.5-4B,secondary:eligible_only,all,116,164,323,332,9,0
+Qwen/Qwen3.5-4B,secondary:eligible_only,qwen/qwen3.5-27b,115,161,161,166,5,0
+Qwen/Qwen3.5-4B,secondary:eligible_only,qwen/qwen3.8-27b,115,162,162,166,4,0
+anthropic/claude-haiku-5.5,secondary:eligible_only,all,116,164,323,332,9,0
+anthropic/claude-haiku-5.5,secondary:eligible_only,qwen/qwen3.5-27b,115,161,161,166,5,0
+anthropic/claude-haiku-5.5,secondary:eligible_only,qwen/qwen3.8-27b,115,162,162,166,4,0

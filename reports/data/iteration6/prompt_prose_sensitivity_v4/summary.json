@@ -1,0 +1,144 @@
+{
+  "schema": "prompt_complete_prose_sensitivity_v1",
+  "primary_families": 8,
+  "retained_families": 7,
+  "retained_debates": 28,
+  "excluded_families": [
+    "6ac15f0338e70a96ba9068660aec78e1b76caed14ed1d83a27349c0d8ca9a91d"
+  ],
+  "contrasts": [
+    {
+      "metric": "haiku_correct",
+      "level": "selective",
+      "contrast": "feedback_on_minus_off",
+      "families": 7,
+      "estimate": 0.14285714285714285,
+      "lower95": 0.0,
+      "upper95": 0.42857142857142855
+    },
+    {
+      "metric": "haiku_correct",
+      "level": "explicit",
+      "contrast": "feedback_on_minus_off",
+      "families": 7,
+      "estimate": 0.14285714285714285,
+      "lower95": 0.0,
+      "upper95": 0.42857142857142855
+    },
+    {
+      "metric": "native_correct",
+      "level": "selective",
+      "contrast": "feedback_on_minus_off",
+      "families": 7,
+      "estimate": -0.2857142857142857,
+      "lower95": -0.5714285714285714,
+      "upper95": 0.0
+    },
+    {
+      "metric": "native_correct",
+      "level": "explicit",
+      "contrast": "feedback_on_minus_off",
+      "families": 7,
+      "estimate": 0.0,
+      "lower95": 0.0,
+      "upper95": 0.0
+    },
+    {
+      "metric": "words",
+      "level": "selective",
+      "contrast": "feedback_on_minus_off",
+      "families": 7,
+      "estimate": 9.666666666666668,
+      "lower95": 0.8095238095238102,
+      "upper95": 17.880952380952387
+    },
+    {
+      "metric": "words",
+      "level": "explicit",
+      "contrast": "feedback_on_minus_off",
+      "families": 7,
+      "estimate": 4.619047619047627,
+      "lower95": -0.6202380952380873,
+      "upper95": 11.190476190476193
+    },
+    {
+      "metric": "exact_self_repeat",
+      "level": "selective",
+      "contrast": "feedback_on_minus_off",
+      "families": 7,
+      "estimate": -0.14285714285714285,
+      "lower95": -0.42857142857142855,
+      "upper95": 0.0
+    },
+    {
+      "metric": "exact_self_repeat",
+      "level": "explicit",
+      "contrast": "feedback_on_minus_off",
+      "families": 7,
+      "estimate": -0.14285714285714285,
+      "lower95": -0.42857142857142855,
+      "upper95": 0.0
+    },
+    {
+      "metric": "assigned_answer_deviations",
+      "level": "selective",
+      "contrast": "feedback_on_minus_off",
+      "families": 7,
+      "estimate": 0.0,
+      "lower95": 0.0,
+      "upper95": 0.0
+    },
+    {
+      "metric": "assigned_answer_deviations",
+      "level": "explicit",
+      "contrast": "feedback_on_minus_off",
+      "families": 7,
+      "estimate": 0.0,
+      "lower95": 0.0,
+      "upper95": 0.0
+    },
+    {
+      "metric": "authentic_assignment_mean_percentile",
+      "level": "selective",
+      "contrast": "feedback_on_minus_off",
+      "families": 7,
+      "estimate": 0.2976666666666668,
+      "lower95": -0.6943333333333334,
+      "upper95": 1.6865238095238102
+    },
+    {
+      "metric": "authentic_assignment_mean_percentile",
+      "level": "explicit",
+      "contrast": "feedback_on_minus_off",
+      "families": 7,
+      "estimate": -0.29752380952381,
+      "lower95": -1.3887630952380967,
+      "upper95": 0.8928571428571423
+    },
+    {
+      "metric": "incorrect_assignment_mean_percentile",
+      "level": "selective",
+      "contrast": "feedback_on_minus_off",
+      "families": 7,
+      "estimate": 3.373000000000002,
+      "lower95": 0.19871428571428953,
+      "upper95": 7.737904761904765
+    },
+    {
+      "metric": "incorrect_assignment_mean_percentile",
+      "level": "explicit",
+      "contrast": "feedback_on_minus_off",
+      "families": 7,
+      "estimate": 0.9918571428571406,
+      "lower95": -2.08361904761905,
+      "upper95": 3.968095238095237
+    }
+  ],
+  "interpretation": "Post-hoc descriptive sensitivity. It is not a replacement for the primary eight-family estimates. Intervals use 10,000 paired family-bootstrap draws with seed 8167 and do not include generation-seed uncertainty.",
+  "provenance": {
+    "trajectories_sha256": "f22a91c954f1858631bf24496243a72d7914c4492755847cba80eb0ecad07804",
+    "judgments_sha256": "7ac465c5a54f5d8fb271b3e31626723fcad31e4b32179d15e37873a70adf29cc",
+    "screen_sha256": "e94c7df6709d55f925fe06edae17a6dda8cbf4bab7318edc7e8c2f1f91abbcdb",
+    "script_sha256": "b99f8594e35b33b83e2b9109ed6e52319733f35f1120932c9a1546a049a499c5"
+  }
+}

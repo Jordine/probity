@@ -1,0 +1,145 @@
+{
+  "families": 12,
+  "units": 1230,
+  "metrics": {
+    "verdict_agreement": {
+      "estimate": 0.7401024361952442,
+      "family_bootstrap_ci95": [
+        0.6728389221994414,
+        0.80682163348827
+      ],
+      "families": 12
+    },
+    "eligibility_agreement": {
+      "estimate": 0.7539196121836002,
+      "family_bootstrap_ci95": [
+        0.683401542828214,
+        0.8213268108010727
+      ],
+      "families": 12
+    },
+    "primary_eligible": {
+      "estimate": 0.7381789887113506,
+      "family_bootstrap_ci95": [
+        0.6599163016581051,
+        0.8087072409407886
+      ],
+      "families": 12
+    },
+    "secondary_eligible": {
+      "estimate": 0.6032020139007668,
+      "family_bootstrap_ci95": [
+        0.4801869261066902,
+        0.7168392768341976
+      ],
+      "families": 12
+    },
+    "eligible_verdict_agreement": {
+      "estimate": 0.9748368055587852,
+      "family_bootstrap_ci95": [
+        0.9553966988352356,
+        0.9908189115439457
+      ],
+      "families": 12
+    }
+  },
+  "raw_sentence_confusion": [
+    {
+      "primary": "contradicted",
+      "secondary": "contradicted",
+      "count": 344
+    },
+    {
+      "primary": "contradicted",
+      "secondary": "unknown",
+      "count": 73
+    },
+    {
+      "primary": "supported",
+      "secondary": "contradicted",
+      "count": 20
+    },
+    {
+      "primary": "supported",
+      "secondary": "supported",
+      "count": 280
+    },
+    {
+      "primary": "supported",
+      "secondary": "unknown",
+      "count": 176
+    },
+    {
+      "primary": "unknown",
+      "secondary": "contradicted",
+      "count": 58
+    },
+    {
+      "primary": "unknown",
+      "secondary": "supported",
+      "count": 13
+    },
+    {
+      "primary": "unknown",
+      "secondary": "unknown",
+      "count": 266
+    }
+  ],
+  "family_balanced_confusion": [
+    {
+      "primary": "supported",
+      "secondary": "supported",
+      "fraction": 0.24394479555328363
+    },
+    {
+      "primary": "supported",
+      "secondary": "contradicted",
+      "fraction": 0.01381717598835597
+    },
+    {
+      "primary": "supported",
+      "secondary": "unknown",
+      "fraction": 0.138220503308202
+    },
+    {
+      "primary": "contradicted",
+      "secondary": "supported",
+      "fraction": 0.0
+    },
+    {
+      "primary": "contradicted",
+      "secondary": "contradicted",
+      "fraction": 0.28988833585621904
+    },
+    {
+      "primary": "contradicted",
+      "secondary": "unknown",
+      "fraction": 0.05230817800528984
+    },
+    {
+      "primary": "unknown",
+      "secondary": "supported",
+      "fraction": 0.009679108875041705
+    },
+    {
+      "primary": "unknown",
+      "secondary": "contradicted",
+      "fraction": 0.045872597627866295
+    },
+    {
+      "primary": "unknown",
+      "secondary": "unknown",
+      "fraction": 0.20626930478574146
+    }
+  ],
+  "disagreement_units": 340,
+  "schema": "iteration6_independent_reader_audit_v1",
+  "interpretation": "Agreement between automated readers, not accuracy against human ground truth. Primary reader and consensus are separate tiers.",
+  "weighting": "Average sentence agreement within each selected source family, then equal weight across families. Bootstrap resamples families.",
+  "selection": "Frozen hash-ranked 12-family sample; excludes all legacy dual labels outside the selected sample.",
+  "input_sha256": {
+    "/root/projects/probity-benchmark/runs/iteration6/labels/historical_v1/units.jsonl": "9f0ea5ca9c667793b297cbdda33ad064578600908fb87f26e038c907e261bca5",
+    "/root/projects/probity-benchmark/runs/iteration6/planning/secondary_audit_plan.json": "697a875d121d141f6a08bfb888e032a059716a931a3bc21ee1cdd09219ed64b5",
+    "/root/projects/probity-benchmark/runs/iteration6/planning/analyze_reader_audit.py": "a6da152f9865dff86f798d1de1cfb9dcab0152a88d4fde394422a4301678feb0"
+  }
+}

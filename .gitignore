@@ -167,6 +167,12 @@ cache/
 # Complete experiment receipts and transcripts stay local unless curated.
 /runs/
 
+# Full per-unit and raw-context evidence is retained on the experiment host.
+# Curated aggregate tables, figures and qualitative readings may be published.
+/reports/**/disagreements_private.jsonl
+/reports/**/joined_units.jsonl
+/reports/**/qualitative_packets.json
+
 # Probes
 saved_probes/
 

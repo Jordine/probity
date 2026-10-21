@@ -1,0 +1,32 @@
+{
+  "schema": "grid5_environment_quality_manifest_v1",
+  "script_sha256": "838a901c1c8fe12597f019532a482974ea795860a4d7f2acf7886329a624956e",
+  "inputs": {
+    "runs/iteration5/judge_grid_v1/pairs.json": "f3368682579e7a9c740b2fd8c0811029643bce36468ce65dd9fc7c9b313f9bb4"
+  },
+  "outputs": {
+    "reports/data/iteration5/environment_quality_v1/summary.json": "f2df4918eedda4a94c3e3dd9758d47e95ae45e5f745bee2a5449b14d0971e994",
+    "reports/data/iteration5/environment_quality_v1/summary.csv": "f7c8b8d358c28770efd0348d883274c64de4b414748f48ddc2b672ddf886a44e",
+    "reports/data/iteration5/environment_quality_v1/trajectory_rows.csv": "2e728f4a2ebef0c7258873ad77fbbc091a294532726e028ac783fd49f6e9e2a4",
+    "reports/data/iteration5/environment_quality_v1/README.md": "a4940c5fb24f9ea517fd25bc5d42f5f16f3d492531b499bce463d4cf265dcb7a",
+    "reports/figures/iteration5/environment_quality_v1/environment_quality.png": "ea4201ad40cb25a028b54ba36174ceb7b98b275b927ce8196aae9228eeec7407"
+  },
+  "verified_pooled_counts": {
+    "no_feedback": {
+      "trajectories_any_repeat": 278,
+      "trajectories": 332,
+      "speakers_all_three_identical": 137,
+      "speaker_trajectories": 664,
+      "blank_line_turns": 263,
+      "turns": 1992
+    },
+    "feedback": {
+      "trajectories_any_repeat": 242,
+      "trajectories": 332,
+      "speakers_all_three_identical": 90,
+      "speaker_trajectories": 664,
+      "blank_line_turns": 97,
+      "turns": 1992
+    }
+  }
+}

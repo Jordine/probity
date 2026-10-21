@@ -11,6 +11,22 @@ from .preflight import load_problems, sha256
 from .shortcut_diagnostics import MODELS
 
 
+def paired_chance_contract(source):
+    """Only assert constructed chance for a complete information-matched pairing."""
+    groups = defaultdict(list)
+    for row in source:
+        groups[row["parent_problem_id"]].append(row)
+    for rows in groups.values():
+        if len(rows) != 2 or {r["correct_answer"] for r in rows} != {"A", "B"}:
+            return False
+        if {r["variant"] for r in rows} != {"original", "swapped_world"}:
+            return False
+        for field in ("question", "option_a", "option_b"):
+            if rows[0][field] != rows[1][field]:
+                return False
+    return bool(groups)
+
+
 async def run(args):
     problems, audit = load_problems(args.dataset)
     source = [json.loads(x) for x in args.dataset.read_text().splitlines()]
@@ -27,6 +43,7 @@ async def run(args):
             "dataset_audit": audit,
             "runner_sha256": sha256(Path(__file__).read_text()),
             "criterion": "Report all worlds and models. Do not silently exclude disagreements. Evidence quotes must occur verbatim in the complete story.",
+            "source_only": args.source_only,
         }
         (args.out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
         results = []
@@ -82,7 +99,7 @@ async def run(args):
             for i, p in enumerate(problems)
             for m in MODELS
             for swap in [False, True]
-            for story in [True, False]
+            for story in ([True] if args.source_only else [True, False])
             if story or source[i]["variant"] == "original"
         ]
         outcomes = await asyncio.gather(
@@ -111,8 +128,14 @@ async def run(args):
                 }
                 for (model, story), rows in sorted(grouped.items())
             ],
-            "no_story_paired_accuracy": 0.5,
-            "paired_baseline_note": "No-story original-world predictions reused for their opposite-gold twin, so paired accuracy is exactly 0.5 by information symmetry.",
+            "no_story_paired_accuracy": (
+                0.5 if not args.source_only and paired_chance_contract(source) else None
+            ),
+            "paired_baseline_note": (
+                "No-story original-world predictions reused for their opposite-gold twin, so paired accuracy is exactly 0.5 by information symmetry."
+                if not args.source_only and paired_chance_contract(source)
+                else "No constructed-chance claim: this run either omits no-story calls or lacks complete opposite-gold pairs with identical question/options."
+            ),
             "claim_limit": "Source validity diagnostic. Model agreement is not independently verified ground truth. Answer order and twins share a parent.",
         }
         (args.out / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
@@ -126,6 +149,7 @@ def main():
     ap.add_argument("--dataset", type=Path, required=True)
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--budget", type=float, default=2)
+    ap.add_argument("--source-only", action="store_true")
     ap.add_argument("--reuse-receipts", type=Path, nargs="*", default=[])
     asyncio.run(run(ap.parse_args()))
 

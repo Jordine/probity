@@ -51,12 +51,22 @@ def overlapping_tokens(offsets, start, end):
     return positions
 
 
-def serialize(tokenizer, messages, response, prefill=PREFILL):
+def serialize(tokenizer, messages, response, prefill=PREFILL, reasoning=None):
     prefix = tokenizer.apply_chat_template(
         messages, tokenize=False, add_generation_prompt=True, enable_thinking=False
     )
     if not prefix.endswith("<think>\n\n</think>\n\n"):
         raise ValueError("unexpected Qwen nonthinking generation template")
+    reasoning_range = None
+    if reasoning is not None:
+        if not isinstance(reasoning, str) or not reasoning.strip():
+            raise ValueError("returned reasoning must be a nonempty complete string")
+        # Preserve every returned trace character, including boundary whitespace.
+        # This is a declared offline serialization, not a claim about opaque
+        # provider-side prompts, kernels, or unreturned internal reasoning.
+        prefix = prefix.removesuffix("<think>\n\n</think>\n\n") + "<think>\n"
+        reasoning_range = (len(prefix), len(prefix) + len(reasoning))
+        prefix += reasoning + "\n</think>\n\n"
     end = tokenizer.eos_token + "\n"
     original = prefix + response + end
     continuation = tokenizer.apply_chat_template(
@@ -118,6 +128,10 @@ def serialize(tokenizer, messages, response, prefill=PREFILL):
         "dyl_position": period_position,
         "followup_start": len(old_ids),
         "original_tokens": len(old_ids),
+        "returned_reasoning_range": reasoning_range,
+        "returned_reasoning_sha256": (
+            sha256(reasoning) if reasoning is not None else None
+        ),
     }
 
 

@@ -1,0 +1,28 @@
+{
+  "schema": "grid5_figure_manifest_v1",
+  "summary_sha256": "32238d41ae2ffbd39e520ccf4a1b066303bdc25dd3df675840073926e81eff73",
+  "renderer_sha256": "5e849a0939d59acc5ea8c991f8d70e4e594a77cde5ed077d9002f10b37e569ea",
+  "pdf_pages": 5,
+  "primary_estimator": "equal-weight original source-family mean",
+  "files": {
+    "01_full_grid.pdf": "b5912f637a0ecea8e5ce4c0997d0478d12154224e30a8dbb4fea9eec4fea533d",
+    "01_full_grid.png": "ddd9ebf7abd6a9643e85ac689a870c21445ca6d1a6f8ae44d4721c1b4dc0af86",
+    "01_full_grid.svg": "b91a8046d40016b153586d9af5d3df9a5e81fe8fe253840dcce4fee45a20beda",
+    "02_paired_effects.pdf": "c609e263db59c5cff4da97b071e756f5fe897540fe3dc2e183d53aaf96b4ee28",
+    "02_paired_effects.png": "963cef5ae6d38bed9ed0155e11a3f1012ab632d1ee3b753a80208e603296e67a",
+    "02_paired_effects.svg": "8d6476fcce2d2e567d01cfd24ef551afa07a8cb283882a3c2f4d74fb5212031e",
+    "03_exposure_grid.pdf": "df83b623c415414425672ab9cdafd18281c2f25af99aeade268dd9e2c5b9b30f",
+    "03_exposure_grid.png": "c824bdca29405c827dcd7b4c70299e0dd8ff19f4bdbf39a036e0968edc7950c7",
+    "03_exposure_grid.svg": "f4b6211d296b199f5e21548943cacbfd413a9d1e11ce4d7cf2e75553801f6dc3",
+    "04_participant_effects.pdf": "e9837642267287aecb0ffb62adefae396249f9ab516d34fa427cae5a90bcb86e",
+    "04_participant_effects.png": "e11faf19cc6a41ddac637a3001c1a8fe6cb728c8cc0531864f4ce409444ed28c",
+    "04_participant_effects.svg": "9a021bd4aef3b900779d11e5783f84feb1616c9e07d3e6f1e855f41960afd23c",
+    "05_strata_effects.pdf": "6e4267014641561de84535b912b747821970ac56661d337ffd375124ec719a2c",
+    "05_strata_effects.png": "eb0cf5353ed2030c9213b1fe87f2534d9c621423edfdf3188507779d43fccf50",
+    "05_strata_effects.svg": "c4decf6d8afa772b8a5d8ba970106d40eb3374dfbbb240f6dd8d49985fa404ef",
+    "accuracy.csv": "15d91e02cc3d05105394770837f4dc1cdf1c85347de7fe80340355fec5e9c85e",
+    "contrasts.csv": "c1158add184e995f2a800154b02dd488d8a7fa47c1055a7489734e2ad84470b7",
+    "probity_expanded_grid.pdf": "70f1aad1872005a4c282a16f0142e5169b83c5f5f283d87ef6b9a1bbcaa9fdb1",
+    "probity_expanded_grid_plots.zip": "db26c34e37169aaae6e833081656f79f734eb713625ab369bf2c45399beb0b11"
+  }
+}

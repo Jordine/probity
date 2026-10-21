@@ -1,0 +1,10 @@
+{
+  "schema": "prompt_prose_review_v1",
+  "screen_sha256": "e94c7df6709d55f925fe06edae17a6dda8cbf4bab7318edc7e8c2f1f91abbcdb",
+  "confirmed_incomplete_arguments": 1,
+  "excluded_families": [
+    "6ac15f0338e70a96ba9068660aec78e1b76caed14ed1d83a27349c0d8ca9a91d"
+  ],
+  "manual_basis": "The exact raw argument ends with the unfinished clause 'The phrase'. Its raw provider content is identical to the parsed argument, the provider reported finish_reason=stop, and no parser-side clipping occurred.",
+  "policy": "The primary eight-family analysis is unchanged. The sensitivity removes this family from all four cells, rather than removing or regenerating one response."
+}

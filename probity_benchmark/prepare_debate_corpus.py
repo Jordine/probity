@@ -8,6 +8,25 @@ from .evaluate_debate_transfer import argument_mapping
 from .preflight import sha256
 
 
+def returned_reasoning(receipt):
+    """Fail closed when a reasoning-enabled action lacks a replayable trace."""
+    enabled = receipt["request"].get("reasoning", {}).get("enabled", False)
+    message = json.loads(receipt["response_body"])["choices"][0]["message"]
+    reasoning = message.get("reasoning")
+    details = message.get("reasoning_details") or []
+    if not enabled:
+        if reasoning or details:
+            raise ValueError("unexpected reasoning on a thinking-disabled action")
+        return None
+    if not isinstance(reasoning, str) or not reasoning.strip():
+        raise ValueError("thinking-enabled action has no complete returned trace")
+    if not details or any(d.get("type") != "reasoning.text" for d in details):
+        raise ValueError("opaque or missing reasoning details cannot be replayed")
+    if "".join(d.get("text", "") for d in details) != reasoning:
+        raise ValueError("reasoning text/details disagree")
+    return reasoning
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--episodes", type=Path, required=True)
@@ -54,6 +73,7 @@ def main():
                     "world": episode["world"],
                     "messages": receipt["request"]["messages"],
                     "response": response,
+                    "response_reasoning": returned_reasoning(receipt),
                     "spans": [],
                     "label": None,
                     "cache_tokens": True,

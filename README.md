@@ -1,4 +1,32 @@
-# Soothcheck: Probe-Augmented Debate for Deception Detection
+# Probity: probes and judge assistance in debate
+
+Start with the [Qwen3.5 probe and feedback reading guide](docs/probity_iteration6_reading_guide.md)
+for the current detector, display and instruction analyses. It separates sentence
+factuality, probe discrimination, changes in debate behavior and final judge accuracy.
+The [earlier 2×2 researcher guide](docs/probity_researcher_guide.md) explains the
+completed two-model expansion. Accuracy in that grid means **the judge's final
+answer accuracy**; it is not local lie detection accuracy.
+
+- [Qwen3.5 analysis specification and implemented scope](docs/probity_iteration6_spec.md)
+- [Complete historical factuality labels and independent-reader audit](docs/probity_iteration6_factuality.md)
+- [Completed 24-family pilot: results and plots](docs/probity_iteration4_results.md)
+- [Completed 166-question expansion: results, diagnostics and plots](docs/probity_iteration5_results.md)
+- [Exact prompts, information flow, feedback and limitations](docs/probity_iteration4_protocol_scope.md)
+- [166-question / 116-family expansion: plan and recovery record](docs/probity_iteration5_plan.md)
+- [Paper options and deferred comparisons](docs/probity_paper_options.md)
+- [Current benchmark harness and environment](probity_benchmark/README.md)
+
+The expansion is complete: 664 debate trajectories, 1,328 decisions per judge,
+and a full 2×2 analysis. The guide distinguishes public aggregate figure
+reproduction from reproduction requiring private source stories, transcripts
+and runtime evidence.
+
+## Legacy Soothcheck setup and experiments
+
+The remainder of this README documents earlier training, models and debate
+tools. Its setup script, prompt switches, local-probe claims and opponent-only
+feedback description do not specify the current Qwen benchmark. Follow the
+current harness documentation for that environment.
 
 > **⚡ Quick Setup:** Run `bash setup_vast.sh` (not pip install) — this installs dependencies AND patches TransformerLens.
 

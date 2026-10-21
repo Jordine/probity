@@ -1,0 +1,28 @@
+{
+  "schema": "judge3_crossjudge_table_export_v1",
+  "source_report_sha256": "3e923b12aba30d95612615770a3205a1f2d8b8e9f29272a4a63ac4afb354d732",
+  "projector_source_sha256": "11b8dc4cc2acb7bf19ea15883f19d040124b75617863827c555d804682abe54b",
+  "inference_or_bootstrap_rerun": false,
+  "rows_selected_by_outcomes": false,
+  "csv_mapping": {
+    "episodes": "n_presentations",
+    "parent_groups": "n_families",
+    "parent_bootstrap_95_ci": [
+      "family_bootstrap_ci_low",
+      "family_bootstrap_ci_high"
+    ]
+  },
+  "outputs": {
+    "uplift_interactions.csv": {
+      "rows": 32,
+      "sha256": "5ea019d241c94dfbb95e55f800f2773b132c58ad5230f371026c0a034cacf36c"
+    },
+    "paired_accuracy_differences.csv": {
+      "rows": 114,
+      "sha256": "ab6f4f52c43cc4b5065e4e0797bc535994c22ffbd65e688765b093e8fb63fed2"
+    },
+    "comparison_summary.json": {
+      "sha256": "fea9f7c9f404f9ff8753f942c9d9b7b2c1c3ca18df99c487cbaac03954282544"
+    }
+  }
+}

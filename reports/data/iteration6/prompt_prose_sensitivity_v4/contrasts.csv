@@ -1,0 +1,15 @@
+metric,level,contrast,families,estimate,lower95,upper95
+haiku_correct,selective,feedback_on_minus_off,7,0.14285714285714285,0.0,0.42857142857142855
+haiku_correct,explicit,feedback_on_minus_off,7,0.14285714285714285,0.0,0.42857142857142855
+native_correct,selective,feedback_on_minus_off,7,-0.2857142857142857,-0.5714285714285714,0.0
+native_correct,explicit,feedback_on_minus_off,7,0.0,0.0,0.0
+words,selective,feedback_on_minus_off,7,9.666666666666668,0.8095238095238102,17.880952380952387
+words,explicit,feedback_on_minus_off,7,4.619047619047627,-0.6202380952380873,11.190476190476193
+exact_self_repeat,selective,feedback_on_minus_off,7,-0.14285714285714285,-0.42857142857142855,0.0
+exact_self_repeat,explicit,feedback_on_minus_off,7,-0.14285714285714285,-0.42857142857142855,0.0
+assigned_answer_deviations,selective,feedback_on_minus_off,7,0.0,0.0,0.0
+assigned_answer_deviations,explicit,feedback_on_minus_off,7,0.0,0.0,0.0
+authentic_assignment_mean_percentile,selective,feedback_on_minus_off,7,0.2976666666666668,-0.6943333333333334,1.6865238095238102
+authentic_assignment_mean_percentile,explicit,feedback_on_minus_off,7,-0.29752380952381,-1.3887630952380967,0.8928571428571423
+incorrect_assignment_mean_percentile,selective,feedback_on_minus_off,7,3.373000000000002,0.19871428571428953,7.737904761904765
+incorrect_assignment_mean_percentile,explicit,feedback_on_minus_off,7,0.9918571428571406,-2.08361904761905,3.968095238095237

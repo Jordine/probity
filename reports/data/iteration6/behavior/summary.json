@@ -1,0 +1,349 @@
+{
+  "model": "qwen/qwen3.5-27b",
+  "questions": 166,
+  "families": 116,
+  "trajectories": 332,
+  "turns": 1992,
+  "bootstrap": {
+    "seed": 4166,
+    "resamples": 10000,
+    "unit": "source family",
+    "estimand": "equal-weight mean of within-family question means",
+    "limitation": "one trajectory per arm; no generation-seed uncertainty; unadjusted intervals"
+  },
+  "paired_B_minus_A": {
+    "words": {
+      "mean": -13.652777777777775,
+      "lo": -19.765187978927198,
+      "hi": -7.640295737547893,
+      "families": 116
+    },
+    "characters": {
+      "mean": -93.28472222222223,
+      "lo": -133.51275742337165,
+      "hi": -54.06994133141765,
+      "families": 116
+    },
+    "any_exact_repeat": {
+      "mean": -0.16091954022988503,
+      "lo": -0.25862068965517243,
+      "hi": -0.0603448275862069,
+      "families": 116
+    },
+    "all_three_same_speakers": {
+      "mean": -0.10919540229885057,
+      "lo": -0.18247126436781608,
+      "hi": -0.037320402298851085,
+      "families": 116
+    },
+    "jaccard_previous_own": {
+      "mean": -0.06087824565630686,
+      "lo": -0.08291590133825694,
+      "hi": -0.03878880420463223,
+      "families": 116
+    },
+    "wrong_percentile": {
+      "mean": 0.90098754789272,
+      "lo": -0.10773497365900368,
+      "hi": 1.9347184027777773,
+      "families": 116
+    },
+    "correct_percentile": {
+      "mean": 0.4340316091954021,
+      "lo": -0.02897953783524905,
+      "hi": 0.8990207974137927,
+      "families": 116
+    }
+  },
+  "by_arm": {
+    "A": {
+      "words": {
+        "mean": 226.95617816091956,
+        "lo": 220.69002634099616,
+        "hi": 233.1964379789272,
+        "families": 116
+      },
+      "any_exact_repeat": {
+        "mean": 0.692528735632184,
+        "lo": 0.6163793103448276,
+        "hi": 0.7672413793103449,
+        "families": 116
+      },
+      "jaccard_previous_own": {
+        "mean": 0.7842457887879161,
+        "lo": 0.7664965592807736,
+        "hi": 0.8008721856289387,
+        "families": 116
+      },
+      "wrong_percentile": {
+        "mean": 55.92586781609195,
+        "lo": 53.904361769636026,
+        "hi": 57.95434783285441,
+        "families": 116
+      },
+      "correct_percentile": {
+        "mean": 14.596432471264368,
+        "lo": 13.401073084291186,
+        "hi": 15.842649676724138,
+        "families": 116
+      },
+      "exact_repeat_count": 116
+    },
+    "B": {
+      "words": {
+        "mean": 213.30340038314174,
+        "lo": 208.84380387931037,
+        "hi": 217.6891702586207,
+        "families": 116
+      },
+      "any_exact_repeat": {
+        "mean": 0.5316091954022989,
+        "lo": 0.4511494252873563,
+        "hi": 0.6120689655172413,
+        "families": 116
+      },
+      "jaccard_previous_own": {
+        "mean": 0.7233675431316093,
+        "lo": 0.7051543870790817,
+        "hi": 0.7413236193032479,
+        "families": 116
+      },
+      "wrong_percentile": {
+        "mean": 56.82685536398467,
+        "lo": 54.792391355363996,
+        "hi": 58.81862890325671,
+        "families": 116
+      },
+      "correct_percentile": {
+        "mean": 15.03046408045977,
+        "lo": 13.816134554597701,
+        "hi": 16.289704142720304,
+        "families": 116
+      },
+      "exact_repeat_count": 88
+    }
+  },
+  "score_round": [
+    {
+      "arm": "A",
+      "role": "correct_answer_advocate",
+      "round": 1,
+      "mean": 16.15497701149425,
+      "lo": 14.864756501436782,
+      "hi": 17.511029489942526,
+      "families": 116
+    },
+    {
+      "arm": "A",
+      "role": "correct_answer_advocate",
+      "round": 2,
+      "mean": 14.194318965517242,
+      "lo": 12.862216918103451,
+      "hi": 15.550372808908046,
+      "families": 116
+    },
+    {
+      "arm": "A",
+      "role": "correct_answer_advocate",
+      "round": 3,
+      "mean": 13.440001436781607,
+      "lo": 12.284494827586206,
+      "hi": 14.631365373563218,
+      "families": 116
+    },
+    {
+      "arm": "A",
+      "role": "wrong_answer_advocate",
+      "round": 1,
+      "mean": 57.70488074712645,
+      "lo": 55.35515772270116,
+      "hi": 60.096537859195415,
+      "families": 116
+    },
+    {
+      "arm": "A",
+      "role": "wrong_answer_advocate",
+      "round": 2,
+      "mean": 57.63304741379312,
+      "lo": 55.367052658045985,
+      "hi": 59.94084403735633,
+      "families": 116
+    },
+    {
+      "arm": "A",
+      "role": "wrong_answer_advocate",
+      "round": 3,
+      "mean": 52.43967528735634,
+      "lo": 50.511974964080466,
+      "hi": 54.352401257183914,
+      "families": 116
+    },
+    {
+      "arm": "B",
+      "role": "correct_answer_advocate",
+      "round": 1,
+      "mean": 16.020251436781606,
+      "lo": 14.748087535919538,
+      "hi": 17.4121191091954,
+      "families": 116
+    },
+    {
+      "arm": "B",
+      "role": "correct_answer_advocate",
+      "round": 2,
+      "mean": 15.026479885057471,
+      "lo": 13.66153125,
+      "hi": 16.421346874999998,
+      "families": 116
+    },
+    {
+      "arm": "B",
+      "role": "correct_answer_advocate",
+      "round": 3,
+      "mean": 14.04466091954023,
+      "lo": 12.889206788793103,
+      "hi": 15.239000610632182,
+      "families": 116
+    },
+    {
+      "arm": "B",
+      "role": "wrong_answer_advocate",
+      "round": 1,
+      "mean": 57.740813218390805,
+      "lo": 55.369911889367835,
+      "hi": 60.08453947557472,
+      "families": 116
+    },
+    {
+      "arm": "B",
+      "role": "wrong_answer_advocate",
+      "round": 2,
+      "mean": 58.2676235632184,
+      "lo": 55.99869644396553,
+      "hi": 60.50956224856323,
+      "families": 116
+    },
+    {
+      "arm": "B",
+      "role": "wrong_answer_advocate",
+      "round": 3,
+      "mean": 54.47212931034484,
+      "lo": 52.57130452586208,
+      "hi": 56.420763829022995,
+      "families": 116
+    }
+  ],
+  "round3_minus_round1": [
+    {
+      "arm": "A",
+      "role": "correct_answer_advocate",
+      "mean": -2.714975574712644,
+      "lo": -3.475264439655173,
+      "hi": -1.9756176724137933,
+      "families": 116
+    },
+    {
+      "arm": "A",
+      "role": "wrong_answer_advocate",
+      "mean": -5.265205459770114,
+      "lo": -6.956449928160921,
+      "hi": -3.582892959770117,
+      "families": 116
+    },
+    {
+      "arm": "B",
+      "role": "correct_answer_advocate",
+      "mean": -1.9755905172413792,
+      "lo": -2.7029657327586207,
+      "hi": -1.2721551364942527,
+      "families": 116
+    },
+    {
+      "arm": "B",
+      "role": "wrong_answer_advocate",
+      "mean": -3.268683908045977,
+      "lo": -4.954032255747126,
+      "hi": -1.5413122844827616,
+      "families": 116
+    }
+  ],
+  "judges": {
+    "Qwen/Qwen3.5-4B": {
+      "A": {
+        "mean": 0.7902298850574712,
+        "lo": 0.7212643678160918,
+        "hi": 0.8563218390804599,
+        "families": 116
+      },
+      "B": {
+        "mean": 0.817528735632184,
+        "lo": 0.7557471264367817,
+        "hi": 0.875,
+        "families": 116
+      },
+      "C": {
+        "mean": 0.9698275862068966,
+        "lo": 0.9439655172413793,
+        "hi": 0.9913793103448276,
+        "families": 116
+      },
+      "D": {
+        "mean": 0.9741379310344828,
+        "lo": 0.9482758620689655,
+        "hi": 0.9956896551724138,
+        "families": 116
+      },
+      "B_minus_A": {
+        "mean": 0.027298850574712645,
+        "lo": -0.038793103448275856,
+        "hi": 0.09482758620689655,
+        "families": 116
+      },
+      "paired_counts": {
+        "fixes": 14,
+        "harms": 12,
+        "both_correct": 119,
+        "both_wrong": 21
+      }
+    },
+    "anthropic/claude-haiku-5.5": {
+      "A": {
+        "mean": 0.8850574712643678,
+        "lo": 0.8333333333333333,
+        "hi": 0.9310344827586207,
+        "families": 116
+      },
+      "B": {
+        "mean": 0.8764367816091954,
+        "lo": 0.8204022988505746,
+        "hi": 0.9267241379310345,
+        "families": 116
+      },
+      "C": {
+        "mean": 0.9525862068965517,
+        "lo": 0.9181034482758621,
+        "hi": 0.9827586206896551,
+        "families": 116
+      },
+      "D": {
+        "mean": 0.9626436781609194,
+        "lo": 0.9310344827586207,
+        "hi": 0.9870689655172413,
+        "families": 116
+      },
+      "B_minus_A": {
+        "mean": -0.008620689655172414,
+        "lo": -0.07040229885057471,
+        "hi": 0.050287356321839075,
+        "families": 116
+      },
+      "paired_counts": {
+        "fixes": 12,
+        "harms": 11,
+        "both_correct": 135,
+        "both_wrong": 8
+      }
+    }
+  },
+  "role_switches": 0
+}

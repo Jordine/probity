@@ -25,6 +25,37 @@ def strict_json(text):
     return json.loads(text, object_pairs_hook=unique)
 
 
+def assert_no_exposed_truncation(payload):
+    """A normalized stop cannot override an exposed forced/length finish."""
+    flags = []
+
+    def visit(value, path):
+        if isinstance(value, dict):
+            for key, item in value.items():
+                here = path + [key]
+                if key in ("forced", "truncated", "forced_final") and item:
+                    flags.append({"path": here, "value": item})
+                if key in (
+                    "native_finish_reason",
+                    "stop_reason",
+                    "finish_reason",
+                ) and item in (
+                    "length",
+                    "max_tokens",
+                    "max_output_tokens",
+                    "truncated",
+                ):
+                    flags.append({"path": here, "value": item})
+                visit(item, here)
+        elif isinstance(value, list):
+            for index, item in enumerate(value):
+                visit(item, path + [index])
+
+    visit(payload, [])
+    if flags:
+        raise ValueError("exposed incomplete generation: " + json.dumps(flags))
+
+
 class BudgetedChat:
     def __init__(
         self,
@@ -37,9 +68,31 @@ class BudgetedChat:
         schema_retries=0,
         concurrency=4,
         reasoning=None,
+        reasoning_by_model=None,
+        request_timeout_seconds=300,
+        structured_output=True,
     ):
         if out.exists() or not math.isfinite(budget) or budget <= 0:
             raise ValueError("new output directory and finite positive budget required")
+        if (
+            isinstance(request_timeout_seconds, bool)
+            or not isinstance(request_timeout_seconds, (int, float))
+            or not math.isfinite(request_timeout_seconds)
+            or request_timeout_seconds <= 0
+        ):
+            raise ValueError("finite positive request timeout required")
+        if type(structured_output) is not bool:
+            raise ValueError("structured_output must be boolean")
+        if reasoning_by_model is not None and (
+            not isinstance(reasoning_by_model, dict)
+            or any(
+                m not in models or not isinstance(value, dict)
+                for m, value in reasoning_by_model.items()
+            )
+        ):
+            raise ValueError(
+                "reasoning_by_model must map requested models to reasoning objects"
+            )
         if not os.environ.get("OPENROUTER_API_KEY"):
             raise RuntimeError("OPENROUTER_API_KEY unavailable")
         catalog = json.load(
@@ -48,7 +101,10 @@ class BudgetedChat:
         all_models = {m["id"]: m for m in catalog["data"]}
         self.models = {m: all_models[m] for m in models}
         for m in self.models.values():
-            if "structured_outputs" not in m["supported_parameters"]:
+            if (
+                structured_output
+                and "structured_outputs" not in m["supported_parameters"]
+            ):
                 raise ValueError("structured output unsupported")
             for key in ["prompt", "completion", "request"]:
                 value = float(m["pricing"].get(key, 0))
@@ -65,13 +121,22 @@ class BudgetedChat:
         self.records = []
         self.schema_retries = schema_retries
         self.reasoning = {"enabled": False} if reasoning is None else dict(reasoning)
+        self.reasoning_by_model = {
+            model: dict(value) for model, value in (reasoning_by_model or {}).items()
+        }
+        self.request_timeout_seconds = request_timeout_seconds
+        self.structured_output = structured_output
         self.reusable = {}
         self.unavailable = {}
         for source in reuse_receipts:
             for line in Path(source).read_text().splitlines():
                 record = strict_json(line)
                 if record["valid"] and record.get("finish_reason") == "stop":
-                    self.reusable[record["request_sha256"]] = (str(source), record)
+                    reuse_key = (
+                        record["request_sha256"],
+                        json.dumps(record["tag"], sort_keys=True),
+                    )
+                    self.reusable[reuse_key] = (str(source), record)
                 elif record.get("finish_reason") == "error":
                     payload = json.loads(record.get("response_body", "{}"))
                     for choice in payload.get("choices", []):
@@ -99,6 +164,10 @@ class BudgetedChat:
                     "budget": budget,
                     "max_tokens": max_tokens,
                     "reasoning": self.reasoning,
+                    "reasoning_by_model": self.reasoning_by_model,
+                    "request_timeout_seconds": self.request_timeout_seconds,
+                    "structured_output": self.structured_output,
+                    "receipt_reuse_identity": "request_sha256_and_canonical_job_tag",
                     "source_sha256": sha256(Path(__file__).read_text()),
                 },
                 indent=2,
@@ -108,7 +177,7 @@ class BudgetedChat:
 
     async def __aenter__(self):
         self.session = aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=300),
+            timeout=aiohttp.ClientTimeout(total=self.request_timeout_seconds),
             headers={"Authorization": "Bearer " + os.environ["OPENROUTER_API_KEY"]},
         )
         return self
@@ -152,12 +221,8 @@ class BudgetedChat:
             "model": model,
             "messages": messages,
             "max_tokens": self.max_tokens,
-            "reasoning": self.reasoning,
+            "reasoning": self.reasoning_by_model.get(model, self.reasoning),
             "usage": {"include": True},
-            "response_format": {
-                "type": "json_schema",
-                "json_schema": {"name": schema_name, "strict": True, "schema": schema},
-            },
             "provider": {
                 "require_parameters": True,
                 "max_price": {
@@ -167,9 +232,15 @@ class BudgetedChat:
                 },
             },
         }
+        if self.structured_output:
+            body["response_format"] = {
+                "type": "json_schema",
+                "json_schema": {"name": schema_name, "strict": True, "schema": schema},
+            }
         if "temperature" in spec["supported_parameters"]:
             body["temperature"] = 0
         request_hash = sha256(json.dumps(body, sort_keys=True))
+        reuse_key = (request_hash, json.dumps(tag, sort_keys=True))
         if request_hash in self.unavailable:
             source, prior = self.unavailable[request_hash]
             record = {
@@ -186,13 +257,13 @@ class BudgetedChat:
             raise RuntimeError(
                 "Previously blocked by provider content inspection; not retried"
             )
-        if request_hash in self.reusable:
-            source, prior = self.reusable[request_hash]
+        if reuse_key in self.reusable:
+            source, prior = self.reusable[reuse_key]
             if prior["request"] != body:
                 raise ValueError("cached request hash/body mismatch")
-            parsed = strict_json(
-                json.loads(prior["response_body"])["choices"][0]["message"]["content"]
-            )
+            prior_payload = json.loads(prior["response_body"])
+            assert_no_exposed_truncation(prior_payload)
+            parsed = strict_json(prior_payload["choices"][0]["message"]["content"])
             jsonschema.validate(parsed, schema)
             if response_validator is not None:
                 response_validator(parsed)
@@ -204,6 +275,11 @@ class BudgetedChat:
                 "original_cost_usd": prior["cost_usd"],
                 "cost_usd": 0.0,
                 "cost_basis": "previously_accounted_receipt",
+                **(
+                    {"local_response_schema": schema}
+                    if not self.structured_output
+                    else {}
+                ),
             }
             self.records.append(record)
             with (self.out / "requests.jsonl").open("a") as f:
@@ -225,6 +301,11 @@ class BudgetedChat:
                 "reserved_usd": upper,
                 "valid": False,
                 "attempt": _attempt,
+                **(
+                    {"local_response_schema": schema}
+                    if not self.structured_output
+                    else {}
+                ),
             }
             start = time.monotonic()
             try:
@@ -272,6 +353,7 @@ class BudgetedChat:
                     or usage["completion_tokens"] >= self.max_tokens
                 ):
                     raise ValueError("incomplete generation")
+                assert_no_exposed_truncation(payload)
                 obj = strict_json(choice["message"]["content"])
                 jsonschema.validate(obj, schema)
                 if response_validator is not None:

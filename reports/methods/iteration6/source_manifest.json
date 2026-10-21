@@ -1,0 +1,40 @@
+{
+  "copies_are_byte_identical": true,
+  "files": [
+    {
+      "original_path": "runs/iteration6/planning/analyze_reader_audit.py",
+      "published_path": "reports/methods/iteration6/analyze_reader_audit.py",
+      "sha256": "c816a287a4e22610506f319dc2a0afc3a0834b2e2d69415233c3caea6abd3f83"
+    },
+    {
+      "original_path": "runs/iteration6/planning/analyze_live_factuality.py",
+      "published_path": "reports/methods/iteration6/analyze_live_factuality.py",
+      "sha256": "5030805e0016709e3c369654e7040396e19f77fcc4601011ddccbed0d24b2fa1"
+    },
+    {
+      "original_path": "runs/iteration6/live/analyze_display_behavior_v1.py",
+      "published_path": "reports/methods/iteration6/analyze_display_behavior_v1.py",
+      "sha256": "0bfd4860f9e42294975523b397ea47d9c7d5391ea7f0170260ac9d533d49d5c8"
+    },
+    {
+      "original_path": "runs/iteration6/live/analyze_judges_v1.py",
+      "published_path": "reports/methods/iteration6/analyze_judges_v1.py",
+      "sha256": "d7686141d7ef4ada45efee4542cdb92bdcb9082942bc58ed0c48057d7d0c01c3"
+    },
+    {
+      "original_path": "runs/iteration6/live/analyze_prompt_v1.py",
+      "published_path": "reports/methods/iteration6/analyze_prompt_v1.py",
+      "sha256": "966f00614d541674461364df591a39faefb22092ea1785dfbe7a2531a4c1ef88"
+    },
+    {
+      "original_path": "runs/iteration6/live/analyze_prose_sensitivity_v1.py",
+      "published_path": "reports/methods/iteration6/analyze_prose_sensitivity_v1.py",
+      "sha256": "4bf7563102c795c57401b1af38a2fb42b6f6158ecf3406e58ee6643309e36661"
+    },
+    {
+      "original_path": "runs/iteration6/behavior/analyze.py",
+      "published_path": "reports/methods/iteration6/analyze_historical_behavior.py",
+      "sha256": "bed021fb648dece498a0d63feceac1ef72ebea8d2ab2db5533c8f7e3f434932a"
+    }
+  ]
+}
