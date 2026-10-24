@@ -90,7 +90,9 @@ preserve useful aggregate information; it does not guarantee removal of the sign
 All live conditions use the same frozen adapted response probe. Alternative
 Apollo-trained, DYL, published FIBS and local heads are evaluated offline on the
 recorded behavior. This campaign does **not** generate separate live debates
-for every probe type or layer.
+for every probe type or layer. Therefore the live result applies only to that
+named adapted layer-43 probe and is not evidence that probe feedback in general
+has the same effect.
 
 ## How factuality and probe plots should be read
 

@@ -1,8 +1,11 @@
 # Iteration 6 artifact index
 
-Start with the [results narrative](../../../docs/probity_iteration6_results.md)
-and [reading guide](../../../docs/probity_iteration6_reading_guide.md). Each
-directory below contains machine-readable JSON/CSV next to PNG/PDF figures.
+Start with the [results narrative](../../../docs/probity_iteration6_results.md),
+[reading guide](../../../docs/probity_iteration6_reading_guide.md), and
+[follow-on debate-probe benchmark specification](../../../docs/probity_debate_probe_benchmark_spec.md).
+Only one probe generated live feedback trajectories in iteration 6;
+alternative probe and layer results below are passive/offline evaluations. Each
+directory contains machine-readable JSON/CSV next to PNG/PDF figures.
 
 | Question | Artifact | Population |
 | --- | --- | --- |

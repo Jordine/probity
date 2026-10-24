@@ -81,6 +81,13 @@ across displays or judge models at current sample sizes. The local probe is a
 promising locator of factual contradictions; that does not yet establish that
 showing its output causes better debates.
 
+Only the adapted layer-43 response probe generated live feedback-conditioned
+trajectories in this campaign. Alternative DYL, FIBS, Apollo-data, local and
+layer readouts were evaluated offline on the resulting contexts. They did not
+generate their own `B` trajectories, so this campaign cannot support a general
+claim about how probes behave in the loop. The next benchmark design is
+specified in [the debate-probe benchmark specification](probity_debate_probe_benchmark_spec.md).
+
 ## Relation to the A/B/C/D grid
 
 | Debater input | Judge sees arguments only | Judge also sees probe scores |
